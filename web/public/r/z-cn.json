@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "z-cn",
+  "type": "registry:lib",
+  "title": "Z Class Names",
+  "description": "Class name merge helper that resolves conflicting Tailwind utilities in favor of the consumer.",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "z-cn.ts",
+      "type": "registry:lib",
+      "target": "lib/z-cn.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\n/**\n * Merges class names, resolving conflicting Tailwind utilities in favor of\n * the last one passed.\n *\n * Named `zcn` rather than `cn` so it never collides with the `cn` a project\n * may already have from shadcn/ui. Z-UI components always pass the consumer's\n * `className` last, which is what makes overriding a built-in utility work:\n * Tailwind resolves by source order, not specificity, so plain concatenation\n * would make overrides a coin flip.\n */\nexport function zcn(...inputs: ClassValue[]): string {\n  return twMerge(clsx(inputs))\n}\n"
+    }
+  ],
+  "meta": {
+    "category": "primitive",
+    "states": null,
+    "spring": null
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "allowJs": true,
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      // Registry sources import through `@/` exactly as a consumer will after
+      // the CLI rewrites them. These explicit entries win over the `@/*`
+      // wildcard below, so the same file typechecks in both workspaces and
+      // what runs here is what ships.
+      "@/lib/z-spring": ["../registry/lib/z-spring/z-spring.ts"],
+      "@/lib/z-cn": ["../registry/lib/z-cn/z-cn.ts"],
+      "@/hooks/use-controllable-state": [
+        "../registry/hooks/use-controllable-state/use-controllable-state.ts"
+      ],
+      "@/components/z-ui/like-button": [
+        "../registry/components/like-button/like-button.tsx"
+      ],
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

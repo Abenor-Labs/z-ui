@@ -1,0 +1,28 @@
+{
+  "name": "z-ui",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Abenor-Labs/z-ui",
+  "items": [
+    {
+      "name": "like-button",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/like-button"
+    },
+    {
+      "name": "use-controllable-state",
+      "type": "registry:hook",
+      "path": "hooks/use-controllable-state"
+    },
+    {
+      "name": "z-cn",
+      "type": "registry:lib",
+      "path": "lib/z-cn"
+    },
+    {
+      "name": "z-spring",
+      "type": "registry:lib",
+      "path": "lib/z-spring"
+    }
+  ]
+}

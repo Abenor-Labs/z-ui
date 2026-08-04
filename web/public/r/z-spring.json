@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "z-spring",
+  "type": "registry:lib",
+  "title": "Z Spring",
+  "description": "The Z-UI spring scale and the transition hook that honors prefers-reduced-motion.",
+  "dependencies": [
+    "motion"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "z-spring.ts",
+      "type": "registry:lib",
+      "target": "lib/z-spring.ts",
+      "content": "'use client'\n\nimport { useReducedMotionConfig } from 'motion/react'\nimport type { Transition } from 'motion/react'\n\n/**\n * The Z-UI spring scale.\n *\n * Named by behavior, not by adjective, so choosing one is a decision rather\n * than a vibe. Damping ratio is what actually determines the feel:\n *\n *   ζ = damping / (2 * sqrt(stiffness * mass))\n *\n *                      t90     overshoot   rest (2%)\n *   snap    ζ 0.89    152ms          <1%      200ms\n *   bounce  ζ 0.35     94ms          31%      571ms\n *   settle  ζ 0.74    173ms           3%      333ms\n *   fling   ζ 0.87    188ms          <1%      267ms\n *\n * `t90` is time to reach 90% of the target: the honest measure of perceived\n * response. Note that `bounce` gets there fastest of the four precisely\n * because it overshoots. Its long tail is settling the user reads as physical\n * weight, not latency, and the element stays interactive throughout.\n *\n * `snap` is the default. Reach for `bounce` only when the recoil itself\n * carries meaning, and only on an element 48px or smaller responding to\n * direct user input.\n */\nexport const springs = {\n  /** State morphs: play/pause, lock, mute. Overshoot here would be noise. */\n  snap: { type: 'spring', stiffness: 500, damping: 40, mass: 1 },\n  /** Tactile feedback: like, bookmark. The overshoot is the message. */\n  bounce: { type: 'spring', stiffness: 400, damping: 14, mass: 1 },\n  /** Reveals: search pill expand, password eye. */\n  settle: { type: 'spring', stiffness: 260, damping: 24, mass: 1 },\n  /** Gesture release, carrying velocity out of a drag. */\n  fling: { type: 'spring', stiffness: 300, damping: 30, mass: 1 },\n} as const satisfies Record<string, Transition>\n\nexport type SpringName = keyof typeof springs\n\n/**\n * Resolves a preset name to a transition, honoring `prefers-reduced-motion`.\n *\n * Reduced motion returns a zero-duration transition so the state change is\n * instant rather than absent. The other half of the contract lives in the\n * component: when reduced motion is active, decorative sub-elements\n * (particles, trails, draw-on strokes) must not render at all. A hook cannot\n * enforce that, so components consult this preference directly for it.\n *\n * `useReducedMotionConfig`, not `useReducedMotion`: the former also honors an\n * enclosing `<MotionConfig reducedMotion=\"always\" | \"never\">`, which is what\n * lets a docs page demonstrate the reduced-motion branch beside the full one\n * without asking the reader to change an OS setting. It returns\n * `boolean | null` and is null during SSR, so compare against `true`\n * explicitly and let the server render the full-motion markup.\n */\nexport function useZTransition(\n  preset: SpringName | Transition = 'snap',\n): Transition {\n  const reduced = useReducedMotionConfig() === true\n  if (reduced) return { duration: 0 }\n  return typeof preset === 'string' ? springs[preset] : preset\n}\n"
+    }
+  ],
+  "meta": {
+    "category": "primitive",
+    "states": null,
+    "spring": null
+  }
+}

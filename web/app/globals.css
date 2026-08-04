@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+/* Component sources live outside this workspace, so Tailwind has to be told
+   where to look or every utility in a registry component is silently dropped. */
+@source '../../registry/**/*.tsx';
+
+@theme {
+  /* The Instrument Panel. Ink chassis, silkscreen markings, one mint
+     indicator that lights only while something is moving. */
+  --color-chassis: #0a0a0b;
+  --color-panel: #121214;
+  --color-panel-2: #1a1a1e;
+  --color-silkscreen: #e8e4dc;
+  --color-muted: #7a756d;
+  --color-rule: #232327;
+  --color-mint: #00e5a0;
+
+  --font-sans: 'Inter var', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-chassis);
+  }
+
+  body {
+    background: var(--color-chassis);
+    color: var(--color-silkscreen);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-mint);
+    color: var(--color-chassis);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-mint);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Mono uppercase is the panel's silkscreen: every label, every unit. */
+  .lbl {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* Shiki emits its own background; the panel supplies the ground instead. */
+  .code pre {
+    background: transparent !important;
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+  }
+  .code code {
+    font-family: var(--font-mono);
+  }
+}
