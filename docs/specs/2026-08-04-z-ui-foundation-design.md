@@ -25,7 +25,7 @@ Z-UI fills that gap: designed, physical, state-driven micro-interactions deliver
 
 ## 3. Locked decisions
 
-These were settled during brainstorming and are not re-opened by this document.
+These were settled during brainstorming and are not re-opened by this document. Each now has an [architecture decision record](../adr/) carrying its full reasoning, what it costs to reverse, and what would change our mind. This table is the summary; the ADRs are the argument.
 
 | Decision | Choice | Rationale |
 | --- | --- | --- |
@@ -130,7 +130,7 @@ Two file types: one index, one manifest per item. The CLI fetches the index once
   ],
   "meta": {
     "category": "tactile-feedback",
-    "states": ["idle", "hover", "pressing", "liked"],
+    "states": ["idle", "hover", "pressing", "liked", "liked-hover", "liked-pressing"],
     "spring": "bounce"
   }
 }
@@ -209,15 +209,27 @@ type MotionConflicts =
   | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
   | 'style'
 
-// One variants object per component, at module scope, keyed by exactly the
-// names in the manifest's meta.states. Module scope, not the render body,
-// so the object identity is stable across renders.
-const variants = {
-  idle:     { scale: 1 },
-  hover:    { scale: 1.08 },
-  pressing: { scale: 0.9 },
-  liked:    { scale: 1 },
-}
+// Liked-ness and interaction are independent, so the state machine is their
+// product. Declared once as a tuple; meta.states and every variants object's
+// keys must equal it, and CI enforces all three agreeing. See ADR 0007.
+const STATES = [
+  'idle', 'hover', 'pressing',
+  'liked', 'liked-hover', 'liked-pressing',
+] as const
+
+export type LikeButtonState = (typeof STATES)[number]
+
+// `satisfies`, not an annotation: it checks exhaustiveness while leaving the
+// literal type intact, which is what motion needs. Annotating widens the
+// values and fails assignment.
+const rootVariants = {
+  'idle':           { scale: 1 },
+  'hover':          { scale: 1.08 },
+  'pressing':       { scale: 0.9 },
+  'liked':          { scale: 1 },
+  'liked-hover':    { scale: 1.08 },
+  'liked-pressing': { scale: 0.9 },
+} satisfies Record<LikeButtonState, object>
 
 export type LikeButtonProps = Omit<
   React.ComponentPropsWithoutRef<'button'>, MotionConflicts
@@ -226,7 +238,10 @@ export type LikeButtonProps = Omit<
   pressed?: boolean
   defaultPressed?: boolean
   onPressedChange?: (pressed: boolean) => void
-  spring?: SpringName
+  // SpringName | Transition, not just a preset name: passing a scaled
+  // transition is how the showcase plays a spring back in slow motion
+  // without adding a second API.
+  spring?: SpringName | Transition
   ref?: React.Ref<HTMLButtonElement>
 }
 
@@ -244,20 +259,34 @@ export function LikeButton({
     defaultProp: defaultPressed,
     onChange: onPressedChange,
   })
+  const [hovered, setHovered] = React.useState(false)
+  const [pressing, setPressing] = React.useState(false)
   const transition = useZTransition(spring)
+
+  // One derived value drives animate and data-state together, so the attribute
+  // a consumer styles against can never disagree with what is on screen.
+  const interaction = pressing ? 'pressing' : hovered ? 'hover' : null
+  const state: LikeButtonState = pressed
+    ? interaction ? (`liked-${interaction}` as LikeButtonState) : 'liked'
+    : (interaction ?? 'idle')
 
   return (
     <motion.button
       ref={ref}
       type="button"
       aria-pressed={pressed}
-      data-state={pressed ? 'liked' : 'idle'}
+      data-state={state}
       initial={false}
-      animate={pressed ? 'liked' : 'idle'}
-      whileHover="hover"
-      whileTap="pressing"
-      variants={variants}
+      animate={state}
+      variants={rootVariants}
       transition={transition}
+      // Explicit handlers rather than whileHover/whileTap. A hover variant
+      // cannot see the rest of the state, and layering one over `animate` is
+      // what desynchronised data-state from the screen. See ADR 0007.
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => { setHovered(false); setPressing(false) }}
+      onPointerDown={() => setPressing(true)}
+      onPointerUp={() => setPressing(false)}
       onClick={() => setPressed(!pressed)}
       className={zcn('relative grid size-11 place-items-center', className)}
       {...props}
@@ -278,7 +307,11 @@ Numbered rules, all machine-checkable except where noted:
 8. `className` is merged last through `zcn` so consumer classes win.
 9. Remaining props spread onto the root element.
 10. Hit target is at least 44x44 CSS pixels, even where the visual element is smaller. `size-11` is 44px.
-11. Every module-scope `variants` object declares the same key vocabulary, matching the manifest's `meta.states` exactly. A component typically needs more than one: `like-button` has three, because the root animates `scale`, the icon animates `color` and `fillOpacity`, and the ring animates keyframed `scale` and `opacity`. Declaring identical keys across all of them is what lets motion's variant propagation drive every child from the root's `animate` state, so no child tracks state itself. It is also what lets the showcase generate a state inspector from the manifest alone, which makes `meta.states` load-bearing rather than decorative.
+11. Every module-scope `variants` object declares the same key vocabulary, matching the manifest's `meta.states` exactly. A component typically needs more than one: `like-button` has two, because the root animates `scale` while the icon animates `color` and `fillOpacity`. Declaring identical keys across all of them is what lets motion's variant propagation drive every child from the root's `animate` state, so no child tracks state itself. Use `satisfies Record<State, object>` rather than a type annotation: it checks exhaustiveness while leaving the literal type intact, whereas annotating widens the values and fails assignment to motion's `Variants`.
+12. The component declares `const STATES = [...] as const` at module scope, and that tuple, `meta.states`, and every `variants` object's keys must all agree. CI enforces the three-way match. This is what makes `data-state` a guarantee rather than a hope, and it is what lets the showcase generate a state inspector from the manifest alone.
+13. **No `whileHover` or `whileTap`.** They layer a variant that cannot see the rest of the component's state, which silently desynchronises `data-state` from what is on screen. Interaction states come from explicit pointer handlers, and one derived value drives `animate` and `data-state` together. Where liked-ness and interaction are independent, the state machine is their product. See [ADR 0007](../adr/0007-composite-state-machine.md), which records the measured bug that produced this rule.
+
+**A note on forcing states programmatically**, which the showcase depends on: dispatch `pointerover` and `pointerout`, not `pointerenter` and `pointerleave`. React derives enter and leave from over and out at the document root, so a synthetic `pointerenter` reaches nothing. A component keyed off motion's own `whileHover` would need the opposite, which is a second reason rule 13 exists.
 
 Three of these carry disproportionate weight:
 
@@ -362,7 +395,9 @@ Runs in CI on every pull request. Cheap to write, and it is the mechanism that s
 | Every motion element carries `initial={false}` | Unwanted mount animation |
 | No `cubic-bezier` whose y control points fall outside 0 to 1 | Fake springs imitating overshoot, banned by DESIGN.md |
 | Every interactive root has `data-state` and an aria attribute | Incomplete component |
-| Every `variants` object's keys match the manifest's `meta.states` exactly | Manifest drifting out of sync with the component |
+| `STATES` equals `meta.states` equals every `variants` object's keys | The manifest promising states the component cannot emit |
+| No `whileHover` or `whileTap` | The mechanism that desynchronised `data-state` from the screen (ADR 0007) |
+| No generated tree drift (`registry:check`) | A stale `public/r/` or `__generated__/` after a source change |
 | No import of an icon library | A component assuming the consumer has `lucide-react` or similar |
 
 The last three are text-level checks that encode design law as CI. They are the difference between principles written in a document and principles that hold.
@@ -388,6 +423,10 @@ Animation output is deliberately untested. Frame-level assertions on spring phys
 | 7 | Component generator skill | `feat/generator-skill` | full CI | follow-on spec |
 
 Step 2 precedes step 3 so the schema is validated against a real component rather than an imagined one. Step 5 precedes step 6 because a contract validated by a single component is a coincidence, and the showcase should be built against a contract that has survived generalizing at least once.
+
+**What actually happened, recorded rather than tidied away.** Steps 1, 2, 3 and 6 shipped; steps 4 and 5 have not. The showcase was built out of order, ahead of both the CLI and the second component, because it was asked for directly. The stated risk was real and is now live: the bench was designed against exactly one component, so `copy-button` is the first test of whether its state rail generalises to a component with a timed, self-reverting state. The ordering argument above stands; it was overruled deliberately, not forgotten.
+
+Live status now lives in [`docs/ROADMAP.md`](../ROADMAP.md), which is the single source of what is next. This table records the plan as it was designed.
 
 ## 10. Workflow
 
