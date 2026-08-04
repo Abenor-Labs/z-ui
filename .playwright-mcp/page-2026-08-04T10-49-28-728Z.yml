@@ -1,0 +1,396 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link [ref=e6] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e18]: /
+        - navigation [ref=e19]:
+          - link "Docs" [ref=e20] [cursor=pointer]:
+            - /url: /get-started/introduction
+          - link "Showcase" [ref=e21] [cursor=pointer]:
+            - /url: /showcase
+          - link "Tools" [ref=e22] [cursor=pointer]:
+            - /url: /tools
+          - link "Sponsors" [ref=e23] [cursor=pointer]:
+            - /url: /sponsors
+      - generic [ref=e24]:
+        - button "Search" [ref=e25] [cursor=pointer]:
+          - generic [ref=e29]: Search...
+          - generic [ref=e30]: /
+        - button "Preferences" [ref=e32] [cursor=pointer]
+        - link "43.5k" [ref=e36] [cursor=pointer]:
+          - /url: https://github.com/DavidHDev/react-bits
+    - generic [ref=e40]:
+      - navigation [ref=e41]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: Get Started
+            - generic [ref=e46]:
+              - link "Introduction" [ref=e47] [cursor=pointer]:
+                - /url: /get-started/introduction
+              - link "Installation" [ref=e48] [cursor=pointer]:
+                - /url: /get-started/installation
+              - link "MCP" [ref=e49] [cursor=pointer]:
+                - /url: /get-started/mcp
+              - link "Index" [ref=e50] [cursor=pointer]:
+                - /url: /get-started/index
+          - generic [ref=e51]:
+            - paragraph [ref=e52]: Tools
+            - generic [ref=e53]:
+              - link "Background Studio" [ref=e54] [cursor=pointer]:
+                - /url: /tools/background-studio
+              - link "Shape Magic" [ref=e63] [cursor=pointer]:
+                - /url: /tools/shape-magic
+              - link "Texture Lab" [ref=e70] [cursor=pointer]:
+                - /url: /tools/texture-lab
+          - generic [ref=e77]:
+            - paragraph [ref=e78]: Text Animations
+            - generic [ref=e79]:
+              - link "Split Text" [ref=e80] [cursor=pointer]:
+                - /url: /text-animations/split-text
+              - link "Blur Text" [ref=e81] [cursor=pointer]:
+                - /url: /text-animations/blur-text
+              - link "Circular Text" [ref=e82] [cursor=pointer]:
+                - /url: /text-animations/circular-text
+              - link "Text Type" [ref=e83] [cursor=pointer]:
+                - /url: /text-animations/text-type
+              - link "Shuffle" [ref=e84] [cursor=pointer]:
+                - /url: /text-animations/shuffle
+              - link "Shiny Text" [ref=e85] [cursor=pointer]:
+                - /url: /text-animations/shiny-text
+              - link "Text Pressure" [ref=e86] [cursor=pointer]:
+                - /url: /text-animations/text-pressure
+              - link "Curved Loop" [ref=e87] [cursor=pointer]:
+                - /url: /text-animations/curved-loop
+              - link "Fuzzy Text" [ref=e88] [cursor=pointer]:
+                - /url: /text-animations/fuzzy-text
+              - link "Gradient Text" [ref=e89] [cursor=pointer]:
+                - /url: /text-animations/gradient-text
+              - link "Falling Text" [ref=e90] [cursor=pointer]:
+                - /url: /text-animations/falling-text
+              - link "Text Cursor" [ref=e91] [cursor=pointer]:
+                - /url: /text-animations/text-cursor
+              - link "Decrypted Text" [ref=e92] [cursor=pointer]:
+                - /url: /text-animations/decrypted-text
+              - link "True Focus" [ref=e93] [cursor=pointer]:
+                - /url: /text-animations/true-focus
+              - link "Scroll Float" [ref=e94] [cursor=pointer]:
+                - /url: /text-animations/scroll-float
+              - link "Scroll Reveal" [ref=e95] [cursor=pointer]:
+                - /url: /text-animations/scroll-reveal
+              - link "ASCII Text" [ref=e96] [cursor=pointer]:
+                - /url: /text-animations/ascii-text
+              - link "Scrambled Text" [ref=e97] [cursor=pointer]:
+                - /url: /text-animations/scrambled-text
+              - link "Rotating Text" [ref=e98] [cursor=pointer]:
+                - /url: /text-animations/rotating-text
+              - link "Glitch Text" [ref=e99] [cursor=pointer]:
+                - /url: /text-animations/glitch-text
+              - link "Scroll Velocity" [ref=e100] [cursor=pointer]:
+                - /url: /text-animations/scroll-velocity
+              - link "Variable Proximity" [ref=e101] [cursor=pointer]:
+                - /url: /text-animations/variable-proximity
+              - link "Count Up" [ref=e102] [cursor=pointer]:
+                - /url: /text-animations/count-up
+          - generic [ref=e103]:
+            - paragraph [ref=e104]: Animations
+            - generic [ref=e105]:
+              - link "Cursor Grid New" [ref=e106] [cursor=pointer]:
+                - /url: /animations/cursor-grid
+                - text: Cursor Grid
+                - generic [ref=e107]: New
+              - link "Animated Content" [ref=e108] [cursor=pointer]:
+                - /url: /animations/animated-content
+              - link "Fade Content" [ref=e109] [cursor=pointer]:
+                - /url: /animations/fade-content
+              - link "Electric Border" [ref=e110] [cursor=pointer]:
+                - /url: /animations/electric-border
+              - link "Orbit Images" [ref=e111] [cursor=pointer]:
+                - /url: /animations/orbit-images
+              - link "Pixel Transition" [ref=e112] [cursor=pointer]:
+                - /url: /animations/pixel-transition
+              - link "Glare Hover" [ref=e113] [cursor=pointer]:
+                - /url: /animations/glare-hover
+              - link "Antigravity" [ref=e114] [cursor=pointer]:
+                - /url: /animations/antigravity
+              - link "Logo Loop" [ref=e115] [cursor=pointer]:
+                - /url: /animations/logo-loop
+              - link "Target Cursor" [ref=e116] [cursor=pointer]:
+                - /url: /animations/target-cursor
+              - link "Magic Rings" [ref=e117] [cursor=pointer]:
+                - /url: /animations/magic-rings
+              - link "Laser Flow" [ref=e118] [cursor=pointer]:
+                - /url: /animations/laser-flow
+              - link "Magnet Lines" [ref=e119] [cursor=pointer]:
+                - /url: /animations/magnet-lines
+              - link "Ghost Cursor" [ref=e120] [cursor=pointer]:
+                - /url: /animations/ghost-cursor
+              - link "Gradual Blur" [ref=e121] [cursor=pointer]:
+                - /url: /animations/gradual-blur
+              - link "Click Spark" [ref=e122] [cursor=pointer]:
+                - /url: /animations/click-spark
+              - link "Magnet" [ref=e123] [cursor=pointer]:
+                - /url: /animations/magnet
+              - link "Strands New" [ref=e124] [cursor=pointer]:
+                - /url: /animations/strands
+                - text: Strands
+                - generic [ref=e125]: New
+              - link "Sticker Peel" [ref=e126] [cursor=pointer]:
+                - /url: /animations/sticker-peel
+              - link "Pixel Trail" [ref=e127] [cursor=pointer]:
+                - /url: /animations/pixel-trail
+              - link "Cubes" [ref=e128] [cursor=pointer]:
+                - /url: /animations/cubes
+              - link "Metallic Paint" [ref=e129] [cursor=pointer]:
+                - /url: /animations/metallic-paint
+              - link "Noise" [ref=e130] [cursor=pointer]:
+                - /url: /animations/noise
+              - link "Shape Blur" [ref=e131] [cursor=pointer]:
+                - /url: /animations/shape-blur
+              - link "Crosshair" [ref=e132] [cursor=pointer]:
+                - /url: /animations/crosshair
+              - link "Image Trail" [ref=e133] [cursor=pointer]:
+                - /url: /animations/image-trail
+              - link "Ribbons" [ref=e134] [cursor=pointer]:
+                - /url: /animations/ribbons
+              - link "Splash Cursor" [ref=e135] [cursor=pointer]:
+                - /url: /animations/splash-cursor
+              - link "Meta Balls" [ref=e136] [cursor=pointer]:
+                - /url: /animations/meta-balls
+              - link "Blob Cursor" [ref=e137] [cursor=pointer]:
+                - /url: /animations/blob-cursor
+              - link "Star Border" [ref=e138] [cursor=pointer]:
+                - /url: /animations/star-border
+          - generic [ref=e139]:
+            - paragraph [ref=e140]: Components
+            - generic [ref=e141]:
+              - link "Specular Button New" [ref=e142] [cursor=pointer]:
+                - /url: /components/specular-button
+                - text: Specular Button
+                - generic [ref=e143]: New
+              - link "Option Wheel New" [ref=e144] [cursor=pointer]:
+                - /url: /components/option-wheel
+                - text: Option Wheel
+                - generic [ref=e145]: New
+              - link "Curved Input New" [ref=e146] [cursor=pointer]:
+                - /url: /components/curved-input
+                - text: Curved Input
+                - generic [ref=e147]: New
+              - link "Line Sidebar New" [ref=e148] [cursor=pointer]:
+                - /url: /components/line-sidebar
+                - text: Line Sidebar
+                - generic [ref=e149]: New
+              - link "Animated List" [ref=e150] [cursor=pointer]:
+                - /url: /components/animated-list
+              - link "Scroll Stack" [ref=e151] [cursor=pointer]:
+                - /url: /components/scroll-stack
+              - link "Bubble Menu" [ref=e152] [cursor=pointer]:
+                - /url: /components/bubble-menu
+              - link "Magic Bento" [ref=e153] [cursor=pointer]:
+                - /url: /components/magic-bento
+              - link "Circular Gallery" [ref=e154] [cursor=pointer]:
+                - /url: /components/circular-gallery
+              - link "Reflective Card" [ref=e155] [cursor=pointer]:
+                - /url: /components/reflective-card
+              - link "Card Nav" [ref=e156] [cursor=pointer]:
+                - /url: /components/card-nav
+              - link "Stack" [ref=e157] [cursor=pointer]:
+                - /url: /components/stack
+              - link "Fluid Glass" [ref=e158] [cursor=pointer]:
+                - /url: /components/fluid-glass
+              - link "Pill Nav" [ref=e159] [cursor=pointer]:
+                - /url: /components/pill-nav
+              - link "Tilted Card" [ref=e160] [cursor=pointer]:
+                - /url: /components/tilted-card
+              - link "Masonry" [ref=e161] [cursor=pointer]:
+                - /url: /components/masonry
+              - link "Glass Surface" [ref=e162] [cursor=pointer]:
+                - /url: /components/glass-surface
+              - link "Dome Gallery" [ref=e163] [cursor=pointer]:
+                - /url: /components/dome-gallery
+              - link "Chroma Grid" [ref=e164] [cursor=pointer]:
+                - /url: /components/chroma-grid
+              - link "Folder" [ref=e165] [cursor=pointer]:
+                - /url: /components/folder
+              - link "Staggered Menu" [ref=e166] [cursor=pointer]:
+                - /url: /components/staggered-menu
+              - link "Model Viewer" [ref=e167] [cursor=pointer]:
+                - /url: /components/model-viewer
+              - link "Lanyard" [ref=e168] [cursor=pointer]:
+                - /url: /components/lanyard
+              - link "Profile Card" [ref=e169] [cursor=pointer]:
+                - /url: /components/profile-card
+              - link "Dock" [ref=e170] [cursor=pointer]:
+                - /url: /components/dock
+              - link "Gooey Nav" [ref=e171] [cursor=pointer]:
+                - /url: /components/gooey-nav
+              - link "Pixel Card" [ref=e172] [cursor=pointer]:
+                - /url: /components/pixel-card
+              - link "Carousel" [ref=e173] [cursor=pointer]:
+                - /url: /components/carousel
+              - link "Spotlight Card" [ref=e174] [cursor=pointer]:
+                - /url: /components/spotlight-card
+              - link "Border Glow New" [ref=e175] [cursor=pointer]:
+                - /url: /components/border-glow
+                - text: Border Glow
+                - generic [ref=e176]: New
+              - link "Flying Posters" [ref=e177] [cursor=pointer]:
+                - /url: /components/flying-posters
+              - link "Card Swap" [ref=e178] [cursor=pointer]:
+                - /url: /components/card-swap
+              - link "Glass Icons" [ref=e179] [cursor=pointer]:
+                - /url: /components/glass-icons
+              - link "Decay Card" [ref=e180] [cursor=pointer]:
+                - /url: /components/decay-card
+              - link "Flowing Menu" [ref=e181] [cursor=pointer]:
+                - /url: /components/flowing-menu
+              - link "Elastic Slider" [ref=e182] [cursor=pointer]:
+                - /url: /components/elastic-slider
+              - link "Counter" [ref=e183] [cursor=pointer]:
+                - /url: /components/counter
+              - link "Infinite Menu" [ref=e184] [cursor=pointer]:
+                - /url: /components/infinite-menu
+              - link "Stepper" [ref=e185] [cursor=pointer]:
+                - /url: /components/stepper
+              - link "Bounce Cards" [ref=e186] [cursor=pointer]:
+                - /url: /components/bounce-cards
+          - generic [ref=e187]:
+            - paragraph [ref=e188]: Backgrounds
+            - generic [ref=e189]:
+              - link "Ferrofluid New" [ref=e190] [cursor=pointer]:
+                - /url: /backgrounds/ferrofluid
+                - text: Ferrofluid
+                - generic [ref=e191]: New
+              - link "Lightfall New" [ref=e192] [cursor=pointer]:
+                - /url: /backgrounds/lightfall
+                - text: Lightfall
+                - generic [ref=e193]: New
+              - link "Liquid Ether" [ref=e194] [cursor=pointer]:
+                - /url: /backgrounds/liquid-ether
+              - link "Prism" [ref=e195] [cursor=pointer]:
+                - /url: /backgrounds/prism
+              - link "Dark Veil" [ref=e196] [cursor=pointer]:
+                - /url: /backgrounds/dark-veil
+              - link "Light Pillar" [ref=e197] [cursor=pointer]:
+                - /url: /backgrounds/light-pillar
+              - link "Silk" [ref=e198] [cursor=pointer]:
+                - /url: /backgrounds/silk
+              - link "Floating Lines" [ref=e199] [cursor=pointer]:
+                - /url: /backgrounds/floating-lines
+              - link "Side Rays New" [ref=e200] [cursor=pointer]:
+                - /url: /backgrounds/side-rays
+                - text: Side Rays
+                - generic [ref=e201]: New
+              - link "Light Rays" [ref=e202] [cursor=pointer]:
+                - /url: /backgrounds/light-rays
+              - link "Pixel Blast" [ref=e203] [cursor=pointer]:
+                - /url: /backgrounds/pixel-blast
+              - link "Color Bends" [ref=e204] [cursor=pointer]:
+                - /url: /backgrounds/color-bends
+              - link "Evil Eye" [ref=e205] [cursor=pointer]:
+                - /url: /backgrounds/evil-eye
+              - link "Line Waves New" [ref=e206] [cursor=pointer]:
+                - /url: /backgrounds/line-waves
+                - text: Line Waves
+                - generic [ref=e207]: New
+              - link "Radar New" [ref=e208] [cursor=pointer]:
+                - /url: /backgrounds/radar
+                - text: Radar
+                - generic [ref=e209]: New
+              - link "Soft Aurora New" [ref=e210] [cursor=pointer]:
+                - /url: /backgrounds/soft-aurora
+                - text: Soft Aurora
+                - generic [ref=e211]: New
+              - link "Aurora" [ref=e212] [cursor=pointer]:
+                - /url: /backgrounds/aurora
+              - link "Plasma" [ref=e213] [cursor=pointer]:
+                - /url: /backgrounds/plasma
+              - link "Plasma Wave New" [ref=e214] [cursor=pointer]:
+                - /url: /backgrounds/plasma-wave
+                - text: Plasma Wave
+                - generic [ref=e215]: New
+              - link "Particles" [ref=e216] [cursor=pointer]:
+                - /url: /backgrounds/particles
+              - link "Gradient Blinds" [ref=e217] [cursor=pointer]:
+                - /url: /backgrounds/gradient-blinds
+              - link "Grainient" [ref=e218] [cursor=pointer]:
+                - /url: /backgrounds/grainient
+              - link "Grid Scan" [ref=e219] [cursor=pointer]:
+                - /url: /backgrounds/grid-scan
+              - link "Beams" [ref=e220] [cursor=pointer]:
+                - /url: /backgrounds/beams
+              - link "Pixel Snow" [ref=e221] [cursor=pointer]:
+                - /url: /backgrounds/pixel-snow
+              - link "Lightning" [ref=e222] [cursor=pointer]:
+                - /url: /backgrounds/lightning
+              - link "Prismatic Burst" [ref=e223] [cursor=pointer]:
+                - /url: /backgrounds/prismatic-burst
+              - link "Galaxy" [ref=e224] [cursor=pointer]:
+                - /url: /backgrounds/galaxy
+              - link "Dither" [ref=e225] [cursor=pointer]:
+                - /url: /backgrounds/dither
+              - link "Faulty Terminal" [ref=e226] [cursor=pointer]:
+                - /url: /backgrounds/faulty-terminal
+              - link "Ripple Grid" [ref=e227] [cursor=pointer]:
+                - /url: /backgrounds/ripple-grid
+              - link "Dot Field New" [ref=e228] [cursor=pointer]:
+                - /url: /backgrounds/dot-field
+                - text: Dot Field
+                - generic [ref=e229]: New
+              - link "Dot Grid" [ref=e230] [cursor=pointer]:
+                - /url: /backgrounds/dot-grid
+              - link "Threads" [ref=e231] [cursor=pointer]:
+                - /url: /backgrounds/threads
+              - link "Hyperspeed" [ref=e232] [cursor=pointer]:
+                - /url: /backgrounds/hyperspeed
+              - link "Iridescence" [ref=e233] [cursor=pointer]:
+                - /url: /backgrounds/iridescence
+              - link "Waves" [ref=e234] [cursor=pointer]:
+                - /url: /backgrounds/waves
+              - link "Grid Distortion" [ref=e235] [cursor=pointer]:
+                - /url: /backgrounds/grid-distortion
+              - link "Ballpit" [ref=e236] [cursor=pointer]:
+                - /url: /backgrounds/ballpit
+              - link "Orb" [ref=e237] [cursor=pointer]:
+                - /url: /backgrounds/orb
+              - link "Letter Glitch" [ref=e238] [cursor=pointer]:
+                - /url: /backgrounds/letter-glitch
+              - link "Grid Motion" [ref=e239] [cursor=pointer]:
+                - /url: /backgrounds/grid-motion
+              - link "Shape Grid" [ref=e240] [cursor=pointer]:
+                - /url: /backgrounds/shape-grid
+              - link "Liquid Chrome" [ref=e241] [cursor=pointer]:
+                - /url: /backgrounds/liquid-chrome
+              - link "Balatro" [ref=e242] [cursor=pointer]:
+                - /url: /backgrounds/balatro
+      - generic [ref=e243]:
+        - heading "Blob Cursor" [level=2] [ref=e245]
+        - button [ref=e246]
+      - complementary [ref=e249]:
+        - generic [ref=e250]:
+          - 'link "PRO Get React Bits Pro 100 components, 238 blocks & 11 templates to ship memorable products faster. Explore Pro ☀️ Summer Sale - 30% off: SUNBITS30" [ref=e251] [cursor=pointer]':
+            - /url: https://pro.reactbits.dev
+            - generic [ref=e253]:
+              - generic [ref=e254]: PRO
+              - heading "Get React Bits Pro" [level=3] [ref=e255]
+              - paragraph [ref=e256]: 100 components, 238 blocks & 11 templates to ship memorable products faster.
+              - generic [ref=e257]: Explore Pro
+              - generic [ref=e261]: "☀️ Summer Sale - 30% off: SUNBITS30"
+          - generic [ref=e263]:
+            - generic [ref=e264]:
+              - generic [ref=e265]: Sponsors
+              - link "Become a sponsor" [ref=e266] [cursor=pointer]:
+                - /url: /sponsors#sponsor-plans
+            - generic [ref=e271]:
+              - generic [ref=e272]: Diamond
+              - link [ref=e274] [cursor=pointer]:
+                - /url: https://www.shadcnblocks.com/?utm_source=reactbits&utm_medium=sponsor&utm_campaign=diamond&ref=reactbits
+                - img "shadcnblocks.com" [ref=e276]
+            - generic [ref=e277]:
+              - generic [ref=e278]: Silver
+              - link [ref=e280] [cursor=pointer]:
+                - /url: https://shadcncraft.com/?utm_source=reactbits&utm_medium=sponsor&utm_campaign=silver&ref=reactbits
+                - img "Shadcncraft" [ref=e282]
+            - paragraph [ref=e283]: 500k+ devs monthly · Limited spots
+  - region "Notifications alt+T"

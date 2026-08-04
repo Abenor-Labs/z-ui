@@ -14,6 +14,9 @@
       "@/lib/z-cn": ["./lib/z-cn/z-cn.ts"],
       "@/hooks/use-controllable-state": [
         "./hooks/use-controllable-state/use-controllable-state.ts"
+      ],
+      "@/components/z-ui/like-button": [
+        "./components/like-button/like-button.tsx"
       ]
     }
   },

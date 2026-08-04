@@ -1,0 +1,598 @@
+- generic [ref=f4e5]:
+  - banner [ref=f4e6]:
+    - generic [ref=f4e7]:
+      - link "Skip to contents" [ref=f4e8] [cursor=pointer]:
+        - /url: "#main-content"
+      - link "Go to the homepage" [ref=f4e9] [cursor=pointer]:
+        - /url: /
+        - img "Base UI" [ref=f4e10]
+      - button "Search (⌘k)" [ref=f4e14]:
+        - text: Search
+        - generic [ref=f4e15]: (⌘k)
+  - navigation "Main navigation" [ref=f4e16]:
+    - generic [ref=f4e17]:
+      - generic [ref=f4e18]:
+        - generic [ref=f4e19]: Overview
+        - list [ref=f4e20]:
+          - listitem [ref=f4e21]:
+            - link "Quick start" [ref=f4e22] [cursor=pointer]:
+              - /url: /react/overview/quick-start
+          - listitem [ref=f4e23]:
+            - link "Accessibility" [ref=f4e24] [cursor=pointer]:
+              - /url: /react/overview/accessibility
+          - listitem [ref=f4e25]:
+            - link "Releases" [ref=f4e26] [cursor=pointer]:
+              - /url: /react/overview/releases
+          - listitem [ref=f4e27]:
+            - link "Community" [ref=f4e28] [cursor=pointer]:
+              - /url: /react/overview/community
+          - listitem [ref=f4e29]:
+            - link "About" [ref=f4e30] [cursor=pointer]:
+              - /url: /react/overview/about
+      - generic [ref=f4e31]:
+        - generic [ref=f4e32]: Handbook
+        - list [ref=f4e33]:
+          - listitem [ref=f4e34]:
+            - link "Styling" [ref=f4e35] [cursor=pointer]:
+              - /url: /react/handbook/styling
+          - listitem [ref=f4e36]:
+            - link "Animation" [ref=f4e37] [cursor=pointer]:
+              - /url: /react/handbook/animation
+          - listitem [ref=f4e38]:
+            - link "Composition" [ref=f4e39] [cursor=pointer]:
+              - /url: /react/handbook/composition
+          - listitem [ref=f4e40]:
+            - link "Customization" [ref=f4e41] [cursor=pointer]:
+              - /url: /react/handbook/customization
+          - listitem [ref=f4e42]:
+            - link "Forms" [ref=f4e43] [cursor=pointer]:
+              - /url: /react/handbook/forms
+          - listitem [ref=f4e44]:
+            - link "TypeScript" [ref=f4e45] [cursor=pointer]:
+              - /url: /react/handbook/typescript
+          - listitem [ref=f4e46]:
+            - link "llms.txt" [ref=f4e47] [cursor=pointer]:
+              - /url: /llms.txt
+      - generic [ref=f4e48]:
+        - generic [ref=f4e49]: Components
+        - list [ref=f4e50]:
+          - listitem [ref=f4e51]:
+            - link "Accordion" [ref=f4e52] [cursor=pointer]:
+              - /url: /react/components/accordion
+          - listitem [ref=f4e53]:
+            - link "Alert Dialog" [ref=f4e54] [cursor=pointer]:
+              - /url: /react/components/alert-dialog
+          - listitem [ref=f4e55]:
+            - link "Autocomplete" [ref=f4e56] [cursor=pointer]:
+              - /url: /react/components/autocomplete
+          - listitem [ref=f4e57]:
+            - link "Avatar" [ref=f4e58] [cursor=pointer]:
+              - /url: /react/components/avatar
+          - listitem [ref=f4e59]:
+            - link "Button" [ref=f4e60] [cursor=pointer]:
+              - /url: /react/components/button
+          - listitem [ref=f4e61]:
+            - link "Checkbox" [ref=f4e62] [cursor=pointer]:
+              - /url: /react/components/checkbox
+          - listitem [ref=f4e63]:
+            - link "Checkbox Group" [ref=f4e64] [cursor=pointer]:
+              - /url: /react/components/checkbox-group
+          - listitem [ref=f4e65]:
+            - link "Collapsible" [ref=f4e66] [cursor=pointer]:
+              - /url: /react/components/collapsible
+          - listitem [ref=f4e67]:
+            - link "Combobox" [ref=f4e68] [cursor=pointer]:
+              - /url: /react/components/combobox
+          - listitem [ref=f4e69]:
+            - link "Context Menu" [ref=f4e70] [cursor=pointer]:
+              - /url: /react/components/context-menu
+          - listitem [ref=f4e71]:
+            - link "Dialog" [ref=f4e72] [cursor=pointer]:
+              - /url: /react/components/dialog
+          - listitem [ref=f4e73]:
+            - link "Drawer" [ref=f4e74] [cursor=pointer]:
+              - /url: /react/components/drawer
+          - listitem [ref=f4e75]:
+            - link "Field" [ref=f4e76] [cursor=pointer]:
+              - /url: /react/components/field
+          - listitem [ref=f4e77]:
+            - link "Fieldset" [ref=f4e78] [cursor=pointer]:
+              - /url: /react/components/fieldset
+          - listitem [ref=f4e79]:
+            - link "Form" [ref=f4e80] [cursor=pointer]:
+              - /url: /react/components/form
+          - listitem [ref=f4e81]:
+            - link "Input" [ref=f4e82] [cursor=pointer]:
+              - /url: /react/components/input
+          - listitem [ref=f4e83]:
+            - link "Menu" [ref=f4e84] [cursor=pointer]:
+              - /url: /react/components/menu
+          - listitem [ref=f4e85]:
+            - link "Menubar" [ref=f4e86] [cursor=pointer]:
+              - /url: /react/components/menubar
+          - listitem [ref=f4e87]:
+            - link "Meter" [ref=f4e88] [cursor=pointer]:
+              - /url: /react/components/meter
+          - listitem [ref=f4e89]:
+            - link "Navigation Menu" [ref=f4e90] [cursor=pointer]:
+              - /url: /react/components/navigation-menu
+          - listitem [ref=f4e91]:
+            - link "Number Field" [ref=f4e92] [cursor=pointer]:
+              - /url: /react/components/number-field
+          - listitem [ref=f4e93]:
+            - link "OTP Field" [ref=f4e94] [cursor=pointer]:
+              - /url: /react/components/otp-field
+          - listitem [ref=f4e95]:
+            - link "Popover" [ref=f4e96] [cursor=pointer]:
+              - /url: /react/components/popover
+          - listitem [ref=f4e97]:
+            - link "Preview Card" [ref=f4e98] [cursor=pointer]:
+              - /url: /react/components/preview-card
+          - listitem [ref=f4e99]:
+            - link "Progress" [ref=f4e100] [cursor=pointer]:
+              - /url: /react/components/progress
+          - listitem [ref=f4e101]:
+            - link "Radio" [ref=f4e102] [cursor=pointer]:
+              - /url: /react/components/radio
+          - listitem [ref=f4e103]:
+            - link "Scroll Area" [ref=f4e104] [cursor=pointer]:
+              - /url: /react/components/scroll-area
+          - listitem [ref=f4e105]:
+            - link "Select" [ref=f4e106] [cursor=pointer]:
+              - /url: /react/components/select
+          - listitem [ref=f4e107]:
+            - link "Separator" [ref=f4e108] [cursor=pointer]:
+              - /url: /react/components/separator
+          - listitem [ref=f4e109]:
+            - link "Slider" [ref=f4e110] [cursor=pointer]:
+              - /url: /react/components/slider
+          - listitem [ref=f4e111]:
+            - link "Switch" [ref=f4e112]:
+              - /url: /react/components/switch
+          - listitem [ref=f4e113]:
+            - link "Tabs" [ref=f4e114] [cursor=pointer]:
+              - /url: /react/components/tabs
+          - listitem [ref=f4e115]:
+            - link "Toast" [ref=f4e116] [cursor=pointer]:
+              - /url: /react/components/toast
+          - listitem [ref=f4e117]:
+            - link "Toggle" [ref=f4e118] [cursor=pointer]:
+              - /url: /react/components/toggle
+          - listitem [ref=f4e119]:
+            - link "Toggle Group" [ref=f4e120] [cursor=pointer]:
+              - /url: /react/components/toggle-group
+          - listitem [ref=f4e121]:
+            - link "Toolbar" [ref=f4e122] [cursor=pointer]:
+              - /url: /react/components/toolbar
+          - listitem [ref=f4e123]:
+            - link "Tooltip" [ref=f4e124] [cursor=pointer]:
+              - /url: /react/components/tooltip
+      - generic [ref=f4e125]:
+        - generic [ref=f4e126]: Utils
+        - list [ref=f4e127]:
+          - listitem [ref=f4e128]:
+            - link "CSP Provider" [ref=f4e129] [cursor=pointer]:
+              - /url: /react/utils/csp-provider
+          - listitem [ref=f4e130]:
+            - link "Direction Provider" [ref=f4e131] [cursor=pointer]:
+              - /url: /react/utils/direction-provider
+          - listitem [ref=f4e132]:
+            - link "mergeProps" [ref=f4e133] [cursor=pointer]:
+              - /url: /react/utils/merge-props
+          - listitem [ref=f4e134]:
+            - link "useRender" [ref=f4e135] [cursor=pointer]:
+              - /url: /react/utils/use-render
+      - separator [ref=f4e136]
+      - list [ref=f4e138]:
+        - listitem [ref=f4e139]:
+          - link [ref=f4e140] [cursor=pointer]:
+            - /url: https://github.com/mui/base-ui
+        - listitem [ref=f4e144]:
+          - link "npm 1.7.0" [ref=f4e145] [cursor=pointer]:
+            - /url: https://www.npmjs.com/package/@base-ui/react
+            - generic [ref=f4e151]:
+              - text: npm
+              - generic [ref=f4e152]: 1.7.0
+  - main [ref=f4e153]:
+    - generic [ref=f4e155]:
+      - heading "Switch" [level=1] [ref=f4e156]
+      - generic [ref=f4e157]:
+        - paragraph [ref=f4e158]: A control that indicates whether a setting is on or off.
+        - generic [ref=f4e159]:
+          - link "View markdown source" [ref=f4e160] [cursor=pointer]:
+            - /url: /react/components/switch.md
+            - generic [ref=f4e161]: View as Markdown
+          - link "View source on GitHub" [ref=f4e164] [cursor=pointer]:
+            - /url: https://github.com/mui/base-ui/tree/v1.7.0/packages/react/src/switch
+            - generic [ref=f4e165]: View source
+      - generic [ref=f4e169]:
+        - figure "Component demo" [ref=f4e172]:
+          - generic [ref=f4e173]:
+            - switch [checked] [ref=f4e174]
+            - checkbox [checked] [ref=f4e176]
+            - text: Notifications
+        - figure "Component demo code" [ref=f4e178]:
+          - generic [ref=f4e179]:
+            - tablist "Files" [ref=f4e182]:
+              - tab "index.tsx" [selected] [ref=f4e183] [cursor=pointer]
+              - tab "index.module.css" [ref=f4e185] [cursor=pointer]
+            - generic [ref=f4e187]:
+              - combobox "Styling method" [ref=f4e188]:
+                - generic [ref=f4e189]: CSS Modules
+              - textbox [ref=f4e192]: CssModules
+              - button "Open in StackBlitz" [ref=f4e193]: StackBlitz
+              - button "More actions" [ref=f4e197]
+          - generic [ref=f4e201]:
+            - code [ref=f4e205]:
+              - generic [ref=f4e206]:
+                - generic [ref=f4e207]:
+                  - text: "import { Switch } from"
+                  - generic [ref=f4e208]: "'@base-ui/react/switch'"
+                  - text: ;
+                - generic [ref=f4e209]:
+                  - text: import styles from
+                  - generic [ref=f4e210]: "'./index.module.css'"
+                  - text: ;
+                - generic [ref=f4e211]: "export default function ExampleSwitch() {"
+                - generic [ref=f4e212]: return (
+                - generic [ref=f4e213]: "<label className={styles.Label}>"
+            - button "Copy code" [ref=f4e214]
+            - button "Show code" [ref=f4e219]
+      - heading [level=2] [ref=f4e220]:
+        - link "Usage guidelines" [ref=f4e221] [cursor=pointer]:
+          - /url: "#usage-guidelines"
+      - list [ref=f4e222]:
+        - listitem [ref=f4e223]:
+          - strong [ref=f4e224]: Form controls must have an accessible name
+          - text: ": It can be created using a"
+          - code [ref=f4e225]:
+            - generic [ref=f4e226]: <label>
+          - text: element or the
+          - code [ref=f4e227]: Field
+          - text: component. See
+          - link "Labeling a switch" [ref=f4e228] [cursor=pointer]:
+            - /url: "#labeling-a-switch"
+          - text: and the
+          - link "forms guide" [ref=f4e229] [cursor=pointer]:
+            - /url: /react/handbook/forms
+          - text: .
+      - heading [level=2] [ref=f4e230]:
+        - link "Anatomy" [ref=f4e231] [cursor=pointer]:
+          - /url: "#anatomy"
+      - paragraph [ref=f4e232]: "Import the component and assemble its parts:"
+      - figure "Anatomy" [ref=f4e233]:
+        - generic [ref=f4e234]:
+          - generic [ref=f4e235]: Anatomy
+          - button "Copy code" [ref=f4e236]
+        - code [ref=f4e245]:
+          - generic [ref=f4e246]:
+            - generic [ref=f4e247]:
+              - text: "import { Switch } from"
+              - generic [ref=f4e248]: "'@base-ui/react/switch'"
+              - text: ;
+            - generic [ref=f4e249]: <Switch.Root>
+            - generic [ref=f4e250]: <Switch.Thumb />
+            - generic [ref=f4e251]: </Switch.Root>
+      - heading [level=2] [ref=f4e252]:
+        - link "Examples" [ref=f4e253] [cursor=pointer]:
+          - /url: "#examples"
+      - heading [level=3] [ref=f4e254]:
+        - link "Labeling a switch" [ref=f4e255] [cursor=pointer]:
+          - /url: "#labeling-a-switch"
+      - paragraph [ref=f4e256]:
+        - text: An enclosing
+        - code [ref=f4e257]:
+          - generic [ref=f4e258]: <label>
+        - text: "is the simplest labeling pattern:"
+      - figure "Wrapping a label around a switch" [ref=f4e259]:
+        - generic [ref=f4e260]:
+          - generic [ref=f4e261]: Wrapping a label around a switch
+          - button "Copy code" [ref=f4e262]
+        - code [ref=f4e271]:
+          - generic [ref=f4e272]: <label>
+          - generic [ref=f4e274]:
+            - generic [ref=f4e275]: <Switch.Root />
+            - text: Notifications
+          - generic [ref=f4e276]: </label>
+      - heading [level=3] [ref=f4e277]:
+        - link "Rendering as a native button" [ref=f4e278] [cursor=pointer]:
+          - /url: "#rendering-as-a-native-button"
+      - paragraph [ref=f4e279]:
+        - text: By default,
+        - code [ref=f4e280]:
+          - generic [ref=f4e281]: <Switch.Root>
+        - text: renders a
+        - code [ref=f4e282]:
+          - generic [ref=f4e283]: <span>
+        - text: element to support enclosing labels. Prefer rendering the switch as a native button when using sibling labels (
+        - code [ref=f4e284]: htmlFor
+        - text: /
+        - code [ref=f4e285]: id
+        - text: ).
+      - figure "Sibling label pattern with a native button" [ref=f4e286]:
+        - generic [ref=f4e287]:
+          - generic [ref=f4e288]: Sibling label pattern with a native button
+          - button "Copy code" [ref=f4e289]
+        - code [ref=f4e298]:
+          - generic [ref=f4e299]: "<div> <label htmlFor=\"notifications-switch\">Notifications</label> <Switch.Root id=\"notifications-switch\" nativeButton render={<button />}> <Switch.Thumb /> </Switch.Root> </div>"
+      - paragraph [ref=f4e300]:
+        - text: Native buttons with wrapping labels are supported by using the
+        - code [ref=f4e301]: render
+        - text: "callback to avoid invalid HTML, so the hidden input is placed outside the label:"
+      - figure "Render callback" [ref=f4e302]:
+        - generic [ref=f4e303]:
+          - generic [ref=f4e304]: Render callback
+          - button "Copy code" [ref=f4e305]
+        - code [ref=f4e314]:
+          - generic [ref=f4e315]: <Switch.Root nativeButton
+          - generic [ref=f4e316]: "render={(buttonProps) => ( <label> <button {...buttonProps} /> Notifications </label> )}"
+          - generic [ref=f4e317]: />
+      - heading [level=3] [ref=f4e318]:
+        - link "Form integration" [ref=f4e319] [cursor=pointer]:
+          - /url: "#form-integration"
+      - paragraph [ref=f4e320]:
+        - text: Use
+        - link "Field" [ref=f4e321] [cursor=pointer]:
+          - /url: /react/components/field
+        - text: "to handle label associations and form integration:"
+      - figure "Using Switch in a form" [ref=f4e322]:
+        - generic [ref=f4e323]:
+          - generic [ref=f4e324]: Using Switch in a form
+          - button "Copy code" [ref=f4e325]
+        - code [ref=f4e334]:
+          - generic [ref=f4e335]: <Form>
+          - generic [ref=f4e336]: <Field.Root name="notifications">
+          - generic [ref=f4e337]: <Field.Label> <Switch.Root /> Notifications </Field.Label> </Field.Root> </Form>
+      - heading [level=2] [ref=f4e338]:
+        - link "API reference" [ref=f4e339] [cursor=pointer]:
+          - /url: "#api-reference"
+      - heading [level=3] [ref=f4e340]:
+        - link "Root" [ref=f4e341] [cursor=pointer]:
+          - /url: "#root"
+      - paragraph [ref=f4e342]:
+        - text: Represents the switch itself. Renders a
+        - code [ref=f4e343]:
+          - generic [ref=f4e344]: <span>
+        - text: element and a hidden
+        - code [ref=f4e345]:
+          - generic [ref=f4e346]: <input>
+        - text: beside.
+      - generic [ref=f4e347]:
+        - generic [ref=f4e348]: Component props table
+        - generic [ref=f4e349]:
+          - generic [ref=f4e350]: Prop
+          - generic [ref=f4e352]: Type
+          - generic [ref=f4e354]: Default
+        - group [ref=f4e358]:
+          - 'generic "Prop: name, type:" [ref=f4e359]':
+            - code [ref=f4e362]: name
+            - code [ref=f4e365]: string
+            - code [ref=f4e368]: —
+        - group [ref=f4e372]:
+          - 'generic "Prop: defaultChecked, type: (default: false)" [ref=f4e373]':
+            - code [ref=f4e376]: defaultChecked
+            - code [ref=f4e379]: boolean
+            - code [ref=f4e382]: "false"
+        - group [ref=f4e386]:
+          - 'generic "Prop: checked, type:" [ref=f4e387]':
+            - code [ref=f4e390]: checked
+            - code [ref=f4e393]: boolean
+            - code [ref=f4e396]: —
+        - group [ref=f4e400]:
+          - 'generic "Prop: onCheckedChange, type:" [ref=f4e401]':
+            - code [ref=f4e404]: onCheckedChange
+            - code [ref=f4e407]: function
+            - code [ref=f4e410]: —
+        - group [ref=f4e414]:
+          - 'generic "Prop: value, type:" [ref=f4e415]':
+            - code [ref=f4e418]: value
+            - code [ref=f4e421]: string
+            - code [ref=f4e424]: —
+        - group [ref=f4e428]:
+          - 'generic "Prop: form, type:" [ref=f4e429]':
+            - code [ref=f4e432]: form
+            - code [ref=f4e435]: string
+            - code [ref=f4e438]: —
+        - group [ref=f4e442]:
+          - 'generic "Prop: nativeButton, type: (default: false)" [ref=f4e443]':
+            - code [ref=f4e446]: nativeButton
+            - code [ref=f4e449]: boolean
+            - code [ref=f4e452]: "false"
+        - group [ref=f4e456]:
+          - 'generic "Prop: uncheckedValue, type:" [ref=f4e457]':
+            - code [ref=f4e460]: uncheckedValue
+            - code [ref=f4e463]: string
+            - code [ref=f4e466]: —
+        - group [ref=f4e470]:
+          - 'generic "Prop: disabled, type: (default: false)" [ref=f4e471]':
+            - code [ref=f4e474]: disabled
+            - code [ref=f4e477]: boolean
+            - code [ref=f4e480]: "false"
+        - group [ref=f4e484]:
+          - 'generic "Prop: readOnly, type: (default: false)" [ref=f4e485]':
+            - code [ref=f4e488]: readOnly
+            - code [ref=f4e491]: boolean
+            - code [ref=f4e494]: "false"
+        - group [ref=f4e498]:
+          - 'generic "Prop: required, type: (default: false)" [ref=f4e499]':
+            - code [ref=f4e502]: required
+            - code [ref=f4e505]: boolean
+            - code [ref=f4e508]: "false"
+        - group [ref=f4e512]:
+          - 'generic "Prop: inputRef, type:" [ref=f4e513]':
+            - code [ref=f4e516]: inputRef
+            - code [ref=f4e519]: React.Ref<HTMLInputElement>
+            - code [ref=f4e522]: —
+        - group [ref=f4e526]:
+          - 'generic "Prop: id, type:" [ref=f4e527]':
+            - code [ref=f4e530]: id
+            - code [ref=f4e533]: string
+            - code [ref=f4e536]: —
+        - group [ref=f4e540]:
+          - 'generic "Prop: className, type:" [ref=f4e541]':
+            - code [ref=f4e544]: className
+            - code [ref=f4e547]: string | function
+            - code [ref=f4e550]: —
+        - group [ref=f4e554]:
+          - 'generic "Prop: style, type:" [ref=f4e555]':
+            - code [ref=f4e558]: style
+            - code [ref=f4e561]: React.CSSProperties | function
+            - code [ref=f4e564]: —
+        - group [ref=f4e568]:
+          - 'generic "Prop: render, type:" [ref=f4e569]':
+            - code [ref=f4e572]: render
+            - code [ref=f4e575]: ReactElement | function
+            - code [ref=f4e578]: —
+      - table [ref=f4e583]:
+        - rowgroup [ref=f4e584]:
+          - row [ref=f4e585]:
+            - columnheader "Attribute" [ref=f4e586]
+            - columnheader "Description" [ref=f4e588]
+            - columnheader [ref=f4e590]
+        - rowgroup [ref=f4e592]:
+          - row [ref=f4e593]:
+            - rowheader [ref=f4e594]:
+              - code [ref=f4e596]: data-checked
+            - cell [ref=f4e597]:
+              - paragraph [ref=f4e599]: Present when the switch is checked.
+          - row [ref=f4e600]:
+            - rowheader [ref=f4e601]:
+              - code [ref=f4e603]: data-unchecked
+            - cell [ref=f4e604]:
+              - paragraph [ref=f4e606]: Present when the switch is not checked.
+          - row [ref=f4e607]:
+            - rowheader [ref=f4e608]:
+              - code [ref=f4e610]: data-disabled
+            - cell [ref=f4e611]:
+              - paragraph [ref=f4e613]: Present when the switch is disabled.
+          - row [ref=f4e614]:
+            - rowheader [ref=f4e615]:
+              - code [ref=f4e617]: data-readonly
+            - cell [ref=f4e618]:
+              - paragraph [ref=f4e620]: Present when the switch is readonly.
+          - row [ref=f4e621]:
+            - rowheader [ref=f4e622]:
+              - code [ref=f4e624]: data-required
+            - cell [ref=f4e625]:
+              - paragraph [ref=f4e627]: Present when the switch is required.
+          - row [ref=f4e628]:
+            - rowheader [ref=f4e629]:
+              - code [ref=f4e631]: data-valid
+            - cell [ref=f4e632]:
+              - paragraph [ref=f4e634]: Present when the switch is in a valid state (when wrapped in Field.Root).
+          - row [ref=f4e635]:
+            - rowheader [ref=f4e636]:
+              - code [ref=f4e638]: data-invalid
+            - cell [ref=f4e639]:
+              - paragraph [ref=f4e641]: Present when the switch is in an invalid state (when wrapped in Field.Root).
+          - row [ref=f4e642]:
+            - rowheader [ref=f4e643]:
+              - code [ref=f4e645]: data-dirty
+            - cell [ref=f4e646]:
+              - paragraph [ref=f4e648]: Present when the switch’s value has changed (when wrapped in Field.Root).
+          - row [ref=f4e649]:
+            - rowheader [ref=f4e650]:
+              - code [ref=f4e652]: data-touched
+            - cell [ref=f4e653]:
+              - paragraph [ref=f4e655]: Present when the switch has been touched (when wrapped in Field.Root).
+          - row [ref=f4e656]:
+            - rowheader [ref=f4e657]:
+              - code [ref=f4e659]: data-filled
+            - cell [ref=f4e660]:
+              - paragraph [ref=f4e662]: Present when the switch is active (when wrapped in Field.Root).
+          - row [ref=f4e663]:
+            - rowheader [ref=f4e664]:
+              - code [ref=f4e666]: data-focused
+            - cell [ref=f4e667]:
+              - paragraph [ref=f4e669]: Present when the switch is focused (when wrapped in Field.Root).
+      - heading [level=3] [ref=f4e670]:
+        - link "Thumb" [ref=f4e671] [cursor=pointer]:
+          - /url: "#thumb"
+      - paragraph [ref=f4e672]:
+        - text: The movable part of the switch that indicates whether the switch is on or off. Renders a
+        - code [ref=f4e673]:
+          - generic [ref=f4e674]: <span>
+        - text: .
+      - generic [ref=f4e675]:
+        - generic [ref=f4e676]: Component props table
+        - generic [ref=f4e677]:
+          - generic [ref=f4e678]: Prop
+          - generic [ref=f4e680]: Type
+          - generic [ref=f4e682]: Default
+        - group [ref=f4e686]:
+          - 'generic "Prop: className, type:" [ref=f4e687]':
+            - code [ref=f4e690]: className
+            - code [ref=f4e693]: string | function
+            - code [ref=f4e696]: —
+        - group [ref=f4e700]:
+          - 'generic "Prop: style, type:" [ref=f4e701]':
+            - code [ref=f4e704]: style
+            - code [ref=f4e707]: React.CSSProperties | function
+            - code [ref=f4e710]: —
+        - group [ref=f4e714]:
+          - 'generic "Prop: render, type:" [ref=f4e715]':
+            - code [ref=f4e718]: render
+            - code [ref=f4e721]: ReactElement | function
+            - code [ref=f4e724]: —
+      - table [ref=f4e729]:
+        - rowgroup [ref=f4e730]:
+          - row [ref=f4e731]:
+            - columnheader "Attribute" [ref=f4e732]
+            - columnheader "Description" [ref=f4e734]
+            - columnheader [ref=f4e736]
+        - rowgroup [ref=f4e738]:
+          - row [ref=f4e739]:
+            - rowheader [ref=f4e740]:
+              - code [ref=f4e742]: data-checked
+            - cell [ref=f4e743]:
+              - paragraph [ref=f4e745]: Present when the switch is checked.
+          - row [ref=f4e746]:
+            - rowheader [ref=f4e747]:
+              - code [ref=f4e749]: data-unchecked
+            - cell [ref=f4e750]:
+              - paragraph [ref=f4e752]: Present when the switch is not checked.
+          - row [ref=f4e753]:
+            - rowheader [ref=f4e754]:
+              - code [ref=f4e756]: data-disabled
+            - cell [ref=f4e757]:
+              - paragraph [ref=f4e759]: Present when the switch is disabled.
+          - row [ref=f4e760]:
+            - rowheader [ref=f4e761]:
+              - code [ref=f4e763]: data-readonly
+            - cell [ref=f4e764]:
+              - paragraph [ref=f4e766]: Present when the switch is readonly.
+          - row [ref=f4e767]:
+            - rowheader [ref=f4e768]:
+              - code [ref=f4e770]: data-required
+            - cell [ref=f4e771]:
+              - paragraph [ref=f4e773]: Present when the switch is required.
+          - row [ref=f4e774]:
+            - rowheader [ref=f4e775]:
+              - code [ref=f4e777]: data-valid
+            - cell [ref=f4e778]:
+              - paragraph [ref=f4e780]: Present when the switch is in a valid state (when wrapped in Field.Root).
+          - row [ref=f4e781]:
+            - rowheader [ref=f4e782]:
+              - code [ref=f4e784]: data-invalid
+            - cell [ref=f4e785]:
+              - paragraph [ref=f4e787]: Present when the switch is in an invalid state (when wrapped in Field.Root).
+          - row [ref=f4e788]:
+            - rowheader [ref=f4e789]:
+              - code [ref=f4e791]: data-dirty
+            - cell [ref=f4e792]:
+              - paragraph [ref=f4e794]: Present when the switch’s value has changed (when wrapped in Field.Root).
+          - row [ref=f4e795]:
+            - rowheader [ref=f4e796]:
+              - code [ref=f4e798]: data-touched
+            - cell [ref=f4e799]:
+              - paragraph [ref=f4e801]: Present when the switch has been touched (when wrapped in Field.Root).
+          - row [ref=f4e802]:
+            - rowheader [ref=f4e803]:
+              - code [ref=f4e805]: data-filled
+            - cell [ref=f4e806]:
+              - paragraph [ref=f4e808]: Present when the switch is active (when wrapped in Field.Root).
+          - row [ref=f4e809]:
+            - rowheader [ref=f4e810]:
+              - code [ref=f4e812]: data-focused
+            - cell [ref=f4e813]:
+              - paragraph [ref=f4e815]: Present when the switch is focused (when wrapped in Field.Root).

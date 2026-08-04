@@ -1,0 +1,805 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - link "✨ Introducing Magic UI Pro - 50+ blocks and templates to build beautiful landing pages in minutes" [ref=f5e4] [cursor=pointer]:
+      - /url: https://pro.magicui.design
+      - text: ✨
+      - generic [ref=f5e5]: Introducing Magic UI Pro - 50+ blocks and templates to build beautiful landing pages in minutes
+    - separator [ref=f5e8]
+  - banner [ref=f5e9]:
+    - generic [ref=f5e11]:
+      - link "Home" [ref=f5e12] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f5e17]: Magic UI
+      - navigation [ref=f5e18]:
+        - link "Components" [ref=f5e19] [cursor=pointer]:
+          - /url: /components
+        - link "Templates" [ref=f5e20] [cursor=pointer]:
+          - /url: https://pro.magicui.design
+        - link "Showcase" [ref=f5e21] [cursor=pointer]:
+          - /url: /showcase
+      - generic [ref=f5e23]:
+        - generic [ref=f5e24]:
+          - button "Search documentation... ⌘ K" [ref=f5e25]:
+            - generic [ref=f5e26]: Search documentation...
+            - generic:
+              - generic: ⌘
+              - text: K
+          - generic [ref=f5e27]:
+            - heading "Command Palette" [level=2] [ref=f5e28]
+            - paragraph [ref=f5e29]: Search for a command to run...
+        - link "21,784" [ref=f5e30] [cursor=pointer]:
+          - /url: https://github.com/magicuidesign/magicui
+        - link "164" [ref=f5e32] [cursor=pointer]:
+          - /url: https://discord.gg/87p2vpsat5
+        - button "Toggle theme" [ref=f5e38]
+  - main [ref=f5e40]:
+    - generic [ref=f5e42]:
+      - generic [ref=f5e44]:
+        - generic [ref=f5e46]:
+          - generic [ref=f5e47]: Getting Started
+          - list [ref=f5e49]:
+            - listitem [ref=f5e51]:
+              - link "Introduction" [ref=f5e52] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=f5e56]:
+              - link "Installation" [ref=f5e57] [cursor=pointer]:
+                - /url: /docs/installation
+            - listitem [ref=f5e61]:
+              - link "MCP" [ref=f5e62] [cursor=pointer]:
+                - /url: /docs/mcp
+            - listitem [ref=f5e66]:
+              - link "Story New" [ref=f5e67] [cursor=pointer]:
+                - /url: /docs/story
+                - generic [ref=f5e69]:
+                  - text: Story
+                  - generic [ref=f5e70]: New
+            - listitem [ref=f5e72]:
+              - link "Legacy" [ref=f5e73] [cursor=pointer]:
+                - /url: /docs/legacy
+        - generic [ref=f5e76]:
+          - generic [ref=f5e77]: Templates
+          - list [ref=f5e79]:
+            - listitem [ref=f5e81]:
+              - link "CodeForge New Pro" [ref=f5e82] [cursor=pointer]:
+                - /url: /docs/templates/codeforge
+                - generic [ref=f5e84]:
+                  - text: CodeForge
+                  - generic [ref=f5e85]: New
+                  - generic [ref=f5e86]: Pro
+            - listitem [ref=f5e88]:
+              - link "AI Agent Pro" [ref=f5e89] [cursor=pointer]:
+                - /url: /docs/templates/agent
+                - generic [ref=f5e91]:
+                  - text: AI Agent
+                  - generic [ref=f5e92]: Pro
+            - listitem [ref=f5e94]:
+              - link "Dev Tool Pro" [ref=f5e95] [cursor=pointer]:
+                - /url: /docs/templates/devtool
+                - generic [ref=f5e97]:
+                  - text: Dev Tool
+                  - generic [ref=f5e98]: Pro
+            - listitem [ref=f5e100]:
+              - link "Mobile Pro" [ref=f5e101] [cursor=pointer]:
+                - /url: /docs/templates/mobile
+                - generic [ref=f5e103]:
+                  - text: Mobile
+                  - generic [ref=f5e104]: Pro
+            - listitem [ref=f5e106]:
+              - link "SaaS Pro" [ref=f5e107] [cursor=pointer]:
+                - /url: /docs/templates/saas
+                - generic [ref=f5e109]:
+                  - text: SaaS
+                  - generic [ref=f5e110]: Pro
+            - listitem [ref=f5e112]:
+              - link "Startup Pro" [ref=f5e113] [cursor=pointer]:
+                - /url: /docs/templates/startup
+                - generic [ref=f5e115]:
+                  - text: Startup
+                  - generic [ref=f5e116]: Pro
+            - listitem [ref=f5e118]:
+              - link "Portfolio" [ref=f5e119] [cursor=pointer]:
+                - /url: /docs/templates/portfolio
+            - listitem [ref=f5e123]:
+              - link "Changelog New" [ref=f5e124] [cursor=pointer]:
+                - /url: /docs/templates/changelog
+                - generic [ref=f5e126]:
+                  - text: Changelog
+                  - generic [ref=f5e127]: New
+            - listitem [ref=f5e129]:
+              - link "Blog New" [ref=f5e130] [cursor=pointer]:
+                - /url: /docs/templates/blog
+                - generic [ref=f5e132]:
+                  - text: Blog
+                  - generic [ref=f5e133]: New
+        - generic [ref=f5e134]:
+          - generic [ref=f5e135]: Components
+          - list [ref=f5e137]:
+            - listitem [ref=f5e139]:
+              - link "Marquee" [ref=f5e140] [cursor=pointer]:
+                - /url: /docs/components/marquee
+            - listitem [ref=f5e144]:
+              - link "Terminal" [ref=f5e145] [cursor=pointer]:
+                - /url: /docs/components/terminal
+            - listitem [ref=f5e149]:
+              - link "Hero Video Dialog" [ref=f5e150] [cursor=pointer]:
+                - /url: /docs/components/hero-video-dialog
+            - listitem [ref=f5e154]:
+              - link "Bento Grid" [ref=f5e155] [cursor=pointer]:
+                - /url: /docs/components/bento-grid
+            - listitem [ref=f5e159]:
+              - link "Animated List" [ref=f5e160] [cursor=pointer]:
+                - /url: /docs/components/animated-list
+            - listitem [ref=f5e164]:
+              - link "Dock" [ref=f5e165] [cursor=pointer]:
+                - /url: /docs/components/dock
+            - listitem [ref=f5e169]:
+              - link "Globe" [ref=f5e170] [cursor=pointer]:
+                - /url: /docs/components/globe
+            - listitem [ref=f5e174]:
+              - link "Tweet Card" [ref=f5e175] [cursor=pointer]:
+                - /url: /docs/components/tweet-card
+            - listitem [ref=f5e179]:
+              - link "Orbiting Circles" [ref=f5e180] [cursor=pointer]:
+                - /url: /docs/components/orbiting-circles
+            - listitem [ref=f5e184]:
+              - link "Avatar Circles" [ref=f5e185] [cursor=pointer]:
+                - /url: /docs/components/avatar-circles
+            - listitem [ref=f5e189]:
+              - link "Icon Cloud" [ref=f5e190] [cursor=pointer]:
+                - /url: /docs/components/icon-cloud
+            - listitem [ref=f5e194]:
+              - link "Lens" [ref=f5e195] [cursor=pointer]:
+                - /url: /docs/components/lens
+            - listitem [ref=f5e199]:
+              - link "Pointer" [ref=f5e200] [cursor=pointer]:
+                - /url: /docs/components/pointer
+            - listitem [ref=f5e204]:
+              - link "Smooth Cursor" [ref=f5e205] [cursor=pointer]:
+                - /url: /docs/components/smooth-cursor
+            - listitem [ref=f5e209]:
+              - link "Progressive Blur" [ref=f5e210] [cursor=pointer]:
+                - /url: /docs/components/progressive-blur
+            - listitem [ref=f5e214]:
+              - link "Dotted Map New" [ref=f5e215] [cursor=pointer]:
+                - /url: /docs/components/dotted-map
+                - generic [ref=f5e217]:
+                  - text: Dotted Map
+                  - generic [ref=f5e218]: New
+        - generic [ref=f5e219]:
+          - generic [ref=f5e220]: Special Effects
+          - list [ref=f5e222]:
+            - listitem [ref=f5e224]:
+              - link "Animated Beam" [ref=f5e225] [cursor=pointer]:
+                - /url: /docs/components/animated-beam
+            - listitem [ref=f5e229]:
+              - link "Border Beam" [ref=f5e230] [cursor=pointer]:
+                - /url: /docs/components/border-beam
+            - listitem [ref=f5e234]:
+              - link "Shine Border" [ref=f5e235] [cursor=pointer]:
+                - /url: /docs/components/shine-border
+            - listitem [ref=f5e239]:
+              - link "Magic Card" [ref=f5e240] [cursor=pointer]:
+                - /url: /docs/components/magic-card
+            - listitem [ref=f5e244]:
+              - link "Glare Hover New" [ref=f5e245] [cursor=pointer]:
+                - /url: /docs/components/glare-hover
+                - generic [ref=f5e247]:
+                  - text: Glare Hover
+                  - generic [ref=f5e248]: New
+            - listitem [ref=f5e250]:
+              - link "Meteors" [ref=f5e251] [cursor=pointer]:
+                - /url: /docs/components/meteors
+            - listitem [ref=f5e255]:
+              - link "Confetti" [ref=f5e256] [cursor=pointer]:
+                - /url: /docs/components/confetti
+            - listitem [ref=f5e260]:
+              - link "Particles" [ref=f5e261] [cursor=pointer]:
+                - /url: /docs/components/particles
+            - listitem [ref=f5e265]:
+              - link "Animated Theme Toggler New" [ref=f5e266] [cursor=pointer]:
+                - /url: /docs/components/animated-theme-toggler
+                - generic [ref=f5e268]:
+                  - text: Animated Theme Toggler
+                  - generic [ref=f5e269]: New
+        - generic [ref=f5e270]:
+          - generic [ref=f5e271]: Animations
+          - list [ref=f5e273]:
+            - listitem [ref=f5e275]:
+              - link "Blur Fade" [ref=f5e276] [cursor=pointer]:
+                - /url: /docs/components/blur-fade
+        - generic [ref=f5e279]:
+          - generic [ref=f5e280]: Text Animations
+          - list [ref=f5e282]:
+            - listitem [ref=f5e284]:
+              - link "Text Animate" [ref=f5e285] [cursor=pointer]:
+                - /url: /docs/components/text-animate
+            - listitem [ref=f5e289]:
+              - link "Typing Animation New" [ref=f5e290] [cursor=pointer]:
+                - /url: /docs/components/typing-animation
+                - generic [ref=f5e292]:
+                  - text: Typing Animation
+                  - generic [ref=f5e293]: New
+            - listitem [ref=f5e295]:
+              - link "Line Shadow Text" [ref=f5e296] [cursor=pointer]:
+                - /url: /docs/components/line-shadow-text
+            - listitem [ref=f5e300]:
+              - link "Aurora Text" [ref=f5e301] [cursor=pointer]:
+                - /url: /docs/components/aurora-text
+            - listitem [ref=f5e305]:
+              - link "Video Text" [ref=f5e306] [cursor=pointer]:
+                - /url: /docs/components/video-text
+            - listitem [ref=f5e310]:
+              - link "Number Ticker" [ref=f5e311] [cursor=pointer]:
+                - /url: /docs/components/number-ticker
+            - listitem [ref=f5e315]:
+              - link "Animated Shiny Text" [ref=f5e316] [cursor=pointer]:
+                - /url: /docs/components/animated-shiny-text
+            - listitem [ref=f5e320]:
+              - link "Animated Gradient Text" [ref=f5e321] [cursor=pointer]:
+                - /url: /docs/components/animated-gradient-text
+            - listitem [ref=f5e325]:
+              - link "Text Reveal" [ref=f5e326] [cursor=pointer]:
+                - /url: /docs/components/text-reveal
+            - listitem [ref=f5e330]:
+              - link "Dia Text Reveal New" [ref=f5e331] [cursor=pointer]:
+                - /url: /docs/components/dia-text-reveal
+                - generic [ref=f5e333]:
+                  - text: Dia Text Reveal
+                  - generic [ref=f5e334]: New
+            - listitem [ref=f5e336]:
+              - link "Hyper Text" [ref=f5e337] [cursor=pointer]:
+                - /url: /docs/components/hyper-text
+            - listitem [ref=f5e341]:
+              - link "Word Rotate" [ref=f5e342] [cursor=pointer]:
+                - /url: /docs/components/word-rotate
+            - listitem [ref=f5e346]:
+              - link "Scroll Based Velocity" [ref=f5e347] [cursor=pointer]:
+                - /url: /docs/components/scroll-based-velocity
+            - listitem [ref=f5e351]:
+              - link "Sparkles Text" [ref=f5e352] [cursor=pointer]:
+                - /url: /docs/components/sparkles-text
+            - listitem [ref=f5e356]:
+              - link "Morphing Text" [ref=f5e357] [cursor=pointer]:
+                - /url: /docs/components/morphing-text
+            - listitem [ref=f5e361]:
+              - link "Spinning Text" [ref=f5e362] [cursor=pointer]:
+                - /url: /docs/components/spinning-text
+            - listitem [ref=f5e366]:
+              - link "Text Highlighter New" [ref=f5e367] [cursor=pointer]:
+                - /url: /docs/components/highlighter
+                - generic [ref=f5e369]:
+                  - text: Text Highlighter
+                  - generic [ref=f5e370]: New
+            - listitem [ref=f5e372]:
+              - link "Text 3D Flip New" [ref=f5e373] [cursor=pointer]:
+                - /url: /docs/components/text-3d-flip
+                - generic [ref=f5e375]:
+                  - text: Text 3D Flip
+                  - generic [ref=f5e376]: New
+        - generic [ref=f5e377]:
+          - generic [ref=f5e378]: Device Mocks
+          - list [ref=f5e380]:
+            - listitem [ref=f5e382]:
+              - link "Safari" [ref=f5e383] [cursor=pointer]:
+                - /url: /docs/components/safari
+            - listitem [ref=f5e387]:
+              - link "iPhone" [ref=f5e388] [cursor=pointer]:
+                - /url: /docs/components/iphone
+            - listitem [ref=f5e392]:
+              - link "Android" [ref=f5e393] [cursor=pointer]:
+                - /url: /docs/components/android
+        - generic [ref=f5e396]:
+          - generic [ref=f5e397]: Buttons
+          - list [ref=f5e399]:
+            - listitem [ref=f5e401]:
+              - link "Rainbow Button" [ref=f5e402] [cursor=pointer]:
+                - /url: /docs/components/rainbow-button
+            - listitem [ref=f5e406]:
+              - link "Shimmer Button" [ref=f5e407] [cursor=pointer]:
+                - /url: /docs/components/shimmer-button
+            - listitem [ref=f5e411]:
+              - link "Ripple Button" [ref=f5e412] [cursor=pointer]:
+                - /url: /docs/components/ripple-button
+        - generic [ref=f5e415]:
+          - generic [ref=f5e416]: Backgrounds
+          - list [ref=f5e418]:
+            - listitem [ref=f5e420]:
+              - link "Flickering Grid" [ref=f5e421] [cursor=pointer]:
+                - /url: /docs/components/flickering-grid
+            - listitem [ref=f5e425]:
+              - link "Animated Grid Pattern" [ref=f5e426] [cursor=pointer]:
+                - /url: /docs/components/animated-grid-pattern
+            - listitem [ref=f5e430]:
+              - link "Retro Grid" [ref=f5e431] [cursor=pointer]:
+                - /url: /docs/components/retro-grid
+            - listitem [ref=f5e435]:
+              - link "Ripple" [ref=f5e436] [cursor=pointer]:
+                - /url: /docs/components/ripple
+            - listitem [ref=f5e440]:
+              - link "Dot Pattern" [ref=f5e441] [cursor=pointer]:
+                - /url: /docs/components/dot-pattern
+            - listitem [ref=f5e445]:
+              - link "Grid Pattern" [ref=f5e446] [cursor=pointer]:
+                - /url: /docs/components/grid-pattern
+            - listitem [ref=f5e450]:
+              - link "Hexagon Pattern New" [ref=f5e451] [cursor=pointer]:
+                - /url: /docs/components/hexagon-pattern
+                - generic [ref=f5e453]:
+                  - text: Hexagon Pattern
+                  - generic [ref=f5e454]: New
+            - listitem [ref=f5e456]:
+              - link "Striped Pattern New" [ref=f5e457] [cursor=pointer]:
+                - /url: /docs/components/striped-pattern
+                - generic [ref=f5e459]:
+                  - text: Striped Pattern
+                  - generic [ref=f5e460]: New
+            - listitem [ref=f5e462]:
+              - link "Interactive Grid Pattern" [ref=f5e463] [cursor=pointer]:
+                - /url: /docs/components/interactive-grid-pattern
+            - listitem [ref=f5e467]:
+              - link "Light Rays New" [ref=f5e468] [cursor=pointer]:
+                - /url: /docs/components/light-rays
+                - generic [ref=f5e470]:
+                  - text: Light Rays
+                  - generic [ref=f5e471]: New
+            - listitem [ref=f5e473]:
+              - link "Noise Texture New" [ref=f5e474] [cursor=pointer]:
+                - /url: /docs/components/noise-texture
+                - generic [ref=f5e476]:
+                  - text: Noise Texture
+                  - generic [ref=f5e477]: New
+        - generic [ref=f5e478]:
+          - generic [ref=f5e479]: Community
+          - list [ref=f5e481]:
+            - listitem [ref=f5e483]:
+              - link "Shiny Button" [ref=f5e484] [cursor=pointer]:
+                - /url: /docs/components/shiny-button
+            - listitem [ref=f5e488]:
+              - link "File Tree" [ref=f5e489] [cursor=pointer]:
+                - /url: /docs/components/file-tree
+            - listitem [ref=f5e493]:
+              - link "Code Comparison" [ref=f5e494] [cursor=pointer]:
+                - /url: /docs/components/code-comparison
+            - listitem [ref=f5e498]:
+              - link "Scroll Progress" [ref=f5e499] [cursor=pointer]:
+                - /url: /docs/components/scroll-progress
+            - listitem [ref=f5e503]:
+              - link "Neon Gradient Card" [ref=f5e504] [cursor=pointer]:
+                - /url: /docs/components/neon-gradient-card
+            - listitem [ref=f5e508]:
+              - link "Comic Text" [ref=f5e509] [cursor=pointer]:
+                - /url: /docs/components/comic-text
+            - listitem [ref=f5e513]:
+              - link "Kinetic Text New" [ref=f5e514] [cursor=pointer]:
+                - /url: /docs/components/kinetic-text
+                - generic [ref=f5e516]:
+                  - text: Kinetic Text
+                  - generic [ref=f5e517]: New
+            - listitem [ref=f5e519]:
+              - link "Cool Mode" [ref=f5e520] [cursor=pointer]:
+                - /url: /docs/components/cool-mode
+            - listitem [ref=f5e524]:
+              - link "Pixel Image" [ref=f5e525] [cursor=pointer]:
+                - /url: /docs/components/pixel-image
+            - listitem [ref=f5e529]:
+              - link "Pulsating Button" [ref=f5e530] [cursor=pointer]:
+                - /url: /docs/components/pulsating-button
+            - listitem [ref=f5e534]:
+              - link "Warp Background" [ref=f5e535] [cursor=pointer]:
+                - /url: /docs/components/warp-background
+            - listitem [ref=f5e539]:
+              - link "Interactive Hover Button" [ref=f5e540] [cursor=pointer]:
+                - /url: /docs/components/interactive-hover-button
+            - listitem [ref=f5e544]:
+              - link "Animated Circular Progress Bar" [ref=f5e545] [cursor=pointer]:
+                - /url: /docs/components/animated-circular-progress-bar
+            - listitem [ref=f5e549]:
+              - link "Backlight New" [ref=f5e550] [cursor=pointer]:
+                - /url: /docs/components/backlight
+                - generic [ref=f5e552]:
+                  - text: Backlight
+                  - generic [ref=f5e553]: New
+            - listitem [ref=f5e555]:
+              - link "Glyph Matrix New" [ref=f5e556] [cursor=pointer]:
+                - /url: /docs/components/glyph-matrix
+                - generic [ref=f5e558]:
+                  - text: Glyph Matrix
+                  - generic [ref=f5e559]: New
+      - generic [ref=f5e561]:
+        - generic [ref=f5e562]:
+          - generic [ref=f5e563]:
+            - generic [ref=f5e565]:
+              - navigation "Breadcrumb" [ref=f5e566]:
+                - list [ref=f5e567]:
+                  - listitem [ref=f5e568]:
+                    - link "Docs" [ref=f5e569] [cursor=pointer]:
+                      - /url: /docs
+                    - generic [ref=f5e570]: /
+                  - listitem [ref=f5e571]:
+                    - link "Components" [ref=f5e572] [cursor=pointer]:
+                      - /url: /docs/components
+                    - generic [ref=f5e573]: /
+                  - listitem [ref=f5e574]:
+                    - generic [ref=f5e575]: Text Animate
+              - generic [ref=f5e576]:
+                - heading "Text Animate" [level=1] [ref=f5e577]
+                - generic [ref=f5e578]:
+                  - generic [ref=f5e579]:
+                    - button "Copy Page" [ref=f5e580]
+                    - button [ref=f5e581]
+                  - link "Previous" [ref=f5e582] [cursor=pointer]:
+                    - /url: /docs/components/blur-fade
+                  - link "Next" [ref=f5e584] [cursor=pointer]:
+                    - /url: /docs/components/typing-animation
+              - paragraph [ref=f5e586]: A text animation component that animates text using a variety of different animations.
+            - generic [ref=f5e587]:
+              - generic [ref=f5e588]:
+                - tablist [ref=f5e591]:
+                  - tab "Preview" [selected] [ref=f5e592]
+                  - tab "Code" [ref=f5e593]
+                - generic [ref=f5e595]:
+                  - generic [ref=f5e596]:
+                    - link "Open in v0" [ref=f5e597] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e598]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e600]:
+                    - generic [ref=f5e601]: Blur in by character
+                    - generic [ref=f5e602]: B
+                    - generic [ref=f5e603]: l
+                    - generic [ref=f5e604]: u
+                    - generic [ref=f5e605]: r
+                    - generic [ref=f5e607]: i
+                    - generic [ref=f5e608]: "n"
+                    - generic [ref=f5e610]: b
+                    - generic [ref=f5e611]: "y"
+                    - generic [ref=f5e613]: c
+                    - generic [ref=f5e614]: h
+                    - generic [ref=f5e615]: a
+                    - generic [ref=f5e616]: r
+                    - generic [ref=f5e617]: a
+                    - generic [ref=f5e618]: c
+                    - generic [ref=f5e619]: t
+                    - generic [ref=f5e620]: e
+                    - generic [ref=f5e621]: r
+              - heading "Installation" [level=2] [ref=f5e622]
+              - generic [ref=f5e623]:
+                - tablist [ref=f5e624]:
+                  - tab "CLI" [selected] [ref=f5e625]
+                  - tab "Manual" [ref=f5e626]
+                - tabpanel "CLI" [ref=f5e627]:
+                  - figure [ref=f5e628]:
+                    - generic [ref=f5e630]:
+                      - generic [ref=f5e631]:
+                        - tablist [ref=f5e636]:
+                          - tab "pnpm" [selected] [ref=f5e637]
+                          - tab "npm" [ref=f5e638]
+                          - tab "yarn" [ref=f5e639]
+                          - tab "bun" [ref=f5e640]
+                        - tabpanel "pnpm" [ref=f5e642]:
+                          - code [ref=f5e644]: pnpm dlx shadcn@latest add @magicui/text-animate
+                      - button "Copy" [ref=f5e645]
+              - heading "Examples" [level=2] [ref=f5e647]
+              - heading "Blur In by Text" [level=3] [ref=f5e648]
+              - generic [ref=f5e649]:
+                - tablist [ref=f5e652]:
+                  - tab "Preview" [selected] [ref=f5e653]
+                  - tab "Code" [ref=f5e654]
+                - generic [ref=f5e656]:
+                  - generic [ref=f5e657]:
+                    - link "Open in v0" [ref=f5e658] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-2.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e659]:
+                      - img "restart-btn"
+                  - heading "Blur in text" [level=1] [ref=f5e661]:
+                    - generic [ref=f5e663]: Blur
+                    - generic [ref=f5e665]: in
+                    - generic [ref=f5e667]: text
+              - heading "Slide Up by Word" [level=3] [ref=f5e668]
+              - generic [ref=f5e669]:
+                - tablist [ref=f5e672]:
+                  - tab "Preview" [selected] [ref=f5e673]
+                  - tab "Code" [ref=f5e674]
+                - generic [ref=f5e676]:
+                  - generic [ref=f5e677]:
+                    - link "Open in v0" [ref=f5e678] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-3.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e679]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e681]:
+                    - generic [ref=f5e682]: Slide up by word
+                    - generic [ref=f5e683]: Slide
+                    - generic [ref=f5e685]: up
+                    - generic [ref=f5e687]: by
+                    - generic [ref=f5e689]: word
+              - heading "Scale Up by Text" [level=3] [ref=f5e690]
+              - generic [ref=f5e691]:
+                - tablist [ref=f5e694]:
+                  - tab "Preview" [selected] [ref=f5e695]
+                  - tab "Code" [ref=f5e696]
+                - generic [ref=f5e698]:
+                  - generic [ref=f5e699]:
+                    - link "Open in v0" [ref=f5e700] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-4.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e701]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e703]:
+                    - generic [ref=f5e704]: Scale up by text
+                    - generic [ref=f5e705]: Scale up by text
+              - heading "Fade In by Line" [level=3] [ref=f5e706]
+              - generic [ref=f5e707]:
+                - tablist [ref=f5e710]:
+                  - tab "Preview" [selected] [ref=f5e711]
+                  - tab "Code" [ref=f5e712]
+                - generic [ref=f5e714]:
+                  - generic [ref=f5e715]:
+                    - link "Open in v0" [ref=f5e716] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-5.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e717]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e719]:
+                    - generic [ref=f5e720]: Fade in by line as paragraph Fade in by line as paragraph Fade in by line as paragraph
+                    - generic [ref=f5e721]: Fade in by line as paragraph
+                    - generic [ref=f5e722]: Fade in by line as paragraph
+                    - generic [ref=f5e723]: Fade in by line as paragraph
+              - heading "Slide Left by Character" [level=3] [ref=f5e724]
+              - generic [ref=f5e725]:
+                - tablist [ref=f5e728]:
+                  - tab "Preview" [selected] [ref=f5e729]
+                  - tab "Code" [ref=f5e730]
+                - generic [ref=f5e732]:
+                  - generic [ref=f5e733]:
+                    - link "Open in v0" [ref=f5e734] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-6.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e735]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e737]:
+                    - generic [ref=f5e738]: Slide left by character
+                    - generic [ref=f5e739]: S
+                    - generic [ref=f5e740]: l
+                    - generic [ref=f5e741]: i
+                    - generic [ref=f5e742]: d
+                    - generic [ref=f5e743]: e
+                    - generic [ref=f5e745]: l
+                    - generic [ref=f5e746]: e
+                    - generic [ref=f5e747]: f
+                    - generic [ref=f5e748]: t
+                    - generic [ref=f5e750]: b
+                    - generic [ref=f5e751]: "y"
+                    - generic [ref=f5e753]: c
+                    - generic [ref=f5e754]: h
+                    - generic [ref=f5e755]: a
+                    - generic [ref=f5e756]: r
+                    - generic [ref=f5e757]: a
+                    - generic [ref=f5e758]: c
+                    - generic [ref=f5e759]: t
+                    - generic [ref=f5e760]: e
+                    - generic [ref=f5e761]: r
+              - heading "With Delay" [level=3] [ref=f5e762]
+              - generic [ref=f5e763]:
+                - tablist [ref=f5e766]:
+                  - tab "Preview" [selected] [ref=f5e767]
+                  - tab "Code" [ref=f5e768]
+                - generic [ref=f5e770]:
+                  - generic [ref=f5e771]:
+                    - link "Open in v0" [ref=f5e772] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-7.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e773]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e775]:
+                    - generic [ref=f5e776]: Blur in by character
+                    - generic [ref=f5e777]: B
+                    - generic [ref=f5e778]: l
+                    - generic [ref=f5e779]: u
+                    - generic [ref=f5e780]: r
+                    - generic [ref=f5e782]: i
+                    - generic [ref=f5e783]: "n"
+                    - generic [ref=f5e785]: b
+                    - generic [ref=f5e786]: "y"
+                    - generic [ref=f5e788]: c
+                    - generic [ref=f5e789]: h
+                    - generic [ref=f5e790]: a
+                    - generic [ref=f5e791]: r
+                    - generic [ref=f5e792]: a
+                    - generic [ref=f5e793]: c
+                    - generic [ref=f5e794]: t
+                    - generic [ref=f5e795]: e
+                    - generic [ref=f5e796]: r
+              - heading "With Duration" [level=3] [ref=f5e797]
+              - generic [ref=f5e798]:
+                - tablist [ref=f5e801]:
+                  - tab "Preview" [selected] [ref=f5e802]
+                  - tab "Code" [ref=f5e803]
+                - generic [ref=f5e805]:
+                  - generic [ref=f5e806]:
+                    - link "Open in v0" [ref=f5e807] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-8.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e808]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e810]:
+                    - generic [ref=f5e811]: Blur in by character
+                    - generic [ref=f5e812]: B
+                    - generic [ref=f5e813]: l
+                    - generic [ref=f5e814]: u
+                    - generic [ref=f5e815]: r
+                    - generic [ref=f5e817]: i
+                    - generic [ref=f5e818]: "n"
+                    - generic [ref=f5e820]: b
+                    - generic [ref=f5e821]: "y"
+                    - generic [ref=f5e823]: c
+                    - generic [ref=f5e824]: h
+                    - generic [ref=f5e825]: a
+                    - generic [ref=f5e826]: r
+                    - generic [ref=f5e827]: a
+                    - generic [ref=f5e828]: c
+                    - generic [ref=f5e829]: t
+                    - generic [ref=f5e830]: e
+                    - generic [ref=f5e831]: r
+              - heading "With Custom Motion Variants" [level=3] [ref=f5e832]
+              - generic [ref=f5e833]:
+                - tablist [ref=f5e836]:
+                  - tab "Preview" [selected] [ref=f5e837]
+                  - tab "Code" [ref=f5e838]
+                - generic [ref=f5e840]:
+                  - generic [ref=f5e841]:
+                    - link "Open in v0" [ref=f5e842] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https://magicui.design/r/text-animate-demo-9.json
+                      - text: Open in
+                    - button "restart-btn" [ref=f5e843]:
+                      - img "restart-btn"
+                  - paragraph [ref=f5e845]:
+                    - generic [ref=f5e846]: Wavy Motion!
+                    - generic [ref=f5e847]: W
+                    - generic [ref=f5e848]: a
+                    - generic [ref=f5e849]: v
+                    - generic [ref=f5e850]: "y"
+                    - generic [ref=f5e852]: M
+                    - generic [ref=f5e853]: o
+                    - generic [ref=f5e854]: t
+                    - generic [ref=f5e855]: i
+                    - generic [ref=f5e856]: o
+                    - generic [ref=f5e857]: "n"
+                    - generic [ref=f5e858]: "!"
+              - heading "Usage" [level=2] [ref=f5e859]
+              - figure [ref=f5e860]:
+                - generic [ref=f5e861]:
+                  - button "Copy" [ref=f5e862]
+                  - code [ref=f5e864]:
+                    - generic [ref=f5e865]: "import { TextAnimate } from \"@/components/ui/text-animate\""
+              - figure [ref=f5e866]:
+                - generic [ref=f5e867]:
+                  - button "Copy" [ref=f5e868]
+                  - code [ref=f5e870]:
+                    - generic [ref=f5e871]: <TextAnimate animation="blurInUp" by="word">
+                    - generic [ref=f5e872]: Blur in by word
+                    - generic [ref=f5e873]: </TextAnimate>
+              - heading "Props" [level=2] [ref=f5e874]
+              - table [ref=f5e876]:
+                - rowgroup [ref=f5e877]:
+                  - row [ref=f5e878]:
+                    - columnheader "Prop" [ref=f5e879]
+                    - columnheader "Type" [ref=f5e880]
+                    - columnheader "Default" [ref=f5e881]
+                    - columnheader "Description" [ref=f5e882]
+                - rowgroup [ref=f5e883]:
+                  - row [ref=f5e884]:
+                    - cell [ref=f5e885]:
+                      - code [ref=f5e886]: children
+                    - cell [ref=f5e887]:
+                      - code [ref=f5e888]: string
+                    - cell [ref=f5e889]:
+                      - code [ref=f5e890]: "-"
+                    - cell "The text content to animate" [ref=f5e891]
+                  - row [ref=f5e892]:
+                    - cell [ref=f5e893]:
+                      - code [ref=f5e894]: className
+                    - cell [ref=f5e895]:
+                      - code [ref=f5e896]: string
+                    - cell [ref=f5e897]:
+                      - code [ref=f5e898]: "-"
+                    - cell "The class name to be applied to the component" [ref=f5e899]
+                  - row [ref=f5e900]:
+                    - cell [ref=f5e901]:
+                      - code [ref=f5e902]: segmentClassName
+                    - cell [ref=f5e903]:
+                      - code [ref=f5e904]: string
+                    - cell [ref=f5e905]:
+                      - code [ref=f5e906]: "-"
+                    - cell "The class name to be applied to each segment" [ref=f5e907]
+                  - row [ref=f5e908]:
+                    - cell [ref=f5e909]:
+                      - code [ref=f5e910]: delay
+                    - cell [ref=f5e911]:
+                      - code [ref=f5e912]: number
+                    - cell [ref=f5e913]:
+                      - code [ref=f5e914]: "0"
+                    - cell "Delay before animation starts" [ref=f5e915]
+                  - row [ref=f5e916]:
+                    - cell [ref=f5e917]:
+                      - code [ref=f5e918]: duration
+                    - cell [ref=f5e919]:
+                      - code [ref=f5e920]: number
+                    - cell [ref=f5e921]:
+                      - code [ref=f5e922]: "0.3"
+                    - cell "Duration of the animation" [ref=f5e923]
+                  - row [ref=f5e924]:
+                    - cell [ref=f5e925]:
+                      - code [ref=f5e926]: variants
+                    - cell [ref=f5e927]:
+                      - code [ref=f5e928]: Variants
+                    - cell [ref=f5e929]:
+                      - code [ref=f5e930]: "-"
+                    - cell "Custom motion variants for the animation" [ref=f5e931]
+                  - row [ref=f5e932]:
+                    - cell [ref=f5e933]:
+                      - code [ref=f5e934]: as
+                    - cell [ref=f5e935]:
+                      - code [ref=f5e936]: "\"article\" | \"div\" | \"h1\" | \"h2\" | \"h3\" | \"h4\" | \"h5\" | \"h6\" | \"li\" | \"p\" | \"section\" | \"span\""
+                    - cell [ref=f5e937]:
+                      - code [ref=f5e938]: "\"p\""
+                    - cell "The element type to render" [ref=f5e939]
+                  - row [ref=f5e940]:
+                    - cell [ref=f5e941]:
+                      - code [ref=f5e942]: by
+                    - cell [ref=f5e943]:
+                      - code [ref=f5e944]: "\"text\" | \"word\" | \"character\" | \"line\""
+                    - cell [ref=f5e945]:
+                      - code [ref=f5e946]: "\"word\""
+                    - cell "How to split the text (\"text\", \"word\", \"character\")" [ref=f5e947]
+                  - row [ref=f5e948]:
+                    - cell [ref=f5e949]:
+                      - code [ref=f5e950]: startOnView
+                    - cell [ref=f5e951]:
+                      - code [ref=f5e952]: boolean
+                    - cell [ref=f5e953]:
+                      - code [ref=f5e954]: "true"
+                    - cell "Whether to start animation when component enters viewport" [ref=f5e955]
+                  - row [ref=f5e956]:
+                    - cell [ref=f5e957]:
+                      - code [ref=f5e958]: once
+                    - cell [ref=f5e959]:
+                      - code [ref=f5e960]: boolean
+                    - cell [ref=f5e961]:
+                      - code [ref=f5e962]: "false"
+                    - cell "Whether to animate only once" [ref=f5e963]
+                  - row [ref=f5e964]:
+                    - cell [ref=f5e965]:
+                      - code [ref=f5e966]: animation
+                    - cell [ref=f5e967]:
+                      - code [ref=f5e968]: AnimationVariant
+                    - cell [ref=f5e969]:
+                      - code [ref=f5e970]: "\"fadeIn\""
+                    - cell "The animation preset to use" [ref=f5e971]
+                  - row [ref=f5e972]:
+                    - cell [ref=f5e973]:
+                      - code [ref=f5e974]: accessible
+                    - cell [ref=f5e975]:
+                      - code [ref=f5e976]: boolean
+                    - cell [ref=f5e977]:
+                      - code [ref=f5e978]: "true"
+                    - cell "Whether to render an accessible screen-reader label" [ref=f5e979]
+          - generic [ref=f5e980]:
+            - link "Blur Fade" [ref=f5e981] [cursor=pointer]:
+              - /url: /docs/components/blur-fade
+            - link "Typing Animation" [ref=f5e982] [cursor=pointer]:
+              - /url: /docs/components/typing-animation
+        - text: Faster
+  - contentinfo [ref=f5e983]:
+    - generic [ref=f5e986]:
+      - text: Built by
+      - link "dillion" [ref=f5e987] [cursor=pointer]:
+        - /url: https://twitter.com/dillionverma
+      - text: . The source code is available on
+      - link "GitHub" [ref=f5e988] [cursor=pointer]:
+        - /url: https://github.com/magicuidesign/magicui
+      - text: .
+  - region "Notifications alt+T"
+  - alert [ref=f5e989]

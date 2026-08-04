@@ -5,6 +5,12 @@
   "homepage": "https://github.com/Abenor-Labs/z-ui",
   "items": [
     {
+      "name": "like-button",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/like-button"
+    },
+    {
       "name": "use-controllable-state",
       "type": "registry:hook",
       "path": "hooks/use-controllable-state"

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "like-button",
+  "type": "registry:component",
+  "title": "Like Button",
+  "description": "A like toggle that overshoots on press and settles with a spring.",
+  "dependencies": ["motion"],
+  "registryDependencies": ["use-controllable-state", "z-spring", "z-cn"],
+  "files": [
+    { "path": "like-button.tsx", "type": "registry:component" }
+  ],
+  "meta": {
+    "category": "tactile-feedback",
+    "states": ["idle", "hover", "pressing", "liked"],
+    "spring": "bounce"
+  }
+}
