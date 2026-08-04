@@ -278,7 +278,7 @@ Numbered rules, all machine-checkable except where noted:
 8. `className` is merged last through `zcn` so consumer classes win.
 9. Remaining props spread onto the root element.
 10. Hit target is at least 44x44 CSS pixels, even where the visual element is smaller. `size-11` is 44px.
-11. One `variants` object at module scope, with keys matching the manifest's `meta.states` exactly. This is what lets the showcase generate a state inspector from the manifest alone, and it makes the manifest's `states` field load-bearing rather than decorative.
+11. Every module-scope `variants` object declares the same key vocabulary, matching the manifest's `meta.states` exactly. A component typically needs more than one: `like-button` has three, because the root animates `scale`, the icon animates `color` and `fillOpacity`, and the ring animates keyframed `scale` and `opacity`. Declaring identical keys across all of them is what lets motion's variant propagation drive every child from the root's `animate` state, so no child tracks state itself. It is also what lets the showcase generate a state inspector from the manifest alone, which makes `meta.states` load-bearing rather than decorative.
 
 Three of these carry disproportionate weight:
 
@@ -287,6 +287,8 @@ Three of these carry disproportionate weight:
 **`animate` plus `variants`, never `useAnimate` sequences.** A declarative target state is what makes mid-flight reversal free. A sequence that must play to completion is a timeline in a spring costume and fails the interruptibility principle.
 
 **The import allowlist.** Registry sources may import from exactly `react`, `motion`, `clsx`, `tailwind-merge`, and the internal prefixes `@/lib/*`, `@/hooks/*`, `@/components/z-ui/*`. Nothing else, ever. This is what reduces the CLI's import rewriting to a string replace on a documented prefix instead of an AST transform, and it is enforced in CI.
+
+A consequence worth stating outright, because it was discovered by building rather than by planning: **icons are inline SVG paths, never imports.** `like-button` could not import a heart from `lucide-react`. A registry component cannot assume a consumer has any icon library installed, and the allowlist catches that at authoring time rather than at install time.
 
 ## 7. CLI
 
@@ -360,7 +362,8 @@ Runs in CI on every pull request. Cheap to write, and it is the mechanism that s
 | Every motion element carries `initial={false}` | Unwanted mount animation |
 | No `cubic-bezier` whose y control points fall outside 0 to 1 | Fake springs imitating overshoot, banned by DESIGN.md |
 | Every interactive root has `data-state` and an aria attribute | Incomplete component |
-| `variants` keys match the manifest's `meta.states` exactly | Manifest drifting out of sync with the component |
+| Every `variants` object's keys match the manifest's `meta.states` exactly | Manifest drifting out of sync with the component |
+| No import of an icon library | A component assuming the consumer has `lucide-react` or similar |
 
 The last three are text-level checks that encode design law as CI. They are the difference between principles written in a document and principles that hold.
 
