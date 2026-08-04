@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Registry components are real TypeScript, so a broken one fails here
+      # rather than in someone else's project.
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # The file contract and the design laws, as checks.
+      - name: Lint registry
+        run: pnpm lint:registry
+
+      # A linter that only ever passes is worthless. This deliberately breaks
+      # the registry nine ways and fails if any of them slips through.
+      - name: Lint the linter
+        run: pnpm lint:registry:test
+
+      # The generated tree is committed, so it must match what the generator
+      # produces from the current registry.
+      - name: Check generated registry is current
+        run: pnpm registry:check
+
+      - name: Build site
+        run: pnpm --filter @z-ui/web build

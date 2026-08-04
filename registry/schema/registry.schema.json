@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry/schema/registry.schema.json",
+  "title": "Z-UI registry index",
+  "description": "The thin index. The CLI fetches this once, then only the manifests it needs.",
+  "type": "object",
+  "required": ["name", "version", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "const": "z-ui" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "homepage": { "type": "string" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+          "type": { "enum": ["registry:component", "registry:hook", "registry:lib"] },
+          "category": {
+            "enum": ["primitive", "tactile-feedback", "state-morphing", "input-utility"]
+          },
+          "path": {
+            "type": "string",
+            "description": "Directory relative to registry/, holding component.json and the sources."
+          }
+        }
+      }
+    }
+  }
+}

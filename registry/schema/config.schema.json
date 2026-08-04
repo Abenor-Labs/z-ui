@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry/schema/config.schema.json",
+  "title": "z-ui.json",
+  "description": "Written by `z-ui init` into a consumer project. Each alias carries both the import specifier and the disk path explicitly, which is what keeps tsconfig path resolution out of the CLI entirely.",
+  "type": "object",
+  "required": ["registry", "tsx", "aliases"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "registry": {
+      "type": "string",
+      "description": "Base URL or local filesystem path. A local path is how contributors test uncommitted components and how the CLI test suite runs without network."
+    },
+    "tsx": { "type": "boolean" },
+    "aliases": {
+      "type": "object",
+      "required": ["components", "hooks", "lib"],
+      "additionalProperties": false,
+      "properties": {
+        "components": { "$ref": "#/$defs/alias" },
+        "hooks": { "$ref": "#/$defs/alias" },
+        "lib": { "$ref": "#/$defs/alias" }
+      }
+    }
+  },
+  "$defs": {
+    "alias": {
+      "type": "object",
+      "required": ["import", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "import": {
+          "type": "string",
+          "description": "Import specifier prefix, e.g. \"@/components/z-ui\"."
+        },
+        "path": {
+          "type": "string",
+          "description": "Directory on disk relative to the project root, e.g. \"src/components/z-ui\"."
+        }
+      }
+    }
+  }
+}
