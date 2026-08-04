@@ -1,50 +1,62 @@
 'use client'
 
 import * as React from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import type { Transition } from 'motion/react'
 import { useControllableState } from '@/hooks/use-controllable-state'
 import { useZTransition, type SpringName } from '@/lib/z-spring'
 import { zcn } from '@/lib/z-cn'
 
 /**
- * Variant sets share one key vocabulary: idle, hover, pressing, liked. Motion
- * propagates the active variant name from the root to its children, so naming
- * them identically is what lets the icon and the ring react without any of
- * them tracking state themselves.
+ * Liked-ness and interaction are two dimensions, so the state machine is their
+ * product rather than either one alone. Six states, not four.
  *
- * Those keys match `meta.states` in component.json exactly. That is not a
- * convention, it is checked in CI, and it is what lets the showcase build a
+ * The obvious shape, `animate={pressed ? 'liked' : 'idle'}` with `whileHover`
+ * layered on top, is wrong in a way that is easy to miss and obvious once
+ * seen: motion applies the hover variant over the animate variant, and a hover
+ * variant cannot know whether the button is liked. Hovering a liked heart
+ * reverts it to grey and unfilled.
+ *
+ * One derived value drives `animate` and `data-state` together, so the
+ * attribute a consumer styles against can never disagree with what is on
+ * screen. Precedence is pressing, then hover, then liked.
+ *
+ * Keys here match `meta.states` in component.json exactly. That is not a
+ * convention, it is checked in CI, and it is what lets a showcase build a
  * state inspector from the manifest alone.
  */
+const STATES = [
+  'idle',
+  'hover',
+  'pressing',
+  'liked',
+  'liked-hover',
+  'liked-pressing',
+] as const
+
+export type LikeButtonState = (typeof STATES)[number]
+
+// `satisfies`, not an annotation: it checks that every state has a variant and
+// no extras sneak in, while leaving the literal type intact so motion still
+// accepts these as Variants. Annotating them as Record<State, object> would
+// widen the values and fail assignment.
 const rootVariants = {
-  idle: { scale: 1 },
-  hover: { scale: 1.08 },
-  pressing: { scale: 0.9 },
-  liked: { scale: 1 },
-}
+  'idle': { scale: 1 },
+  'hover': { scale: 1.08 },
+  'pressing': { scale: 0.9 },
+  'liked': { scale: 1 },
+  'liked-hover': { scale: 1.08 },
+  'liked-pressing': { scale: 0.9 },
+} satisfies Record<LikeButtonState, object>
 
 const iconVariants = {
-  idle: { color: '#a3a3a3', fillOpacity: 0 },
-  hover: { color: '#d4d4d4', fillOpacity: 0 },
-  pressing: { color: '#d4d4d4', fillOpacity: 0 },
-  liked: { color: '#f43f5e', fillOpacity: 1 },
-}
-
-/**
- * Decorative. Rendered only when motion is allowed. The keyframed opacity
- * needs a duration rather than a spring, so this variant overrides the
- * transition it inherits from the root.
- */
-const ringVariants = {
-  idle: { scale: 0.6, opacity: 0 },
-  hover: { scale: 0.6, opacity: 0 },
-  pressing: { scale: 0.6, opacity: 0 },
-  liked: {
-    scale: [0.6, 1.9],
-    opacity: [0.45, 0],
-    transition: { duration: 0.45, ease: 'easeOut' as const },
-  },
-}
+  'idle': { color: '#a3a3a3', fillOpacity: 0 },
+  'hover': { color: '#d4d4d4', fillOpacity: 0 },
+  'pressing': { color: '#d4d4d4', fillOpacity: 0 },
+  'liked': { color: '#f43f5e', fillOpacity: 1 },
+  'liked-hover': { color: '#fb7185', fillOpacity: 1 },
+  'liked-pressing': { color: '#f43f5e', fillOpacity: 1 },
+} satisfies Record<LikeButtonState, object>
 
 type MotionConflicts =
   | 'onChange'
@@ -67,8 +79,11 @@ export type LikeButtonProps = Omit<
   defaultPressed?: boolean
   /** Fired with the next state whenever it changes. */
   onPressedChange?: (pressed: boolean) => void
-  /** Spring preset driving the press response. */
-  spring?: SpringName
+  /**
+   * Spring driving the press response. A preset name, or any motion
+   * `Transition` when you need to scale or override the physics.
+   */
+  spring?: SpringName | Transition
   ref?: React.Ref<HTMLButtonElement>
 }
 
@@ -87,6 +102,12 @@ export function LikeButton({
   className,
   'aria-label': ariaLabel = 'Like',
   ref,
+  onPointerEnter,
+  onPointerLeave,
+  onPointerDown,
+  onPointerUp,
+  onPointerCancel,
+  onClick,
   ...props
 }: LikeButtonProps) {
   const [pressed, setPressed] = useControllableState({
@@ -94,8 +115,16 @@ export function LikeButton({
     defaultProp: defaultPressed,
     onChange: onPressedChange,
   })
+  const [hovered, setHovered] = React.useState(false)
+  const [pressing, setPressing] = React.useState(false)
   const transition = useZTransition(spring)
-  const reduced = useReducedMotion()
+
+  const interaction = pressing ? 'pressing' : hovered ? 'hover' : null
+  const state: LikeButtonState = pressed
+    ? interaction
+      ? (`liked-${interaction}` as LikeButtonState)
+      : 'liked'
+    : (interaction ?? 'idle')
 
   return (
     <motion.button
@@ -103,14 +132,38 @@ export function LikeButton({
       type="button"
       aria-pressed={pressed}
       aria-label={ariaLabel}
-      data-state={pressed ? 'liked' : 'idle'}
+      data-state={state}
       initial={false}
-      animate={pressed ? 'liked' : 'idle'}
-      whileHover="hover"
-      whileTap="pressing"
+      animate={state}
       variants={rootVariants}
       transition={transition}
-      onClick={() => setPressed(!pressed)}
+      onPointerEnter={(e) => {
+        setHovered(true)
+        onPointerEnter?.(e)
+      }}
+      onPointerLeave={(e) => {
+        setHovered(false)
+        // A pointer that leaves mid-press never delivers pointerup here, so
+        // the press is released on the way out or the button sticks pressed.
+        setPressing(false)
+        onPointerLeave?.(e)
+      }}
+      onPointerDown={(e) => {
+        setPressing(true)
+        onPointerDown?.(e)
+      }}
+      onPointerUp={(e) => {
+        setPressing(false)
+        onPointerUp?.(e)
+      }}
+      onPointerCancel={(e) => {
+        setPressing(false)
+        onPointerCancel?.(e)
+      }}
+      onClick={(e) => {
+        setPressed(!pressed)
+        onClick?.(e)
+      }}
       className={zcn(
         'relative grid size-11 place-items-center rounded-full',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2',
@@ -119,19 +172,6 @@ export function LikeButton({
       )}
       {...props}
     >
-      {/*
-        Dropped entirely under reduced motion rather than animated to zero
-        duration. A user who asked for less motion should not receive a ring
-        that appears and vanishes in one frame.
-      */}
-      {!reduced && (
-        <motion.span
-          aria-hidden
-          variants={ringVariants}
-          className="pointer-events-none absolute size-6 rounded-full border-2 border-rose-500"
-        />
-      )}
-
       <motion.svg
         viewBox="0 0 24 24"
         className="size-6"

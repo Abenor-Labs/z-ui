@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducedMotion } from 'motion/react'
+import { useReducedMotionConfig } from 'motion/react'
 import type { Transition } from 'motion/react'
 
 /**
@@ -46,12 +46,19 @@ export type SpringName = keyof typeof springs
  * instant rather than absent. The other half of the contract lives in the
  * component: when reduced motion is active, decorative sub-elements
  * (particles, trails, draw-on strokes) must not render at all. A hook cannot
- * enforce that, so components call `useReducedMotion` directly for it.
+ * enforce that, so components consult this preference directly for it.
+ *
+ * `useReducedMotionConfig`, not `useReducedMotion`: the former also honors an
+ * enclosing `<MotionConfig reducedMotion="always" | "never">`, which is what
+ * lets a docs page demonstrate the reduced-motion branch beside the full one
+ * without asking the reader to change an OS setting. It returns
+ * `boolean | null` and is null during SSR, so compare against `true`
+ * explicitly and let the server render the full-motion markup.
  */
 export function useZTransition(
   preset: SpringName | Transition = 'snap',
 ): Transition {
-  const reduced = useReducedMotion()
+  const reduced = useReducedMotionConfig() === true
   if (reduced) return { duration: 0 }
   return typeof preset === 'string' ? springs[preset] : preset
 }

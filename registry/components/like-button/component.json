@@ -11,7 +11,7 @@
   ],
   "meta": {
     "category": "tactile-feedback",
-    "states": ["idle", "hover", "pressing", "liked"],
+    "states": ["idle", "hover", "pressing", "liked", "liked-hover", "liked-pressing"],
     "spring": "bounce"
   }
 }
