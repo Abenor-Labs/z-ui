@@ -1,0 +1,24 @@
+{
+  "name": "z-ui-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Copy-paste micro-animation components for React. Springy, state-driven, tactile.",
+  "license": "MIT",
+  "author": "Abenor Labs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Abenor-Labs/z-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Abenor-Labs/z-ui/issues"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build"
+  }
+}
