@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry/schema/registry.schema.json",
+  "name": "z-ui",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Abenor-Labs/z-ui",
+  "items": [
+    {
+      "name": "use-controllable-state",
+      "type": "registry:hook",
+      "path": "hooks/use-controllable-state"
+    },
+    {
+      "name": "z-cn",
+      "type": "registry:lib",
+      "path": "lib/z-cn"
+    },
+    {
+      "name": "z-spring",
+      "type": "registry:lib",
+      "path": "lib/z-spring"
+    }
+  ]
+}

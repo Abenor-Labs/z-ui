@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "z-cn",
+  "type": "registry:lib",
+  "title": "Z Class Names",
+  "description": "Class name merge helper that resolves conflicting Tailwind utilities in favor of the consumer.",
+  "dependencies": ["clsx", "tailwind-merge"],
+  "registryDependencies": [],
+  "files": [
+    { "path": "z-cn.ts", "type": "registry:lib" }
+  ],
+  "meta": {
+    "category": "primitive"
+  }
+}

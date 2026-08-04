@@ -1,0 +1,22 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    // No `baseUrl`: TypeScript 7 removed it, and paths now resolve relative
+    // to this file's directory.
+    // Registry sources import via the same `@/` specifiers a consumer will
+    // have after the CLI rewrites them, so what typechecks here is what ships.
+    // Entries are explicit per item because our folder-plus-manifest layout
+    // nests each source one level deeper than it lands in a consumer project
+    // (lib/z-spring/z-spring.ts here, lib/z-spring.ts there), and tsconfig
+    // paths allow only one wildcard per pattern.
+    "paths": {
+      "@/lib/z-spring": ["./lib/z-spring/z-spring.ts"],
+      "@/lib/z-cn": ["./lib/z-cn/z-cn.ts"],
+      "@/hooks/use-controllable-state": [
+        "./hooks/use-controllable-state/use-controllable-state.ts"
+      ]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
