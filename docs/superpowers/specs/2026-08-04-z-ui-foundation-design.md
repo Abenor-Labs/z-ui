@@ -163,16 +163,18 @@ export const springs = {
 export type SpringName = keyof typeof springs
 ```
 
-| Preset | Damping ratio | Peak overshoot | Perceived response | Full rest | Use |
+Values below are derived, not estimated. Damping ratio is `damping / (2 * sqrt(stiffness * mass))`; `t90` is the numerically solved time for the step response to first reach 90% of target, which is the honest measure of perceived response.
+
+| Preset | Damping ratio | `t90` | Peak overshoot | Rest (2%) | Use |
 | --- | --- | --- | --- | --- | --- |
-| `snap` | 0.89 | under 1% | 100ms | 200ms | State morphs: play/pause, lock, mute. Overshoot here is noise. |
-| `bounce` | 0.35 | ~30% | 285ms | 570ms | Tactile feedback: like, bookmark. The overshoot is the message. |
-| `settle` | 0.74 | ~3% | 165ms | 330ms | Reveals: search pill expand, password eye. |
-| `fling` | 0.87 | under 1% | 135ms | 270ms | Gesture release with velocity carry-over. |
+| `snap` | 0.89 | 152ms | under 1% | 200ms | State morphs: play/pause, lock, mute. Overshoot here is noise. |
+| `bounce` | 0.35 | 94ms | 31% | 571ms | Tactile feedback: like, bookmark. The overshoot is the message. |
+| `settle` | 0.74 | 173ms | 3% | 333ms | Reveals: search pill expand, password eye. |
+| `fling` | 0.87 | 188ms | under 1% | 267ms | Gesture release with velocity carry-over. |
 
 `snap` is the library default, applied whenever a component does not declare one. A component overrides to `bounce` only when the recoil carries meaning; `like-button` is the one v1 component that does.
 
-**On `bounce` exceeding the 500ms feedback guideline:** the guideline governs perceived response, and a spring communicates its result at the first peak, not at rest. `bounce` reaches peak at roughly 60ms and is perceptually complete at 285ms; the remaining travel is sub-pixel settling the user reads as physical weight, not as latency. The component is fully interactive throughout. This is a deliberate exception, and it applies to `bounce` alone.
+**On `bounce` exceeding the 500ms feedback guideline:** the guideline governs perceived response, not time to rest, and those diverge for an underdamped spring. `bounce` reaches 90% of target in 94ms, the fastest of all four presets, precisely because it overshoots rather than approaching asymptotically. The remaining travel is low-amplitude settling the user reads as physical weight, and the element stays fully interactive throughout. This is a deliberate exception and it applies to `bounce` alone.
 
 ### 6.2 Reduced motion is a branch, not a zeroed duration
 
@@ -401,7 +403,7 @@ Trunk-based. Short-lived branches, squash-merge, no `develop` branch and no rele
 | Building a first-party CLI is more work than it appears | Explicit `import` plus `path` aliases in `z-ui.json` remove tsconfig resolution entirely. Manifests stay shadcn-shaped, so `npx shadcn add <url>` is a working fallback while the CLI matures. |
 | Scope creep into a general component library | Named as a non-goal here and as Design Principle 5 in PRODUCT.md. Every addition must be a micro-interaction. |
 | Drift toward gimmick components | Named as an anti-reference in PRODUCT.md and as a Don't in DESIGN.md. The four-condition overshoot carve-out is the concrete test. |
-| `#00E5A0` fails AA contrast on light surfaces (approximately 1.7:1) | Documented as the Contrast Floor Rule in DESIGN.md. Mint is a motion color only; ink and sand carry all text and all state that must be legible. |
+| `#00E5A0` fails AA contrast on light surfaces (1.65:1 on white, measured) | Documented as the Contrast Floor Rule in DESIGN.md. Two separate constraints are at work and should not be conflated: contrast forbids mint on light surfaces, while the Moving Part Rule restricts mint to the moving element as a design choice. On ink `#0A0A0B` mint measures 11.98:1 and would pass AAA, so the motion-only restriction there is deliberate, not forced. Sand on ink measures 15.61:1. |
 | Contract proves wrong after the second component | Step 5 exists precisely to discover this, and it runs before the showcase and before the generator skill hard-code any assumption. |
 
 ## 12. Open questions
