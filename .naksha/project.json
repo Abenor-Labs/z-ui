@@ -1,0 +1,13 @@
+{
+  "name": "Z-UI",
+  "brand": {
+    "primary": "#00E5A0",
+    "secondary": "#E8E4DC",
+    "font": "Inter",
+    "voice": "precise and playful"
+  },
+  "framework": "react",
+  "tokenFormat": "tailwind",
+  "createdAt": "2026-08-04T05:00:21Z",
+  "updatedAt": "2026-08-04T05:00:21Z"
+}
