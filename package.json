@@ -23,7 +23,9 @@
     "lint:registry": "node scripts/lint-registry.mjs",
     "registry:check": "pnpm --filter @z-ui/web registry:check",
     "lint:registry:test": "node scripts/lint-registry.test.mjs",
-    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm registry:check"
+    "lint:contrast": "node scripts/lint-contrast.mjs",
+    "lint:contrast:test": "node scripts/lint-contrast.test.mjs",
+    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check"
   },
   "devDependencies": {
     "ajv": "^8.20.0",

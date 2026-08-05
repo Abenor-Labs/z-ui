@@ -38,6 +38,15 @@ jobs:
       - name: Lint the linter
         run: pnpm lint:registry:test
 
+      # Colour is shipped, not rendered. A contrast mistake in a registry
+      # component arrives in every project that ran `add`, as a file we can
+      # no longer touch.
+      - name: Lint contrast
+        run: pnpm lint:contrast
+
+      - name: Lint the contrast linter
+        run: pnpm lint:contrast:test
+
       # The generated tree is committed, so it must match what the generator
       # produces from the current registry.
       - name: Check generated registry is current
