@@ -7,22 +7,182 @@
       "name": "like-button",
       "type": "registry:component",
       "category": "tactile-feedback",
-      "path": "components/like-button"
+      "path": "components/like-button",
+      "title": "Like Button",
+      "description": "A like toggle that overshoots on press and settles with a spring.",
+      "spring": "bounce",
+      "states": [
+        "idle",
+        "hover",
+        "pressing",
+        "liked",
+        "liked-hover",
+        "liked-pressing"
+      ]
+    },
+    {
+      "name": "scrub",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/scrub",
+      "title": "Scrub",
+      "description": "A seek bar whose precision increases as the pointer pulls away from the track.",
+      "spring": "settle",
+      "states": [
+        "idle",
+        "hover",
+        "scrubbing",
+        "scrubbing-fine",
+        "settling"
+      ]
+    },
+    {
+      "name": "hold-to-confirm",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/hold-to-confirm",
+      "title": "Hold To Confirm",
+      "description": "A destructive action that costs a second of deliberate pressure, and unwinds if you let go.",
+      "spring": "snap",
+      "states": [
+        "idle",
+        "hover",
+        "holding",
+        "releasing",
+        "confirmed"
+      ]
+    },
+    {
+      "name": "undo-toast",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/undo-toast",
+      "title": "Undo Toast",
+      "description": "A destructive action's grace period, with a visible clock that pauses when you reach for it.",
+      "spring": "settle",
+      "states": [
+        "counting",
+        "held",
+        "dragging",
+        "leaving"
+      ]
+    },
+    {
+      "name": "disclosure",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/disclosure",
+      "title": "Disclosure",
+      "description": "An accordion panel whose height is a spring you can interrupt mid-flight, not a duration that has to finish first.",
+      "spring": "settle",
+      "states": [
+        "closed",
+        "hover",
+        "opening",
+        "open",
+        "closing"
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/sheet",
+      "title": "Sheet",
+      "description": "A draggable panel that snaps to the detent your release velocity projects toward, not the one nearest where your hand happened to stop.",
+      "spring": "settle",
+      "states": [
+        "closed",
+        "dragging",
+        "settling",
+        "open"
+      ]
+    },
+    {
+      "name": "reorder",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/reorder",
+      "title": "Reorder",
+      "description": "A drag-to-reorder list where the displaced rows don't move together — each settles with a spring softened by its distance from the row you dragged, so the shift travels down the list as a wave.",
+      "spring": "snap",
+      "states": [
+        "idle",
+        "dragging",
+        "settling"
+      ]
+    },
+    {
+      "name": "slide-to-confirm",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/slide-to-confirm",
+      "title": "Slide To Confirm",
+      "description": "A drag-to-commit gesture that fails safe with a recoil carrying your release velocity, so how close the attempt got is something you feel, not just a snap back to zero.",
+      "spring": "bounce",
+      "states": [
+        "idle",
+        "hover",
+        "dragging",
+        "snapping-back",
+        "confirmed"
+      ]
+    },
+    {
+      "name": "revert-field",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/revert-field",
+      "title": "Revert Field",
+      "description": "A text field where Escape rewinds an edit as a watched un-typing, deleting to the shared prefix and typing the prior value back in, instead of silently snapping the string back.",
+      "spring": "snap",
+      "states": [
+        "idle",
+        "hover",
+        "editing",
+        "reverting"
+      ]
+    },
+    {
+      "name": "scheduler",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/scheduler",
+      "title": "Scheduler",
+      "description": "A date-and-time booking picker where hovering a slot raises a dim, question-marked preview of the confirmation before you've committed to anything, and month navigation is an interruptible spring, not a crossfade.",
+      "spring": "settle",
+      "states": [
+        "browsing",
+        "previewing",
+        "committed"
+      ]
     },
     {
       "name": "use-controllable-state",
       "type": "registry:hook",
-      "path": "hooks/use-controllable-state"
+      "path": "hooks/use-controllable-state",
+      "title": "Use Controllable State",
+      "description": "State that is uncontrolled by default and controlled when a value is passed.",
+      "spring": null,
+      "states": null
     },
     {
       "name": "z-cn",
       "type": "registry:lib",
-      "path": "lib/z-cn"
+      "path": "lib/z-cn",
+      "title": "Z Class Names",
+      "description": "Class name merge helper that resolves conflicting Tailwind utilities in favor of the consumer.",
+      "spring": null,
+      "states": null
     },
     {
       "name": "z-spring",
       "type": "registry:lib",
-      "path": "lib/z-spring"
+      "path": "lib/z-spring",
+      "title": "Z Spring",
+      "description": "The Z-UI spring scale and the transition hook that honors prefers-reduced-motion.",
+      "spring": null,
+      "states": null
     }
   ]
 }

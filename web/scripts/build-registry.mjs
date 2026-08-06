@@ -104,7 +104,16 @@ for (const item of items) {
           target: f.target,
           content: f.content,
         })),
-        meta: { category: item.category, states: item.states, spring: item.spring },
+        // Everything Z-UI-specific nests under `meta`, which shadcn ignores
+        // (ADR 0002). `digests` is what lets our CLI verify that the bytes it
+        // received are the bytes this generator hashed, rather than trusting
+        // the transport — the same claim the site makes on every source panel.
+        meta: {
+          category: item.category,
+          states: item.states,
+          spring: item.spring,
+          digests: Object.fromEntries(item.files.map((f) => [f.path, f.sha])),
+        },
       },
       null,
       2,
@@ -115,7 +124,19 @@ for (const item of items) {
 emit(
   'public/r/index.json',
   JSON.stringify(
-    { name: index.name, version: index.version, homepage: index.homepage, items: index.items },
+    {
+      name: index.name,
+      version: index.version,
+      homepage: index.homepage,
+      // Enriched so `z-ui list` can print a useful table from one request
+      // rather than fetching every item to learn its spring.
+      items: index.items.map((i) => {
+        const full = byName[i.name]
+        return full
+          ? { ...i, title: full.title, description: full.description, spring: full.spring, states: full.states }
+          : i
+      }),
+    },
     null,
     2,
   ) + '\n',

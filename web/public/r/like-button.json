@@ -30,6 +30,9 @@
       "liked-hover",
       "liked-pressing"
     ],
-    "spring": "bounce"
+    "spring": "bounce",
+    "digests": {
+      "like-button.tsx": "b63c3c0194ed"
+    }
   }
 }

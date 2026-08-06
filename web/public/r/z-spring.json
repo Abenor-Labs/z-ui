@@ -19,6 +19,9 @@
   "meta": {
     "category": "primitive",
     "states": null,
-    "spring": null
+    "spring": null,
+    "digests": {
+      "z-spring.ts": "8036154529ed"
+    }
   }
 }

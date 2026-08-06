@@ -20,6 +20,9 @@
   "meta": {
     "category": "primitive",
     "states": null,
-    "spring": null
+    "spring": null,
+    "digests": {
+      "z-cn.ts": "01832b4bf9ea"
+    }
   }
 }

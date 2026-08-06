@@ -17,6 +17,9 @@
   "meta": {
     "category": "primitive",
     "states": null,
-    "spring": null
+    "spring": null,
+    "digests": {
+      "use-controllable-state.ts": "1508d9ae5c2f"
+    }
   }
 }
