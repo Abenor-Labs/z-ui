@@ -20,3 +20,4 @@ from building or running rather than from review:
 | Spec | Covers | Status |
 | --- | --- | --- |
 | `2026-08-04-z-ui-foundation-design.md` | Registry schema, component contract, CLI, validation | in review ([#1](https://github.com/Abenor-Labs/z-ui/pull/1)) |
+| [`2026-08-05-operating-model.md`](2026-08-05-operating-model.md) | How work starts and lands, the gate ladder, build order to v1, the launch gate | in review |
