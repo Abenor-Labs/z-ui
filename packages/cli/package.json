@@ -1,0 +1,42 @@
+{
+  "name": "@abenor/z-ui",
+  "version": "0.1.0",
+  "description": "Install Z-UI micro-interaction components as source you own.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "z-ui": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "node --experimental-strip-types src/index.ts",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "react",
+    "motion",
+    "spring",
+    "micro-interactions",
+    "registry"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Abenor-Labs/z-ui.git",
+    "directory": "packages/cli"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^26.1.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "figlet": "^1.11.4"
+  }
+}

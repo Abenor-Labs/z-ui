@@ -36,3 +36,9 @@ Thumbs.db
 # local preview / browser tooling scratch
 .playwright-mcp/
 .preview/
+
+# Throwaway project for trying the CLI by hand.
+playground/
+
+# Critique snapshots are a local record, not shared state.
+.impeccable/

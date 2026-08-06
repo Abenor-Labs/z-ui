@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2022",
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": false,
+    "noEmit": false,
+    "types": ["node"],
+
+    // Source imports carry `.ts` extensions so `node src/index.ts` runs with no
+    // build step, which is what `pnpm dev` and the test suite rely on. These two
+    // let tsc accept those specifiers and rewrite them to `.js` on emit, so the
+    // published `dist/` is valid ESM.
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"]
+}
