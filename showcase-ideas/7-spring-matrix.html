@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 7 — Spring matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+header.top { padding: clamp(2.5rem,6vw,4rem) 0 1.5rem; }
+header.top h1 { font-size: clamp(1.7rem,4vw,2.4rem); letter-spacing: -.03em; font-weight: 600; }
+header.top p { margin-top: 10px; max-width: 62ch; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+.bar { display: flex; align-items: center; gap: 8px; padding: 12px 0; border-block: 1px solid var(--rule); flex-wrap: wrap; }
+.bar .fire { padding: 8px 18px; border-radius: 8px; background: var(--ink); color: var(--bg); font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.bar .fire:hover { background: #fff; }
+.bar button.tog { padding: 5px 11px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.bar button.tog[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,.08); }
+
+.matrix { overflow-x: auto; padding-block: 4px 90px; }
+table { border-collapse: collapse; min-width: 780px; width: 100%; }
+th, td { border: 1px solid var(--hair); }
+thead th { padding: 12px 14px; background: var(--surface); text-align: left; }
+thead th .s { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink); }
+thead th .p { display: block; margin-top: 4px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+thead th:first-child { background: var(--bg); border-top-color: transparent; border-left-color: transparent; }
+tbody th { padding: 14px; text-align: left; background: var(--surface); vertical-align: middle; white-space: nowrap; }
+tbody th .n { font-size: 14px; font-weight: 500; }
+tbody th .k { display: block; margin-top: 3px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+td { padding: 0; }
+td .cell { display: grid; place-items: center; min-height: 118px; padding: 16px 10px; transition: background .18s; }
+td:hover .cell { background: rgba(99,102,241,.06); }
+td.own { position: relative; background: rgba(99,102,241,.05); }
+td.own::after { content: 'ships with this'; position: absolute; left: 8px; bottom: 6px; font-family: var(--mono); font-size: 9px; letter-spacing: .06em; color: var(--accent); opacity: .8; }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 7</b><span>Spring matrix — every component × every preset, fired together</span>
+  <nav><a href="3-spec-sheet.html">3</a><a href="5-oscilloscope.html">5</a><a href="6-drill-down.html">6</a><a href="8-terminal.html">8</a></nav>
+</div></div>
+
+<div class="wrap">
+  <header class="top">
+    <span class="lbl">comparison</span>
+    <h1>The same component, four ways.</h1>
+    <p>Reading that <span style="color:var(--ink)">bounce</span> has a damping ratio of 0.35
+       conveys nothing. Firing the same component across all four presets at once conveys all
+       of it. The highlighted cell in each row is the preset the registry actually ships —
+       this is the page that shows why that choice was made rather than asserting it.</p>
+  </header>
+
+  <div class="bar">
+    <button class="fire" id="fireAll">▶ Fire the whole matrix</button>
+    <button class="tog" id="row">fire one row at a time</button>
+    <span style="margin-left:auto"></span>
+    <button class="tog" id="slow" aria-pressed="false">0.25×</button>
+  </div>
+
+  <div class="matrix">
+    <table>
+      <thead><tr id="head"><th></th></tr></thead>
+      <tbody id="body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+import { DEMOS, SPEED } from './_core.js'
+
+const PRESETS = ['snap', 'bounce', 'settle', 'fling']
+const K = { snap: [500, 40], bounce: [400, 14], settle: [260, 24], fling: [300, 30] }
+const zetaOf = (n) => (K[n][1] / (2 * Math.sqrt(K[n][0]))).toFixed(2)
+
+const head = document.getElementById('head')
+for (const p of PRESETS) {
+  const th = document.createElement('th')
+  th.innerHTML = `<span class="s">${p}</span><span class="p">ζ ${zetaOf(p)}</span>`
+  head.append(th)
+}
+
+const grid = []
+const body = document.getElementById('body')
+
+Object.entries(DEMOS).forEach(([k, d]) => {
+  const tr = document.createElement('tr')
+  tr.innerHTML = `<th><span class="n">${d.title}</span><span class="k">${k}</span></th>`
+  const line = []
+  for (const p of PRESETS) {
+    const td = document.createElement('td')
+    if (p === d.spring) td.className = 'own'
+    td.innerHTML = `<div class="cell"><div class="mount"></div></div>`
+    tr.append(td)
+    const api = d.build(td.querySelector('.mount'), { size: 24, label: 'Hold' })
+    api.spring(p)
+    line.push(api)
+  }
+  body.append(tr)
+  grid.push(line)
+})
+
+/* Fired together, not staggered: the whole point is that four traces leave at
+   the same instant and arrive at different times. */
+const fireAll = () => grid.flat().forEach((a) => a.fire())
+const fireByRow = () => grid.forEach((row, i) => setTimeout(() => row.forEach((a) => a.fire()), i * 520))
+
+let rowMode = false
+document.getElementById('fireAll').onclick = () => (rowMode ? fireByRow() : fireAll())
+document.getElementById('row').onclick = function () {
+  rowMode = !rowMode
+  this.setAttribute('aria-pressed', String(rowMode))
+}
+document.getElementById('slow').onclick = function () {
+  const on = this.getAttribute('aria-pressed') === 'true'
+  SPEED.value = on ? 1 : 0.25
+  this.setAttribute('aria-pressed', String(!on))
+}
+</script>
+</body>
+</html>

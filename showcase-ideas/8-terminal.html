@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 8 — Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+.term { max-width: 62rem; margin-inline: auto; padding: 24px clamp(1rem,4vw,2rem) 40px; }
+.win { border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; background: #0c0c0f; }
+.win-top { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--hair); background: var(--surface); }
+.win-top i { width: 9px; height: 9px; border-radius: 99px; background: rgba(255,255,255,.14); display: block; }
+.win-top span { margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.win-top .hint { margin-left: auto; }
+
+.out { padding: 16px 18px; height: min(66vh, 620px); overflow-y: auto; font-family: var(--mono); font-size: 13px; line-height: 1.75; }
+.out::-webkit-scrollbar { width: 10px }
+.out::-webkit-scrollbar-thumb { background: #26262b; border-radius: 99px }
+
+.ln { white-space: pre-wrap; }
+.ln.cmd { color: var(--ink); }
+.ln.cmd .p { color: var(--accent); }
+.ln.dim { color: var(--muted); }
+.ln.err { color: #ff8a7a; }
+.ln.ok { color: #6ee7a8; }
+.ln a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+.card { margin: 10px 0 16px; border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; background: var(--panel); }
+.card .stage { display: grid; place-items: center; min-height: 130px; padding: 22px;
+  background: radial-gradient(70% 70% at 50% 40%, rgba(99,102,241,.10), transparent 70%); }
+.card .foot { display: flex; gap: 14px; flex-wrap: wrap; padding: 9px 14px; border-top: 1px solid var(--hair); background: var(--surface); font-size: 11px; color: var(--muted); }
+
+table.ls { border-collapse: collapse; margin: 4px 0 10px; }
+table.ls td { padding: 2px 22px 2px 0; font-size: 13px; color: var(--muted); }
+table.ls td.k { color: var(--ink); }
+table.ls td.k a { color: var(--ink); text-decoration: none; }
+table.ls tr:hover td { color: var(--ink); }
+
+.prompt { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--hair); background: #0a0a0d; }
+.prompt span { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.prompt input { flex: 1; min-width: 0; background: none; border: 0; outline: none; font-family: var(--mono); font-size: 13px; color: var(--ink); }
+.prompt input::placeholder { color: #3f3f46; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.chips button { padding: 5px 11px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--surface); }
+.chips button:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 8</b><span>Terminal — browse the registry by typing. Components render as command output</span>
+  <nav><a href="3-spec-sheet.html">3</a><a href="5-oscilloscope.html">5</a><a href="6-drill-down.html">6</a><a href="7-spring-matrix.html">7</a></nav>
+</div></div>
+
+<div class="term">
+  <div class="win">
+    <div class="win-top">
+      <i></i><i></i><i></i><span>z-ui — registry shell</span>
+      <span class="hint">try: ls · show scrub · spring bounce · fire</span>
+    </div>
+    <div class="out" id="out"></div>
+    <label class="prompt">
+      <span>❯</span>
+      <input id="in" autocomplete="off" spellcheck="false" placeholder="type a command, or ? for help" aria-label="Command">
+    </label>
+  </div>
+
+  <div class="chips" id="chips"></div>
+</div>
+
+<script type="module">
+import { DEMOS } from './_core.js'
+
+const out = document.getElementById('out')
+const input = document.getElementById('in')
+const keys = Object.keys(DEMOS)
+let lastShown = null
+
+const write = (text, cls = 'dim') => {
+  const d = document.createElement('div')
+  d.className = `ln ${cls}`
+  d.innerHTML = text
+  out.append(d)
+  out.scrollTop = out.scrollHeight
+  return d
+}
+const echo = (cmd) => write(`<span class="p">❯</span> ${cmd}`, 'cmd')
+
+function renderComponent(key) {
+  const d = DEMOS[key]
+  const card = document.createElement('div')
+  card.className = 'card'
+  card.innerHTML = `<div class="stage"><div class="mount"></div></div>
+    <div class="foot"><span>${d.cat}</span><span>spring · ${d.spring}</span><span>${d.states} states</span><span>${d.kb}</span></div>`
+  out.append(card)
+  const api = d.build(card.querySelector('.mount'), { size: 30, label: 'Hold' })
+  out.scrollTop = out.scrollHeight
+  lastShown = { key, api }
+  return api
+}
+
+const COMMANDS = {
+  '?': () => {
+    write('commands', 'ok')
+    write(
+      [
+        '  ls                 list every component in the registry',
+        '  show &lt;name&gt;        render a component here, live',
+        '  spring &lt;preset&gt;    restyle the last shown component',
+        '                     snap · bounce · settle · fling',
+        '  fire               replay the last shown component',
+        '  add &lt;name&gt;         copy its install command',
+        '  clear              wipe the scrollback',
+      ].join('\n'),
+    )
+  },
+  help: () => COMMANDS['?'](),
+  ls: () => {
+    const t = document.createElement('table')
+    t.className = 'ls'
+    t.innerHTML = keys
+      .map(
+        (k) =>
+          `<tr><td class="k"><a data-run="show ${k}">${k}</a></td><td>${DEMOS[k].spring}</td><td>${DEMOS[k].states} states</td><td>${DEMOS[k].kb}</td><td>${DEMOS[k].line}</td></tr>`,
+      )
+      .join('')
+    out.append(t)
+    write(`${keys.length} components · <a data-run="show ${keys[0]}">show one</a>`, 'dim')
+  },
+  show: (arg) => {
+    if (!arg) return write('show what? try: show scrub', 'err')
+    const key = keys.find((k) => k === arg || k.startsWith(arg))
+    if (!key) return write(`no component named “${arg}”. try ls`, 'err')
+    write(`${DEMOS[key].title} — ${DEMOS[key].why}`, 'ok')
+    renderComponent(key)
+    write('interact with it above. <a data-run="fire">fire</a> to replay, <a data-run="spring bounce">spring bounce</a> to restyle.', 'dim')
+  },
+  spring: (arg) => {
+    if (!lastShown) return write('nothing shown yet. try: show like-button', 'err')
+    if (!['snap', 'bounce', 'settle', 'fling'].includes(arg))
+      return write(`unknown preset “${arg}”. one of snap, bounce, settle, fling`, 'err')
+    lastShown.api.spring(arg)
+    lastShown.api.fire()
+    write(`${lastShown.key} now running on ${arg}`, 'ok')
+  },
+  fire: () => {
+    if (!lastShown) return write('nothing shown yet. try: show scrub', 'err')
+    lastShown.api.fire()
+  },
+  add: (arg) => {
+    const key = keys.find((k) => k === arg || k.startsWith(arg)) ?? lastShown?.key
+    if (!key) return write('add what? try: add like-button', 'err')
+    const cmd = `npx @abenor/z-ui add ${key}`
+    navigator.clipboard?.writeText(cmd).catch(() => {})
+    write(`copied · ${cmd}`, 'ok')
+  },
+  clear: () => (out.innerHTML = ''),
+}
+
+function run(line) {
+  const [c, ...rest] = line.trim().split(/\s+/)
+  if (!c) return
+  echo(line)
+  const fn = COMMANDS[c]
+  if (!fn) return write(`command not found: ${c} — type ? for help`, 'err')
+  fn(rest.join(' '))
+}
+
+input.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return
+  run(input.value)
+  input.value = ''
+})
+
+// Anything with data-run is a clickable command, so the terminal is browsable
+// by pointer as well as by keyboard.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-run]')
+  if (!a) return
+  run(a.dataset.run)
+  input.focus()
+})
+
+const chips = document.getElementById('chips')
+;['ls', 'show like-button', 'show scrub', 'spring bounce', 'fire', '?'].forEach((c) => {
+  const b = document.createElement('button')
+  b.textContent = c
+  b.dataset.run = c
+  chips.append(b)
+})
+
+write('z-ui registry shell · 4 components loaded', 'ok')
+write('type <a data-run="ls">ls</a> to list them, or <a data-run="?">?</a> for help.', 'dim')
+run('ls')
+input.focus()
+</script>
+</body>
+</html>

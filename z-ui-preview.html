@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Z-UI | Physics-Driven Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Tokens — lifted verbatim from the Stitch tailwind.config.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#09090B;
+  --surface:#131315;
+  --surface-lowest:#0e0e10;
+  --card:#18181B;
+  --card-2:#27272A;
+  --on-surface:#e5e1e4;
+  --muted:#A1A1AA;
+  --indigo:#6366F1;
+  --indigo-deep:#4f46e5;
+  --primary:#adc6ff;
+  --ghost:rgba(255,255,255,.1);
+  --hair:rgba(255,255,255,.05);
+
+  --f-display:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+  --gutter:24px;
+  --margin:16px;
+  --container:1280px;
+  --r:.125rem; --r-lg:.25rem; --r-xl:.5rem; --r-full:.75rem;
+}
+@media(min-width:768px){:root{--margin:64px}}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--bg);color-scheme:dark;-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--on-surface);font-family:var(--f-display);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+canvas{display:block}
+::selection{background:var(--indigo);color:#fff}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:3px;border-radius:var(--r-lg)}
+svg{display:block;flex:none}
+
+/* ── type scale ── */
+.t-xl{font-size:clamp(2rem,7vw,48px);line-height:1.16;letter-spacing:-.04em;font-weight:700}
+.t-lg{font-size:24px;line-height:32px;font-weight:600;letter-spacing:-.01em}
+@media(min-width:768px){.t-lg{font-size:32px;line-height:40px;letter-spacing:-.02em}}
+.t-body{font-size:16px;line-height:24px;font-weight:400}
+.t-code{font-family:var(--f-mono);font-size:14px;line-height:20px;font-weight:400}
+.t-caps{font-family:var(--f-mono);font-size:12px;line-height:16px;letter-spacing:.05em;font-weight:600}
+.t-kb{font-family:var(--f-mono);font-size:11px;line-height:12px;font-weight:500}
+.muted{color:var(--muted)}
+
+.wrap{max-width:var(--container);margin-inline:auto;padding-inline:var(--margin);width:100%}
+.ghost{border:1px solid var(--ghost)}
+
+/* ── nav ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;border-bottom:1px solid var(--ghost);
+  background:rgba(9,9,11,.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{font-family:var(--f-mono);font-size:16px;font-weight:700;letter-spacing:-.05em}
+.navlinks{display:none;align-items:center;gap:32px}
+@media(min-width:768px){.navlinks{display:flex}}
+.navlinks a{color:var(--muted);transition:color .2s}
+.navlinks a:hover{color:var(--indigo)}
+.btn-white{display:none;align-items:center;gap:8px;background:#fff;color:#000;
+  padding:8px 16px;border-radius:var(--r-lg)}
+@media(min-width:768px){.btn-white{display:inline-flex}}
+.btn-white:hover{background:#e4e4e7}
+.menu-btn{display:grid;place-items:center;width:40px;height:40px;margin-right:-8px}
+@media(min-width:768px){.menu-btn{display:none}}
+.mobile-menu{display:none;flex-direction:column;gap:4px;padding:8px var(--margin) 20px;
+  border-top:1px solid var(--hair)}
+.mobile-menu.open{display:flex}
+.mobile-menu a,.mobile-menu button{padding:12px 0;color:var(--muted);text-align:left}
+
+main{position:relative;width:100%;padding-top:64px;overflow:hidden}
+
+/* ── 1. hero ── */
+.hero{position:relative;display:flex;align-items:center;justify-content:center;
+  min-height:clamp(600px,calc(100svh - 64px),921px);padding-block:64px;
+  border-bottom:1px solid var(--hair)}
+#shader{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.4;pointer-events:none}
+.hero .wrap{position:relative;z-index:10;display:grid;grid-template-columns:1fr;
+  gap:var(--gutter);align-items:center}
+@media(min-width:1024px){.hero .wrap{grid-template-columns:1fr 1fr}}
+.hero-copy{display:flex;flex-direction:column;gap:24px}
+.hero-copy p{max-width:32rem}
+.cta{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+@media(min-width:640px){.cta{flex-direction:row}}
+.cta-primary{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  background:#fff;color:#000;padding:12px 24px;border-radius:var(--r-lg)}
+.cta-primary svg{opacity:.7;transition:opacity .2s}
+.cta-primary:hover svg{opacity:1}
+.cta-ghost{display:flex;align-items:center;justify-content:center;padding:12px 24px;
+  border-radius:var(--r-lg);border:1px solid var(--ghost);
+  transition:border-color .2s,box-shadow .2s}
+.cta-ghost:hover{border-color:var(--indigo);box-shadow:0 0 12px 2px rgba(99,102,241,.2)}
+
+.scene{display:none;position:relative;height:500px;width:100%;border-radius:var(--r-xl);
+  border:1px solid var(--ghost);background:var(--card);overflow:hidden}
+@media(min-width:1024px){.scene{display:block}}
+#helix{position:absolute;inset:0;width:100%;height:100%}
+.badge{position:absolute;top:16px;left:16px;z-index:20;padding:4px 8px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:var(--r-lg);color:#fff}
+.hint{position:absolute;bottom:16px;right:16px;z-index:20;display:flex;align-items:center;gap:8px;
+  color:var(--muted);background:rgba(0,0,0,.5);backdrop-filter:blur(6px);
+  padding:4px 12px;border-radius:var(--r-lg)}
+
+/* ── 2. tech bar ── */
+.tech{padding-block:48px;border-bottom:1px solid var(--hair);background:var(--surface-lowest)}
+.tech p{text-align:center;margin-bottom:24px}
+.tech .row{display:flex;flex-wrap:wrap;justify-content:center;gap:24px 48px;opacity:.6}
+.tech .row div{display:flex;align-items:center;gap:8px}
+
+/* ── 3. primitives grid ── */
+.primitives{padding-block:96px}
+.primitives header{margin-bottom:48px}
+.primitives header h2{margin-bottom:8px}
+.grid{display:grid;grid-template-columns:1fr;gap:var(--gutter)}
+@media(min-width:768px){.grid{grid-template-columns:1fr 1fr}}
+
+.pcard{display:flex;flex-direction:column;height:320px;overflow:hidden;
+  background:var(--card);border:1px solid var(--ghost);border-radius:var(--r-xl);
+  transition:border-color .2s,box-shadow .2s}
+.pcard:hover{border-color:var(--indigo);box-shadow:0 0 12px 2px rgba(99,102,241,.2)}
+.stage{position:relative;flex:1;display:grid;place-items:center;padding:32px;overflow:hidden;
+  background:linear-gradient(to bottom right,rgba(255,255,255,.05),transparent);
+  touch-action:none}
+.pfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px;border-top:1px solid var(--hair);background:var(--surface)}
+.kb{display:inline-block;margin-top:4px;padding:1px 8px;background:rgba(255,255,255,.1);
+  border-radius:var(--r-lg);color:var(--muted)}
+.code-btn{display:grid;place-items:center;width:40px;height:40px;margin:-8px;
+  color:var(--muted);transition:color .2s}
+.code-btn:hover{color:#fff}
+.code-btn.done{color:var(--indigo)}
+
+/* demo 1 — command palette */
+.cmdbar{display:flex;align-items:center;gap:12px;width:min(16rem,100%);height:64px;padding:0 16px;
+  background:var(--card-2);border:1px solid var(--ghost);border-radius:var(--r-full);
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.6);cursor:pointer;will-change:transform}
+.cmdbar .kbs{margin-left:auto;display:flex;gap:4px}
+.cmdbar .kbs span{padding:2px 6px;background:rgba(0,0,0,.4);border:1px solid var(--hair);
+  border-radius:var(--r-lg);color:var(--muted)}
+
+/* the real palette */
+.scrim{position:fixed;inset:0;z-index:100;display:grid;place-items:start center;
+  padding-top:14vh;background:rgba(9,9,11,.6);backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);visibility:hidden}
+.scrim.on{visibility:visible}
+.palette{width:min(34rem,calc(100vw - 32px));background:var(--card-2);
+  border:1px solid var(--ghost);border-radius:var(--r-full);overflow:hidden;
+  box-shadow:0 32px 64px -12px rgba(0,0,0,.8);will-change:transform,opacity}
+.palette .top{display:flex;align-items:center;gap:12px;padding:16px;
+  border-bottom:1px solid var(--hair)}
+.palette input{flex:1;min-width:0;background:none;border:0;outline:none;
+  font-family:var(--f-mono);font-size:14px;color:var(--on-surface)}
+.palette input::placeholder{color:var(--muted)}
+.palette ul{list-style:none;max-height:16rem;overflow-y:auto;padding:8px}
+.palette li{display:flex;align-items:center;gap:12px;padding:10px 12px;
+  border-radius:var(--r-lg);color:var(--muted);cursor:pointer}
+.palette li[aria-selected=true]{background:rgba(99,102,241,.15);color:var(--on-surface)}
+.palette li .sl{margin-left:auto;font-family:var(--f-mono);font-size:11px;opacity:.7}
+.palette .empty{padding:24px 12px;text-align:center;color:var(--muted)}
+
+/* demo 2 — toast */
+.toast{display:flex;align-items:flex-start;gap:12px;width:14rem;padding:16px;
+  background:var(--card-2);border:1px solid var(--ghost);border-radius:var(--r-full);
+  box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;will-change:transform,opacity}
+.toast .ttl{font-size:14px;font-weight:600;line-height:1.2}
+.toast .sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.3}
+.fire{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;color:var(--muted);
+  padding:4px 10px;border:1px solid var(--hair);border-radius:var(--r-lg)}
+.fire:hover{color:var(--on-surface);border-color:var(--ghost)}
+
+/* demo 3 — draggable */
+.drag{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:8rem;height:10rem;background:var(--card-2);border:1px solid var(--ghost);
+  border-radius:var(--r-full);box-shadow:0 10px 15px -3px rgba(0,0,0,.4);
+  cursor:grab;touch-action:none;will-change:transform}
+.drag:active{cursor:grabbing}
+.drag .knob{display:grid;place-items:center;width:48px;height:48px;margin-bottom:16px;
+  background:rgba(255,255,255,.05);border-radius:99px;color:var(--muted)}
+
+/* demo 4 — morph */
+.morph{display:flex;align-items:center;justify-content:center;gap:8px;
+  width:8rem;height:4rem;background:var(--indigo);color:#fff;
+  border-radius:var(--r-xl);box-shadow:0 0 20px rgba(99,102,241,.3);
+  will-change:transform,border-radius}
+
+/* ── footer ── */
+footer{position:relative;z-index:10;background:var(--surface-lowest);border-top:1px solid var(--hair)}
+footer .wrap{display:grid;grid-template-columns:1fr 1fr;gap:var(--gutter);padding-block:48px}
+@media(min-width:768px){footer .wrap{grid-template-columns:repeat(4,1fr)}}
+.fbrand{grid-column:span 2;display:flex;flex-direction:column;gap:16px}
+@media(min-width:768px){.fbrand{grid-column:span 1}}
+.flinks{grid-column:span 2;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-start}
+@media(min-width:768px){.flinks{grid-column:span 3;justify-content:flex-end}}
+.flinks a{color:var(--muted);text-underline-offset:4px}
+.flinks a:hover{color:var(--on-surface);text-decoration:underline}
+
+@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand">Z-UI</a>
+    <div class="navlinks t-caps">
+      <a href="#components">Components</a>
+      <a href="#docs">Docs</a>
+      <a href="#github">GitHub</a>
+    </div>
+    <button class="btn-white t-caps" data-copy="npx @abenor/z-ui init">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span>Copy CLI</span>
+    </button>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mobileMenu" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+  <div class="mobile-menu t-caps" id="mobileMenu">
+    <a href="#components">Components</a>
+    <a href="#docs">Docs</a>
+    <a href="#github">GitHub</a>
+    <button data-copy="npx @abenor/z-ui init">Copy CLI</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- 1. hero -->
+  <section class="hero">
+    <canvas id="shader" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1 class="t-xl">Physics-Driven UI Architecture.</h1>
+        <p class="t-body muted">
+          Engineered kinetic components for React. Zero-dependency spring physics and WebGL
+          micro-interactions designed for maximum performance.
+        </p>
+        <div class="cta">
+          <button class="cta-primary t-code" data-copy="npx @abenor/z-ui init">
+            <span>npx @abenor/z-ui init</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <a href="#components" class="cta-ghost t-caps">Explore Primitives</a>
+        </div>
+      </div>
+
+      <div class="scene">
+        <span class="badge t-kb">LIVE PHYSICS</span>
+        <canvas id="helix" aria-label="A rotating spring coil that follows the pointer" role="img"></canvas>
+        <span class="hint t-code">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 11V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 11V6.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5.2-3l-2.2-3.8a1.5 1.5 0 0 1 2.6-1.5L9 15"/></svg>
+          Interactive
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. tech bar -->
+  <section class="tech">
+    <div class="wrap">
+      <p class="t-caps muted">BUILT ON MODERN PRIMITIVES</p>
+      <div class="row t-code">
+        <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 17-6-5 6-5"/><path d="m16 7 6 5-6 5"/></svg> React</div>
+        <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 14c4-9 8 5 12-4"/><circle cx="19" cy="8" r="2.5"/></svg> Motion</div>
+        <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-4 0-5.5 2-6 5 1.5-2 3.2-1.5 4.5-.5S13 10 16 10c4 0 5.5-2 6-5-1.5 2-3.2 1.5-4.5.5S15 3 12 3Z"/><path d="M6 12c-4 0-5.5 2-6 5 1.5-2 3.2-1.5 4.5-.5S7 19 10 19c4 0 5.5-2 6-5-1.5 2-3.2 1.5-4.5.5S9 12 6 12Z"/></svg> Tailwind CSS</div>
+        <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 17 6-5-6-5"/><path d="M12 19h8"/></svg> TypeScript</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. primitives -->
+  <section class="primitives wrap" id="components">
+    <header>
+      <h2 class="t-lg">High-Impact Primitives</h2>
+      <p class="t-body muted">Advanced interactive components built on custom spring physics.</p>
+    </header>
+
+    <div class="grid">
+
+      <!-- 1 · magnetic command palette -->
+      <div class="pcard">
+        <div class="stage" id="s_cmd">
+          <div class="cmdbar" id="cmdbar" role="button" tabindex="0"
+               aria-label="Open command palette" aria-haspopup="dialog">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="muted" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></svg>
+            <span class="t-code muted">Type a command…</span>
+            <span class="kbs t-kb"><span>⌘</span><span>K</span></span>
+          </div>
+        </div>
+        <div class="pfoot">
+          <div>
+            <p class="t-caps">Magnetic Command Palette</p>
+            <span class="kb t-kb">2.1kb</span>
+          </div>
+          <button class="code-btn" data-copy="npx @abenor/z-ui add command-palette" aria-label="Copy install command">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 17-6-5 6-5"/><path d="m16 7 6 5-6 5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2 · spring-physics toast -->
+      <div class="pcard">
+        <div class="stage" id="s_toast">
+          <div class="toast" id="toast" role="status">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.8 2.8L16 9.5"/></svg>
+            <div>
+              <p class="ttl">Deployment Successful</p>
+              <p class="sub">Your changes are now live.</p>
+            </div>
+          </div>
+          <button class="fire" id="fireToast">Fire toast</button>
+        </div>
+        <div class="pfoot">
+          <div>
+            <p class="t-caps">Spring-Physics Toast</p>
+            <span class="kb t-kb">1.5kb</span>
+          </div>
+          <button class="code-btn" data-copy="npx @abenor/z-ui add toast" aria-label="Copy install command">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 17-6-5 6-5"/><path d="m16 7 6 5-6 5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 · elastic draggable -->
+      <div class="pcard">
+        <div class="stage" id="s_drag">
+          <div class="drag" id="drag" role="button" tabindex="0" aria-label="Drag me, or nudge with arrow keys">
+            <span class="knob">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+            </span>
+            <span class="t-caps muted">Drag Me</span>
+          </div>
+        </div>
+        <div class="pfoot">
+          <div>
+            <p class="t-caps">Elastic Draggable</p>
+            <span class="kb t-kb">1.8kb</span>
+          </div>
+          <button class="code-btn" data-copy="npx @abenor/z-ui add draggable" aria-label="Copy install command">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 17-6-5 6-5"/><path d="m16 7 6 5-6 5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 · fluid morphing button -->
+      <div class="pcard">
+        <div class="stage" id="s_morph">
+          <button class="morph t-body" id="morph">
+            <span>Morph</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.7c3.4 4 6 7 6 10.3a6 6 0 0 1-12 0c0-3.3 2.6-6.3 6-10.3Z"/></svg>
+          </button>
+        </div>
+        <div class="pfoot">
+          <div>
+            <p class="t-caps">Fluid Morphing Button</p>
+            <span class="kb t-kb">1.1kb</span>
+          </div>
+          <button class="code-btn" data-copy="npx @abenor/z-ui add morph-button" aria-label="Copy install command">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 17-6-5 6-5"/><path d="m16 7 6 5-6 5"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fbrand">
+      <span class="t-lg">Z-UI</span>
+      <p class="t-body muted">MIT License © 2026 Abenor Labs</p>
+    </div>
+    <div class="flinks t-caps">
+      <a href="#">Changelog</a>
+      <a href="#">Community</a>
+      <a href="#">Discord</a>
+      <a href="#">Security</a>
+      <a href="#">Status</a>
+    </div>
+  </div>
+</footer>
+
+<!-- the real palette, spring-driven -->
+<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+  <div class="palette" id="palette">
+    <div class="top">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></svg>
+      <input id="pq" placeholder="Type a command…" aria-label="Command" autocomplete="off" spellcheck="false">
+      <span class="t-kb muted">ESC</span>
+    </div>
+    <ul id="plist" role="listbox" aria-label="Commands"></ul>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════
+   The spring engine. One integrator, one rAF loop, every motion on
+   this page derived from it — including the ones Stitch drew as CSS
+   keyframes. A physics library whose demos are fake transitions is
+   an advertisement for the wrong thing.
+   ═══════════════════════════════════════════════════════════════════ */
+const PRESET = {
+  snap  : {k:520, c:44, m:1},
+  bounce: {k:400, c:14, m:1},
+  settle: {k:260, c:24, m:1},
+  fling : {k:300, c:30, m:1},
+  drift : {k:140, c:20, m:1},
+};
+const mqReduce = matchMedia('(prefers-reduced-motion: reduce)');
+const reduced = () => mqReduce.matches;
+
+const live = new Set();
+let looping = false, last = 0;
+function frame(t){
+  const dt = Math.min(0.05, (t - last) / 1000);
+  last = t;
+  for (const s of live) s.step(dt);
+  if (live.size) requestAnimationFrame(frame); else looping = false;
+}
+function kick(){
+  if (looping) return;
+  looping = true; last = performance.now();
+  requestAnimationFrame(frame);
+}
+
+class Spring {
+  constructor(v, preset, onChange){
+    this.x = v; this.v = 0; this.target = v;
+    this.p = preset; this.cb = onChange; this.active = false;
+  }
+  to(t){
+    this.target = t;
+    if (reduced()){ this.x = t; this.v = 0; this.stop(); this.cb(this.x, false); return; }
+    if (!this.active){ this.active = true; live.add(this); kick(); }
+  }
+  /* Hand the spring a velocity so a release carries the gesture. */
+  push(v){ this.v = v; if (!this.active && !reduced()){ this.active = true; live.add(this); kick(); } }
+  set(t){ this.x = this.target = t; this.v = 0; this.stop(); this.cb(this.x, false); }
+  stop(){ this.active = false; live.delete(this); }
+  step(dt){
+    const {k, c, m} = PRESET[this.p];
+    const n = Math.max(1, Math.ceil(dt / 0.002)), h = dt / n;
+    for (let i = 0; i < n; i++){
+      const a = (-k * (this.x - this.target) - c * this.v) / m;
+      this.v += a * h; this.x += this.v * h;
+    }
+    if (Math.abs(this.x - this.target) < 0.0008 && Math.abs(this.v) < 0.008){
+      this.x = this.target; this.v = 0; this.stop(); this.cb(this.x, false); return;
+    }
+    this.cb(this.x, true);
+  }
+}
+
+/* ─── copy-to-clipboard, shared by every [data-copy] ─────────────── */
+document.querySelectorAll('[data-copy]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(btn.dataset.copy); } catch { /* denied */ }
+    const label = btn.querySelector('span:last-child');
+    if (btn.classList.contains('code-btn')){
+      btn.classList.add('done');
+      setTimeout(() => btn.classList.remove('done'), 1200);
+    } else if (label){
+      const was = label.textContent;
+      label.textContent = 'Copied';
+      setTimeout(() => { label.textContent = was; }, 1400);
+    }
+  });
+});
+
+/* ─── mobile menu ────────────────────────────────────────────────── */
+const menuBtn = document.getElementById('menuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+menuBtn.addEventListener('click', () => {
+  const open = mobileMenu.classList.toggle('open');
+  menuBtn.setAttribute('aria-expanded', String(open));
+});
+mobileMenu.addEventListener('click', e => {
+  if (e.target.closest('a')){
+    mobileMenu.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   Hero background — the Stitch fragment shader, unchanged.
+   Added: reduced-motion freeze and a visibility pause, so a shader
+   nobody is looking at stops burning the GPU.
+   ═══════════════════════════════════════════════════════════════════ */
+(function shaderBg(){
+  const canvas = document.getElementById('shader');
+  const gl = canvas.getContext('webgl', {antialias:false, depth:false})
+          || canvas.getContext('experimental-webgl');
+  if (!gl){ canvas.style.background = 'radial-gradient(60% 60% at 40% 40%,#141830,#0d0d10)'; return; }
+
+  const VS = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main(){ v_texCoord = a_position * 0.5 + 0.5; gl_Position = vec4(a_position, 0.0, 1.0); }`;
+
+  const FS = `precision highp float;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+varying vec2 v_texCoord;
+
+void main(){
+    vec2 uv = v_texCoord;
+    vec2 mouse = u_mouse / u_resolution;
+
+    float t = u_time * 0.5;
+    vec2 p1 = vec2(0.5 + 0.3 * cos(t), 0.5 + 0.3 * sin(t));
+
+    float d1 = distance(uv, p1);
+    float d3 = distance(uv, mouse);
+
+    vec3 color = vec3(0.05, 0.05, 0.06);
+
+    float glow1 = smoothstep(0.6, 0.0, d1);
+    color += glow1 * vec3(0.23, 0.51, 0.96) * 0.15;
+
+    float mouseGlow = smoothstep(0.3, 0.0, d3);
+    color += mouseGlow * vec3(0.48, 0.45, 0.98) * 0.2;
+
+    float noise = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+    color += noise * 0.015;
+
+    gl_FragColor = vec4(color, 1.0);
+}`;
+
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) return null;
+    return s;
+  }
+  const vs = compile(gl.VERTEX_SHADER, VS), fs = compile(gl.FRAGMENT_SHADER, FS);
+  if (!vs || !fs) return;
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+  const uTime  = gl.getUniformLocation(prog, 'u_time');
+  const uRes   = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  /* Half-res buffer: the shader is a soft gradient, so nobody can tell,
+     and it costs a quarter of the fill. */
+  function sync(){
+    const w = Math.max(1, Math.round(canvas.clientWidth  * 0.5));
+    const h = Math.max(1, Math.round(canvas.clientHeight * 0.5));
+    if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
+  }
+  new ResizeObserver(sync).observe(canvas);
+  sync();
+
+  const mouse = {x: 0.5, y: 0.5};
+  addEventListener('pointermove', e => {
+    const r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    mouse.x = (e.clientX - r.left) / r.width;
+    mouse.y = 1 - (e.clientY - r.top) / r.height;
+  }, {passive:true});
+
+  let visible = true, raf = 0;
+  new IntersectionObserver(([e]) => {
+    visible = e.isIntersecting;
+    if (visible && !raf && !reduced()) raf = requestAnimationFrame(render);
+  }).observe(canvas);
+
+  function draw(ms){
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform1f(uTime, ms * 0.001);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform2f(uMouse, mouse.x * canvas.width, mouse.y * canvas.height);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  function render(ms){
+    raf = 0;
+    draw(ms);
+    if (visible && !document.hidden && !reduced()) raf = requestAnimationFrame(render);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && visible && !raf && !reduced()) raf = requestAnimationFrame(render);
+  });
+  mqReduce.addEventListener('change', () => {
+    if (reduced()){ cancelAnimationFrame(raf); raf = 0; draw(0); }
+    else if (!raf) raf = requestAnimationFrame(render);
+  });
+  if (reduced()) draw(0); else raf = requestAnimationFrame(render);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   Hero scene — the spring coil.
+   Stitch shipped this as three.js r125 off a CDN: ~600kb to draw one
+   tube, and its inner IIFE looked up a container id that does not
+   exist on the page, so it threw before rendering a single frame.
+   This is the same coil in 2d canvas: helix samples, painter-ordered,
+   lambert-shaded off the same light position. No dependency.
+   ═══════════════════════════════════════════════════════════════════ */
+(function coil(){
+  const canvas = document.getElementById('helix');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  /* The export specified 2.1 turns spread over 13 units of height, which
+     projects to a flat sine wave — a ribbon, not a spring. Same helix,
+     tightened until the loops overlap and it reads as a coil. */
+  const R = 1.6;          // coil radius
+  const TUBE = 0.2;       // tube radius
+  const TURNS = 6;
+  const N = 420;          // centreline samples
+  const HEIGHT = 11;      // world height at rest
+  const CAM_Z = 10, FOV = 75;
+  const LIGHT = norm([10, 10, 10]);
+
+  /* y is stored as 0..1 so compression can scale the pitch every frame. */
+  const pts = [];
+  for (let i = 0; i < N; i++){
+    const u = i / (N - 1);
+    const t = u * TURNS * Math.PI * 2;
+    pts.push([Math.cos(t) * R, u - 0.5, Math.sin(t) * R, Math.cos(t), Math.sin(t)]);
+  }
+
+  function norm(v){
+    const l = Math.hypot(v[0], v[1], v[2]) || 1;
+    return [v[0]/l, v[1]/l, v[2]/l];
+  }
+
+  let dpr = 1, W = 0, H = 0, scale = 1, spin = 0;
+  function sync(){
+    dpr = Math.min(2, devicePixelRatio || 1);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    W = w; H = h;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    /* World height visible at the coil's depth, matching a 75° camera. */
+    const visible = 2 * CAM_Z * Math.tan((FOV * Math.PI / 180) / 2);
+    scale = h / visible;
+  }
+  /* Resizing reallocates the backing store, which clears it — repaint in
+     the same tick so the canvas is never caught blank. */
+  new ResizeObserver(() => { sync(); paint(spin); }).observe(canvas);
+  sync();
+
+  /* Tilt and compression run on the same springs as everything else, so
+     the coil settles instead of easing — that is the whole pitch. The
+     badge says LIVE PHYSICS, so press it and it had better compress. */
+  let tiltX = 0, tiltZ = 0, squash = 1;
+  const sx = new Spring(0, 'drift',  v => { tiltX = v; });
+  const sz = new Spring(0, 'drift',  v => { tiltZ = v; });
+  const sq = new Spring(1, 'bounce', v => { squash = v; });
+
+  addEventListener('pointermove', e => {
+    const r = canvas.getBoundingClientRect();
+    if (!r.width) return;
+    const mx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    const my = 1 - ((e.clientY - r.top) / r.height) * 2;
+    sx.to(Math.max(-1.4, Math.min(1.4, my)) * 0.3);
+    sz.to(Math.max(-1.4, Math.min(1.4, mx)) * 0.3);
+  }, {passive:true});
+
+  const scene = canvas.parentElement;
+  scene.addEventListener('pointerdown', () => sq.to(0.52));
+  scene.addEventListener('pointerup', () => sq.to(1));
+  scene.addEventListener('pointercancel', () => sq.to(1));
+  scene.addEventListener('pointerleave', () => sq.to(1));
+
+  const seg = [];
+  function project(spinY){
+    const cy = Math.cos(spinY), sy = Math.sin(spinY);
+    const cx = Math.cos(tiltX), sxv = Math.sin(tiltX);
+    const cz = Math.cos(tiltZ), szv = Math.sin(tiltZ);
+
+    const span = HEIGHT * squash;
+
+    for (let i = 0; i < N; i++){
+      const p = pts[i];
+      /* y-spin → x-tilt → z-tilt, mirroring the three.js rotation order */
+      let x = p[0] * cy + p[2] * sy;
+      let y = p[1] * span;
+      let z = -p[0] * sy + p[2] * cy;
+
+      let y2 = y * cx - z * sxv, z2 = y * sxv + z * cx;
+      let x3 = x * cz - y2 * szv, y3 = x * szv + y2 * cz;
+
+      /* Outward radial normal, carried through the same rotations. */
+      let nx = p[3] * cy + p[4] * sy;
+      let nz = -p[3] * sy + p[4] * cy;
+      let ny2 = -nz * sxv, nz2 = nz * cx;
+      let nx3 = nx * cz - ny2 * szv, ny3 = nx * szv + ny2 * cz;
+
+      const depth = CAM_Z - z2;
+      const k = CAM_Z / Math.max(0.1, depth);
+
+      const s = seg[i] || (seg[i] = {});
+      s.sx = W / 2 + x3 * k * scale;
+      s.sy = H / 2 - y3 * k * scale;
+      s.w  = Math.max(0.6, TUBE * 2 * k * scale);
+      s.z  = z2;
+      s.lam = Math.max(0, nx3 * LIGHT[0] + ny3 * LIGHT[1] + nz2 * LIGHT[2]);
+    }
+  }
+
+  const order = Array.from({length: N - 1}, (_, i) => i);
+
+  function paint(spinY){
+    project(spinY);
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = 'round';
+
+    /* Painter's algorithm: far segments first, so the coil occludes itself. */
+    order.sort((a, b) => (seg[a].z + seg[a+1].z) - (seg[b].z + seg[b+1].z));
+
+    /* Pass 1 — emissive bloom, one wide soft stroke under everything. */
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = 'rgba(79,70,229,.11)';
+    for (const i of order){
+      const a = seg[i], b = seg[i+1];
+      ctx.lineWidth = a.w * 2.6;
+      ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+    }
+
+    /* Pass 2 — the tube. Lambert term over the emissive floor, plus a
+       depth fade so the back of the coil recedes. */
+    ctx.globalCompositeOperation = 'source-over';
+    for (const i of order){
+      const a = seg[i], b = seg[i+1];
+      const lam = (a.lam + b.lam) / 2;
+      const fog = 0.3 + 0.7 * Math.max(0, Math.min(1, (a.z + R) / (2 * R)));
+      const r = Math.round((49 + 130 * lam) * fog);
+      const g = Math.round((46 + 110 * lam) * fog);
+      const bl = Math.round((129 + 126 * lam) * fog);
+      ctx.strokeStyle = `rgb(${r},${g},${bl})`;
+      ctx.lineWidth = a.w;
+      ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+    }
+
+    /* Pass 3 — specular. Narrow, only where the tube faces the light. */
+    ctx.globalCompositeOperation = 'lighter';
+    for (const i of order){
+      const a = seg[i], b = seg[i+1];
+      const lam = (a.lam + b.lam) / 2;
+      if (lam < 0.72) continue;
+      const hi = Math.pow((lam - 0.72) / 0.28, 2);
+      ctx.strokeStyle = `rgba(200,205,255,${(hi * 0.5).toFixed(3)})`;
+      ctx.lineWidth = a.w * 0.34;
+      ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  let prev = 0, raf = 0, visible = false;
+  function loop(ms){
+    raf = 0;
+    const dt = prev ? Math.min(0.05, (ms - prev) / 1000) : 0.016;
+    prev = ms;
+    spin += dt * 0.3;
+    paint(spin);
+    if (visible && !document.hidden && !reduced()) raf = requestAnimationFrame(loop);
+  }
+  function start(){
+    if (raf || !visible || document.hidden) return;
+    if (reduced()){ paint(spin); return; }
+    prev = 0; raf = requestAnimationFrame(loop);
+  }
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; start(); }).observe(canvas);
+  document.addEventListener('visibilitychange', start);
+  addEventListener('resize', () => { sync(); if (reduced()) paint(spin); });
+  visible = true; start();
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   1 · Magnetic command palette
+   The bar is pulled toward the pointer on springs and tilts from the
+   same offset. Not a :hover transform — the pull is continuous, and
+   letting go carries.
+   ═══════════════════════════════════════════════════════════════════ */
+(function commandPalette(){
+  const stage = document.getElementById('s_cmd');
+  const bar   = document.getElementById('cmdbar');
+  const scrim = document.getElementById('scrim');
+  const panel = document.getElementById('palette');
+  const input = document.getElementById('pq');
+  const list  = document.getElementById('plist');
+
+  let px = 0, py = 0, lift = 0;
+  const put = () => {
+    const rx = (-py / 26).toFixed(2), ry = (px / 26).toFixed(2);
+    bar.style.transform =
+      `perspective(600px) translate3d(${px.toFixed(2)}px,${py.toFixed(2)}px,0) ` +
+      `rotateX(${rx}deg) rotateY(${ry}deg) scale(${(1 + lift * 0.05).toFixed(3)})`;
+  };
+  const mx = new Spring(0, 'settle', v => { px = v; put(); });
+  const my = new Spring(0, 'settle', v => { py = v; put(); });
+  const ml = new Spring(0, 'bounce', v => { lift = v; put(); });
+
+  const PULL = 0.34, MAX = 26;
+  stage.addEventListener('pointermove', e => {
+    const b = bar.getBoundingClientRect();
+    const dx = e.clientX - (b.left + b.width / 2);
+    const dy = e.clientY - (b.top + b.height / 2);
+    mx.to(Math.max(-MAX, Math.min(MAX, dx * PULL)));
+    my.to(Math.max(-MAX, Math.min(MAX, dy * PULL)));
+    ml.to(1);
+  });
+  stage.addEventListener('pointerleave', () => { mx.to(0); my.to(0); ml.to(0); });
+
+  /* ── the panel itself ── */
+  const CMDS = [
+    ['Install a component', '⌘ I'],
+    ['Search the registry',  '⌘ /'],
+    ['Toggle reduced motion','⌘ M'],
+    ['Copy install command', '⌘ C'],
+    ['Open documentation',   '⌘ D'],
+    ['Report an issue',      '⌘ ⇧ I'],
+  ];
+  let cursor = 0, open = false, lastFocus = null;
+
+  function paint(){
+    const q = input.value.trim().toLowerCase();
+    const hits = CMDS.filter(c => c[0].toLowerCase().includes(q));
+    cursor = Math.min(cursor, Math.max(0, hits.length - 1));
+    list.innerHTML = hits.length
+      ? hits.map((c, i) => `<li role="option" id="opt${i}" aria-selected="${i === cursor}" class="t-code">
+           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+           <span>${c[0]}</span><span class="sl">${c[1]}</span></li>`).join('')
+      : `<li class="empty t-code">No matching command</li>`;
+    input.setAttribute('aria-activedescendant', hits.length ? 'opt' + cursor : '');
+    return hits;
+  }
+
+  const pScale = new Spring(0.94, 'bounce', v => {
+    panel.style.transform = `scale(${v.toFixed(3)})`;
+  });
+  const pFade = new Spring(0, 'settle', v => {
+    scrim.style.opacity = v.toFixed(3);
+    panel.style.opacity = v.toFixed(3);
+    if (v < 0.01 && !open){ scrim.classList.remove('on'); scrim.hidden = true; }
+  });
+
+  function show(){
+    if (open) return;
+    open = true; lastFocus = document.activeElement;
+    scrim.hidden = false; scrim.classList.add('on');
+    cursor = 0; input.value = ''; paint();
+    pScale.set(0.94); pScale.to(1); pFade.to(1);
+    input.focus();
+  }
+  function hide(){
+    if (!open) return;
+    open = false;
+    pScale.to(0.96); pFade.to(0);
+    if (reduced()){ scrim.classList.remove('on'); scrim.hidden = true; }
+    lastFocus?.focus?.();
+  }
+
+  bar.addEventListener('click', show);
+  bar.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); show(); }
+  });
+  scrim.addEventListener('pointerdown', e => { if (e.target === scrim) hide(); });
+  input.addEventListener('input', () => { cursor = 0; paint(); });
+
+  list.addEventListener('click', e => {
+    const li = e.target.closest('li[role=option]');
+    if (li) hide();
+  });
+
+  addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){
+      e.preventDefault(); open ? hide() : show(); return;
+    }
+    if (!open) return;
+    if (e.key === 'Escape'){ e.preventDefault(); hide(); return; }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      e.preventDefault();
+      const hits = paint();
+      if (!hits.length) return;
+      cursor = (cursor + (e.key === 'ArrowDown' ? 1 : hits.length - 1)) % hits.length;
+      paint();
+      return;
+    }
+    if (e.key === 'Enter'){ e.preventDefault(); hide(); }
+    /* Focus stays in the input, so the dialog is trapped by construction. */
+    if (e.key === 'Tab') e.preventDefault();
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   2 · Spring-physics toast
+   Stitch had this on an infinite CSS keyframe loop, which is a poster
+   of a toast. Here it enters on a spring, holds, and leaves — and
+   re-firing mid-flight is interrupted, not queued.
+   ═══════════════════════════════════════════════════════════════════ */
+(function springToast(){
+  const el = document.getElementById('toast');
+  const fire = document.getElementById('fireToast');
+
+  let y = 0, s = 1, a = 1;
+  const put = () => {
+    el.style.transform = `translate3d(0,${y.toFixed(2)}px,0) scale(${s.toFixed(3)})`;
+    el.style.opacity = a.toFixed(3);
+  };
+  const sy = new Spring(0, 'bounce',  v => { y = v; put(); });
+  const ss = new Spring(1, 'bounce',  v => { s = v; put(); });
+  const sa = new Spring(1, 'settle',  v => { a = v; put(); });
+
+  /* The resting state is on-screen. An auto-dismiss would leave this card
+     empty most of the time, and an empty card is not a component demo —
+     firing drops the toast out and springs it back, so the entrance is
+     the thing you actually watch. */
+  function show(){
+    sy.set(72); sa.set(0); ss.set(0.92);
+    sy.to(0);   sa.to(1);  ss.to(1);
+  }
+
+  sy.set(0); sa.set(1); ss.set(1);
+  fire.addEventListener('click', show);
+  el.addEventListener('click', show);
+
+  /* Play the entrance once, when the card first scrolls into view. */
+  const io = new IntersectionObserver(([e]) => {
+    if (e.isIntersecting){ if (!reduced()) show(); io.disconnect(); }
+  }, {threshold:0.6});
+  io.observe(el);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   3 · Elastic draggable
+   Real pointer drag with rubber-band resistance past the bounds, then
+   a spring release that carries the throw velocity. Squash and stretch
+   are derived from that velocity, not from :hover.
+   ═══════════════════════════════════════════════════════════════════ */
+(function elasticDrag(){
+  const stage = document.getElementById('s_drag');
+  const el = document.getElementById('drag');
+
+  let x = 0, y = 0, sx = 1, sy = 1;
+  const put = () => {
+    el.style.transform = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${sx.toFixed(3)},${sy.toFixed(3)})`;
+  };
+  const px = new Spring(0, 'fling',  v => { x = v; put(); });
+  const py = new Spring(0, 'fling',  v => { y = v; put(); });
+  const st = new Spring(0, 'bounce', v => {
+    /* One stretch scalar drives both axes in opposition — volume-ish. */
+    sx = 1 + v * 0.16; sy = 1 - v * 0.16; put();
+  });
+
+  let dragging = false, id = null, ox = 0, oy = 0, lastT = 0, vx = 0, vy = 0, lx = 0, ly = 0;
+
+  function bounds(){
+    const s = stage.getBoundingClientRect(), b = el.getBoundingClientRect();
+    return {
+      mx: Math.max(0, (s.width  - b.width  / (sx || 1)) / 2 - 12),
+      my: Math.max(0, (s.height - b.height / (sy || 1)) / 2 - 12),
+    };
+  }
+  /* Past the edge, each further pixel is worth less — the rubber band. */
+  const band = (v, max) => {
+    if (Math.abs(v) <= max) return v;
+    const over = Math.abs(v) - max;
+    return Math.sign(v) * (max + over / (1 + over / 42));
+  };
+
+  el.addEventListener('pointerdown', e => {
+    dragging = true; id = e.pointerId;
+    el.setPointerCapture(id);
+    px.stop(); py.stop();
+    ox = e.clientX - x; oy = e.clientY - y;
+    lx = e.clientX; ly = e.clientY; lastT = e.timeStamp; vx = vy = 0;
+    st.to(0.35);
+  });
+
+  el.addEventListener('pointermove', e => {
+    if (!dragging || e.pointerId !== id) return;
+    const b = bounds();
+    x = band(e.clientX - ox, b.mx);
+    y = band(e.clientY - oy, b.my);
+    px.x = x; py.x = y;
+    const dt = Math.max(8, e.timeStamp - lastT);
+    vx = (e.clientX - lx) / dt * 1000;
+    vy = (e.clientY - ly) / dt * 1000;
+    lx = e.clientX; ly = e.clientY; lastT = e.timeStamp;
+    st.to(0.35 + Math.min(0.5, Math.hypot(vx, vy) / 2600));
+    put();
+  });
+
+  function release(e){
+    if (!dragging || (e && e.pointerId !== id)) return;
+    dragging = false;
+    try { el.releasePointerCapture(id); } catch {}
+    px.to(0); py.to(0);
+    px.push(vx); py.push(vy);                       // the throw carries
+    st.to(0); st.push(Math.min(9, Math.hypot(vx, vy) / 120));
+  }
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+
+  el.addEventListener('keydown', e => {
+    const step = 24;
+    const map = {ArrowLeft:[-step,0], ArrowRight:[step,0], ArrowUp:[0,-step], ArrowDown:[0,step]};
+    if (map[e.key]){
+      e.preventDefault();
+      const b = bounds();
+      px.to(Math.max(-b.mx, Math.min(b.mx, px.target + map[e.key][0])));
+      py.to(Math.max(-b.my, Math.min(b.my, py.target + map[e.key][1])));
+      st.to(0.3); st.to(0);
+    }
+    if (e.key === 'Escape' || e.key === 'Home'){ px.to(0); py.to(0); }
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   4 · Fluid morphing button
+   The blob radii, rotation and scale are all one spring value, so an
+   interrupted press reverses from wherever it got to instead of
+   restarting a 500ms transition.
+   ═══════════════════════════════════════════════════════════════════ */
+(function morphButton(){
+  const el = document.getElementById('morph');
+  const REST = [8, 8, 8, 8];
+  const BLOB = [50, 20, 10, 40];
+
+  const m = new Spring(0, 'bounce', v => {
+    const r = REST.map((a, i) => a + (BLOB[i] - a) * v);
+    el.style.borderRadius = `${r[0]}% ${r[1]}% / ${r[2]}% ${r[3]}%`;
+    el.style.transform = `rotate(${(v * 5).toFixed(2)}deg) scale(${(1 + v * 0.1).toFixed(3)})`;
+    el.style.boxShadow = `0 0 ${(20 + v * 26).toFixed(0)}px rgba(99,102,241,${(0.3 + v * 0.35).toFixed(2)})`;
+  });
+
+  let hover = false, press = false;
+  const sync = () => m.to(press ? 1.12 : hover ? 1 : 0);
+
+  el.addEventListener('pointerenter', () => { hover = true;  sync(); });
+  el.addEventListener('pointerleave', () => { hover = press = false; sync(); });
+  el.addEventListener('pointerdown',  () => { press = true;  sync(); });
+  el.addEventListener('pointerup',    () => { press = false; sync(); });
+  el.addEventListener('focus', () => { hover = true;  sync(); });
+  el.addEventListener('blur',  () => { hover = false; sync(); });
+  el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter'){ press = true;  sync(); } });
+  el.addEventListener('keyup',   e => { if (e.key === ' ' || e.key === 'Enter'){ press = false; sync(); } });
+  m.set(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 2 — Editorial bands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+.intro { padding: clamp(4rem,10vw,7rem) 0 clamp(2rem,5vw,3.5rem); }
+.intro h1 { font-size: clamp(2rem,6vw,3.4rem); line-height: 1.08; letter-spacing: -.04em; font-weight: 700; max-width: 16ch; }
+.intro p { margin-top: 20px; max-width: 52ch; font-size: 18px; line-height: 1.6; color: var(--muted); }
+
+.band { border-top: 1px solid var(--rule); padding-block: clamp(3.5rem,8vw,6rem); }
+.band:nth-child(even) { background: var(--surface); }
+.band .wrap { display: grid; gap: clamp(2rem,5vw,4rem); align-items: center; }
+@media (min-width: 60rem) {
+  .band .wrap { grid-template-columns: 0.9fr 1.1fr; }
+  .band:nth-child(even) .copy { order: 2; }
+}
+
+.idx { font-family: var(--mono); font-size: 12px; letter-spacing: .05em; color: var(--accent); }
+.copy h2 { margin-top: 14px; font-size: clamp(1.7rem,4vw,2.5rem); line-height: 1.1; letter-spacing: -.03em; font-weight: 600; }
+.copy .line { margin-top: 14px; max-width: 44ch; font-size: 17px; line-height: 1.6; color: var(--muted); }
+.copy .why { margin-top: 18px; padding-left: 16px; border-left: 2px solid var(--accent); max-width: 44ch; font-size: 15px; line-height: 1.6; }
+.copy .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.copy .go { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; padding: 10px 18px; border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 12px; }
+.copy .go:hover { border-color: var(--accent); background: rgba(99,102,241,.06); }
+
+.plate { position: relative; display: grid; place-items: center; min-height: 300px; padding: 40px; border: 1px solid var(--rule); border-radius: 16px; background:
+  radial-gradient(70% 70% at 50% 40%, rgba(99,102,241,.10), transparent 70%), var(--panel); }
+.plate .hint { position: absolute; left: 16px; bottom: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.plate .scale { transform: scale(1.5); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 2</b><span>Editorial bands — each component gets a full-width spread and an argument</span>
+  <nav><a href="1-focus-stage.html">1</a><a href="3-spec-sheet.html">3</a><a href="4-live-wall.html">4</a></nav>
+</div></div>
+
+<header class="intro wrap">
+  <span class="lbl">catalog</span>
+  <h1>Ten components, each with one idea.</h1>
+  <p>Scroll. Every demo below is the real thing — press it, drag it, hold it. If a component
+     can't survive being the only thing on screen, it hasn't earned a place in the registry.</p>
+</header>
+
+<main id="bands"></main>
+
+<script type="module">
+import { DEMOS } from './_core.js'
+
+const HINTS = {
+  'like-button': 'press it',
+  scrub: 'drag, then pull away from the track',
+  'hold-to-confirm': 'press and keep holding',
+  'undo-toast': 'hover to stall the clock',
+}
+
+const main = document.getElementById('bands')
+Object.entries(DEMOS).forEach(([k, d], i) => {
+  const s = document.createElement('section')
+  s.className = 'band'
+  s.innerHTML = `<div class="wrap">
+    <div class="copy">
+      <span class="idx">${String(i + 1).padStart(2, '0')} / ${Object.keys(DEMOS).length}</span>
+      <h2>${d.title}</h2>
+      <p class="line">${d.line}</p>
+      <p class="why">${d.why}</p>
+      <div class="facts">
+        <span class="chip">${d.cat}</span><span class="chip">spring · ${d.spring}</span>
+        <span class="chip">${d.states} states</span><span class="chip">${d.kb}</span>
+      </div>
+      <a class="go" href="#">npx @abenor/z-ui add ${k} →</a>
+    </div>
+    <div class="plate"><div class="scale mount"></div><span class="hint">${HINTS[k] ?? 'try it'}</span></div>
+  </div>`
+  main.append(s)
+  d.build(s.querySelector('.mount'), { size: 34 })
+})
+</script>
+</body>
+</html>

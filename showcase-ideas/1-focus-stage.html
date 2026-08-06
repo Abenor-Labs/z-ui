@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 1 — Focus stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+.shell { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 56px); }
+@media (min-width: 60rem) { .shell { grid-template-columns: 260px 1fr; } }
+
+/* rail */
+.rail { border-right: 1px solid var(--rule); padding: 20px 0; }
+.rail h2 { padding: 0 20px 12px; }
+.rail button { position: relative; display: block; width: 100%; text-align: left; padding: 12px 20px; border-left: 2px solid transparent; }
+.rail button:hover { background: rgba(255,255,255,.03); }
+.rail button[aria-current="true"] { border-left-color: var(--accent); background: rgba(99,102,241,.07); }
+.rail .n { font-size: 14px; font-weight: 500; }
+.rail button[aria-current="true"] .n { color: var(--accent); }
+.rail .m { display: block; margin-top: 3px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+/* stage */
+.stage { display: flex; flex-direction: column; }
+.stage-top { flex: 1; display: grid; place-items: center; padding: 48px 24px; min-height: 340px;
+  background:
+    radial-gradient(60% 60% at 50% 45%, rgba(99,102,241,.10), transparent 70%),
+    linear-gradient(to bottom right, rgba(255,255,255,.04), transparent); }
+.mount { transform: scale(1.6); transform-origin: center; }
+
+.meta { border-top: 1px solid var(--rule); padding: 24px clamp(1rem,4vw,3rem); }
+.meta h1 { font-size: 30px; letter-spacing: -.02em; font-weight: 600; }
+.meta .why { margin-top: 8px; max-width: 46ch; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.cmd { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 12px 16px; border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 13px; }
+.cmd button { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.cmd button:hover { color: var(--ink); }
+
+.tools { display: flex; align-items: center; gap: 8px; padding: 10px clamp(1rem,4vw,3rem); border-top: 1px solid var(--hair); }
+.tools .lbl { margin-right: 4px; }
+.tools button { padding: 4px 10px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.tools button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 1</b><span>Focus stage — one component at a time, big, with a rail to switch</span>
+  <nav><a href="2-editorial.html">2</a><a href="3-spec-sheet.html">3</a><a href="4-live-wall.html">4</a></nav>
+</div></div>
+
+<div class="shell">
+  <aside class="rail">
+    <h2 class="lbl">Registry</h2>
+    <div id="rail"></div>
+  </aside>
+
+  <section class="stage">
+    <div class="stage-top"><div class="mount" id="mount"></div></div>
+
+    <div class="tools">
+      <span class="lbl">spring</span>
+      <button data-spring="snap">snap</button>
+      <button data-spring="bounce">bounce</button>
+      <button data-spring="settle">settle</button>
+      <button data-spring="fling">fling</button>
+      <span style="margin-left:auto"></span>
+      <button id="slow" aria-pressed="false">0.25×</button>
+      <button id="fire">replay</button>
+    </div>
+
+    <div class="meta">
+      <h1 id="title"></h1>
+      <p class="why" id="why"></p>
+      <div class="facts" id="facts"></div>
+      <div class="cmd"><span style="color:var(--accent)">$</span><code id="cmd"></code><button id="copy">copy</button></div>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+import { DEMOS, SPEED } from './_core.js'
+
+const rail = document.getElementById('rail')
+const mount = document.getElementById('mount')
+let current = null
+let key = 'like-button'
+
+Object.entries(DEMOS).forEach(([k, d]) => {
+  const b = document.createElement('button')
+  b.innerHTML = `<span class="n">${d.title}</span><span class="m">${d.spring} · ${d.states} states · ${d.kb}</span>`
+  b.onclick = () => select(k)
+  b.dataset.key = k
+  rail.append(b)
+})
+
+function select(k) {
+  key = k
+  const d = DEMOS[k]
+  rail.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.key === k)))
+  mount.innerHTML = ''
+  current = d.build(mount, { size: 34 })
+  document.getElementById('title').textContent = d.title
+  document.getElementById('why').textContent = d.why
+  document.getElementById('facts').innerHTML =
+    `<span class="chip">${d.cat}</span><span class="chip">spring · ${d.spring}</span><span class="chip">${d.states} states</span><span class="chip">${d.kb}</span>`
+  document.getElementById('cmd').textContent = `npx @abenor/z-ui add ${k}`
+  document.querySelectorAll('[data-spring]').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.spring === d.spring)),
+  )
+}
+
+document.querySelectorAll('[data-spring]').forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-spring]').forEach((x) => x.setAttribute('aria-pressed', 'false'))
+    b.setAttribute('aria-pressed', 'true')
+    current?.spring(b.dataset.spring)
+    current?.fire()
+  }
+})
+document.getElementById('fire').onclick = () => current?.fire()
+document.getElementById('slow').onclick = function () {
+  const on = this.getAttribute('aria-pressed') === 'true'
+  SPEED.value = on ? 1 : 0.25
+  this.setAttribute('aria-pressed', String(!on))
+}
+document.getElementById('copy').onclick = function () {
+  navigator.clipboard?.writeText(document.getElementById('cmd').textContent).catch(() => {})
+  this.textContent = 'copied'
+  setTimeout(() => (this.textContent = 'copy'), 1400)
+}
+
+select('like-button')
+</script>
+</body>
+</html>

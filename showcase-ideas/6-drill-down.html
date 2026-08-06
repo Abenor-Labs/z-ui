@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 6 — Drill-down sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+header.top { padding: clamp(2.5rem,6vw,4rem) 0 1.5rem; }
+header.top h1 { font-size: clamp(1.7rem,4vw,2.4rem); letter-spacing: -.03em; font-weight: 600; }
+header.top p { margin-top: 10px; max-width: 60ch; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+.sheet { border-top: 1px solid var(--rule); }
+.item { border-bottom: 1px solid var(--hair); }
+
+.rowbtn { display: grid; grid-template-columns: 22px 1fr 130px 90px 80px; gap: 14px; align-items: center;
+  width: 100%; padding: 16px 4px; text-align: left; }
+.rowbtn:hover { background: rgba(255,255,255,.025); }
+.rowbtn .car { font-family: var(--mono); font-size: 12px; color: var(--muted); transition: transform .18s; }
+.item[open] .rowbtn .car { transform: rotate(90deg); color: var(--accent); }
+.rowbtn .n { font-size: 15px; font-weight: 500; }
+.rowbtn .n small { display: block; margin-top: 3px; font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 400; }
+.rowbtn .c { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.item[open] .rowbtn .n { color: var(--accent); }
+@media (max-width: 56rem) { .rowbtn { grid-template-columns: 22px 1fr 70px; } .rowbtn .c.hide { display: none; } }
+
+/* the drawer: a spring on height, opened by the same engine the components use */
+.drawer { overflow: hidden; height: 0; }
+.drawer-in { padding: 6px 0 26px 36px; display: grid; gap: 20px; }
+@media (min-width: 62rem) { .drawer-in { grid-template-columns: 1.15fr 1fr; } }
+
+.pad { display: grid; place-items: center; min-height: 190px; padding: 26px; border: 1px solid var(--hair); border-radius: 12px;
+  background: radial-gradient(70% 70% at 50% 40%, rgba(99,102,241,.09), transparent 70%), var(--panel); }
+.side { display: grid; gap: 14px; align-content: start; }
+.why { padding-left: 14px; border-left: 2px solid var(--accent); font-size: 14px; line-height: 1.6; }
+.states { display: flex; flex-wrap: wrap; gap: 6px; }
+.states code { padding: 3px 8px; border: 1px solid var(--hair); border-radius: 5px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.cmd { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 12px; }
+.cmd button { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.cmd button:hover { color: var(--ink); }
+.springs { display: flex; gap: 6px; }
+.springs button { padding: 4px 10px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.springs button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 6</b><span>Drill-down — the spec sheet you liked, but a row opens into its own bench</span>
+  <nav><a href="3-spec-sheet.html">3</a><a href="5-oscilloscope.html">5</a><a href="7-spring-matrix.html">7</a><a href="8-terminal.html">8</a></nav>
+</div></div>
+
+<div class="wrap">
+  <header class="top">
+    <span class="lbl">registry</span>
+    <h1>Scan the list. Open the one you want.</h1>
+    <p>The index stays on screen and the detail comes to you — no page load, no losing your
+       place in the list. The drawer height is a spring, so opening a second row while the first
+       is still moving retargets it rather than restarting. Only one is open at a time.</p>
+  </header>
+
+  <div class="sheet" id="sheet"></div>
+  <div style="height:90px"></div>
+</div>
+
+<script type="module">
+import { DEMOS, Spring } from './_core.js'
+
+const STATES = {
+  'like-button': ['idle', 'hover', 'pressing', 'liked', 'liked-hover', 'liked-pressing'],
+  scrub: ['idle', 'hover', 'scrubbing', 'scrubbing-fine', 'settling'],
+  'hold-to-confirm': ['idle', 'hover', 'holding', 'releasing', 'confirmed'],
+  'undo-toast': ['counting', 'held', 'dragging', 'leaving'],
+}
+
+const sheet = document.getElementById('sheet')
+const items = []
+let openKey = null
+
+Object.entries(DEMOS).forEach(([k, d]) => {
+  const item = document.createElement('div')
+  item.className = 'item'
+  item.innerHTML = `
+    <button class="rowbtn" aria-expanded="false">
+      <span class="car">›</span>
+      <span class="n">${d.title}<small>${d.line}</small></span>
+      <span class="c hide">${d.spring}</span>
+      <span class="c hide">${d.states} states</span>
+      <span class="c">${d.kb}</span>
+    </button>
+    <div class="drawer"><div class="drawer-in">
+      <div class="pad"><div class="mount"></div></div>
+      <div class="side">
+        <p class="why">${d.why}</p>
+        <div>
+          <span class="lbl">states</span>
+          <div class="states" style="margin-top:8px">${STATES[k].map((s) => `<code>${s}</code>`).join('')}</div>
+        </div>
+        <div>
+          <span class="lbl">spring</span>
+          <div class="springs" style="margin-top:8px">
+            ${['snap', 'bounce', 'settle', 'fling'].map((s) => `<button data-s="${s}" aria-pressed="${s === d.spring}">${s}</button>`).join('')}
+          </div>
+        </div>
+        <div class="cmd"><span style="color:var(--accent)">$</span><code>npx @abenor/z-ui add ${k}</code><button>copy</button></div>
+      </div>
+    </div></div>`
+  sheet.append(item)
+
+  const drawer = item.querySelector('.drawer')
+  const inner = item.querySelector('.drawer-in')
+  const api = d.build(item.querySelector('.mount'), { size: 30, label: 'Hold' })
+
+  // Height is a spring, not a transition: opening B while A is still closing
+  // retargets both mid-flight instead of queueing two 300ms animations.
+  const h = new Spring(0, 'settle', (v) => {
+    drawer.style.height = `${Math.max(0, v)}px`
+  })
+
+  const rec = { key: k, item, drawer, inner, api, h, btn: item.querySelector('.rowbtn') }
+  items.push(rec)
+
+  rec.btn.onclick = () => toggle(k)
+
+  item.querySelectorAll('[data-s]').forEach((b) => {
+    b.onclick = (e) => {
+      e.stopPropagation()
+      item.querySelectorAll('[data-s]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+      api.spring(b.dataset.s)
+      api.fire()
+    }
+  })
+  item.querySelector('.cmd button').onclick = function (e) {
+    e.stopPropagation()
+    navigator.clipboard?.writeText(`npx @abenor/z-ui add ${k}`).catch(() => {})
+    this.textContent = 'copied'
+    setTimeout(() => (this.textContent = 'copy'), 1300)
+  }
+})
+
+function toggle(k) {
+  const next = openKey === k ? null : k
+  openKey = next
+  for (const r of items) {
+    const on = r.key === next
+    r.item.toggleAttribute('open', on)
+    r.btn.setAttribute('aria-expanded', String(on))
+    r.h.to(on ? r.inner.offsetHeight : 0)
+    if (on) setTimeout(() => r.api.fire(), 120)
+  }
+}
+
+addEventListener('resize', () => {
+  const r = items.find((x) => x.key === openKey)
+  if (r) r.h.to(r.inner.offsetHeight)
+})
+
+toggle('like-button')
+</script>
+</body>
+</html>

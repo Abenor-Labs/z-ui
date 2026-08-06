@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 9 — Copy first</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+header.top { padding: clamp(2.5rem,6vw,3.5rem) 0 0; }
+header.top h1 { font-size: clamp(1.7rem,4vw,2.4rem); letter-spacing: -.03em; font-weight: 600; }
+header.top p { margin-top: 10px; max-width: 60ch; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+/* the one bar that matters */
+.initbar { display: flex; align-items: center; gap: 14px; margin: 24px 0 8px; padding: 14px 18px;
+  border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); flex-wrap: wrap; }
+.initbar .p { color: var(--accent); font-family: var(--mono); }
+.initbar code { flex: 1; min-width: 220px; font-family: var(--mono); font-size: 14px; }
+.copy { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: 1px solid var(--rule);
+  border-radius: 7px; font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--surface); }
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+.copy.done { border-color: #34d399; color: #34d399; }
+.copy svg { width: 13px; height: 13px; }
+
+.jump { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 0 26px; }
+.jump a { padding: 5px 11px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.jump a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* component block */
+.comp { border-top: 1px solid var(--rule); padding: 32px 0 40px; scroll-margin-top: 20px; }
+.chead { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.chead h2 { font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+.chead .sub { margin-top: 5px; font-size: 14px; color: var(--muted); max-width: 52ch; }
+.chead .meta { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.chead .cli { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); }
+.chead .cli code { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+
+.body { display: grid; gap: 16px; }
+@media (min-width: 68rem) { .body { grid-template-columns: 400px 1fr; align-items: start; } }
+
+.preview { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--panel); }
+.preview .stage { display: grid; place-items: center; min-height: 168px; padding: 26px;
+  background: radial-gradient(75% 75% at 50% 40%, rgba(99,102,241,.09), transparent 70%); }
+.preview .scopewrap { border-top: 1px solid var(--hair); padding: 10px 12px; background: #0b0b0e; }
+.preview canvas { width: 100%; height: 54px; display: block; }
+.preview .sfoot { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--hair);
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.preview .sfoot b { color: var(--ink); font-weight: 500; }
+.preview .sfoot button { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.preview .sfoot button:hover { color: var(--accent); }
+
+/* code panel */
+.panel { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: #0b0b0e; }
+.tabs { display: flex; align-items: center; gap: 2px; padding: 6px 8px; border-bottom: 1px solid var(--hair); background: var(--surface); }
+.tabs button { padding: 5px 11px; border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: rgba(99,102,241,.12); color: var(--accent); }
+.tabs .right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.tabs .path { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+
+pre.code { margin: 0; padding: 14px 0 16px; overflow-x: auto; max-height: 420px; }
+pre.code code { display: block; font-family: var(--mono); font-size: 12.5px; line-height: 1.72; }
+pre.code .l { display: block; padding: 0 16px 0 0; white-space: pre; }
+pre.code .l::before { content: attr(data-n); display: inline-block; width: 34px; padding-right: 14px;
+  text-align: right; color: #34343c; user-select: none; }
+.k { color: #c084fc } .s { color: #86efac } .c { color: #52525b; font-style: italic }
+.n { color: #fbbf24 } .t { color: #60a5fa } .b { color: #f472b6 }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 9</b><span>Copy first — the anatomy stays, but the page exists to hand you the file</span>
+  <nav><a href="5b-oscilloscope-lab.html">5b</a><a href="5-oscilloscope.html">5</a><a href="3-spec-sheet.html">3</a><a href="6-drill-down.html">6</a></nav>
+</div></div>
+
+<div class="wrap">
+  <header class="top">
+    <span class="lbl">registry</span>
+    <h1>Take the file. The physics comes with it.</h1>
+    <p>Every component below ships as source you own. Copy the command, or copy the code —
+       both put the same bytes in your project. The trace under each preview is there so you
+       can check the spring does what the props claim before you paste anything.</p>
+
+    <div class="initbar">
+      <span class="p">$</span>
+      <code id="initcmd">npx @abenor/z-ui init</code>
+      <button class="copy" data-copy="npx @abenor/z-ui init">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span>copy</span>
+      </button>
+    </div>
+
+    <div class="jump" id="jump"></div>
+  </header>
+
+  <div id="list"></div>
+  <div style="height:80px"></div>
+</div>
+
+<script type="module">
+import { DEMOS, SPEED } from './_core.js'
+
+/* Condensed but real-shaped source — the same imports, the same derived
+   `data-state`, the same `useZTransition` the registry components use. */
+const SOURCE = {
+  'like-button': `'use client'
+
+import * as React from 'react'
+import { motion } from 'motion/react'
+import { useControllableState } from '@/hooks/use-controllable-state'
+import { useZTransition, type SpringName } from '@/lib/z-spring'
+
+const variants = {
+  idle:           { scale: 1 },
+  hover:          { scale: 1.12 },
+  pressing:       { scale: 0.86 },
+  liked:          { scale: 1 },
+  'liked-hover':  { scale: 1.12 },
+  'liked-pressing': { scale: 0.86 },
+}
+
+export function LikeButton({ pressed, onPressedChange, spring = 'bounce' }: Props) {
+  const [on, setOn] = useControllableState({ prop: pressed, defaultProp: false, onChange: onPressedChange })
+  const [hover, setHover] = React.useState(false)
+  const [press, setPress] = React.useState(false)
+
+  // One derived state. Your CSS matches the same string the motion reads.
+  const state = \`\${on ? 'liked' : 'idle'}\${press ? '-pressing' : hover ? '-hover' : ''}\`
+    .replace('idle-', '') as keyof typeof variants
+
+  return (
+    <motion.button
+      data-state={state}
+      animate={state}
+      variants={variants}
+      transition={useZTransition(spring)}
+      aria-pressed={on}
+      onPointerOver={() => setHover(true)}
+      onPointerOut={() => { setHover(false); setPress(false) }}
+      onPointerDown={() => setPress(true)}
+      onPointerUp={() => setPress(false)}
+      onClick={() => setOn(!on)}
+    >
+      <Heart filled={on} />
+    </motion.button>
+  )
+}`,
+
+  scrub: `'use client'
+
+import * as React from 'react'
+import { motion, useMotionValue, useSpring } from 'motion/react'
+import { springs, type SpringName } from '@/lib/z-spring'
+
+export function Scrub({ value, onValueChange, spring = 'settle' }: ScrubProps) {
+  const x = useMotionValue(value)
+  // The handle follows the value on a spring rather than being the value,
+  // so a fast drag visibly trails and catches up.
+  const handle = useSpring(x, springs[spring])
+  const [state, setState] = React.useState<ScrubState>('idle')
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (state === 'idle' || state === 'hover') return
+    const box = e.currentTarget.getBoundingClientRect()
+
+    // Precision rises continuously with distance from the track. Four discrete
+    // tiers, as iOS uses, has a perceptible step under your finger.
+    const away = Math.max(0, Math.abs(e.clientY - box.top - box.height / 2) - 16)
+    const ratio = 1 / (1 + away / 26)
+    setState(ratio < 0.95 ? 'scrubbing-fine' : 'scrubbing')
+
+    onValueChange(clamp(value + (e.movementX / box.width) * ratio))
+  }
+
+  return (
+    <div data-state={state} onPointerMove={onPointerMove} onPointerUp={() => setState('settling')}>
+      <motion.span style={{ left: handle }} />
+    </div>
+  )
+}`,
+
+  'hold-to-confirm': `'use client'
+
+import * as React from 'react'
+import { motion, useMotionValue, animate } from 'motion/react'
+import { useZTransition, type SpringName } from '@/lib/z-spring'
+
+export function HoldToConfirm({ duration = 1000, onConfirm, onAbandon, spring = 'snap' }: Props) {
+  const charge = useMotionValue(0)
+  const [state, setState] = React.useState<HoldState>('idle')
+
+  function hold() {
+    setState('holding')
+    const controls = animate(charge, 1, { duration: duration / 1000, ease: 'linear' })
+    controls.then(() => { setState('confirmed'); onConfirm?.() })
+    return controls
+  }
+
+  function release(controls: ReturnType<typeof animate>) {
+    if (state !== 'holding') return
+    controls.stop()
+    setState('releasing')
+    // Unwinds on a spring rather than snapping to zero, so how close you got
+    // is something you feel rather than something you are told.
+    onAbandon?.(charge.get())
+    animate(charge, 0, useZTransition(spring))
+  }
+
+  return (
+    <button data-state={state} onPointerDown={hold} onPointerUp={release}>
+      <motion.span style={{ scaleX: charge }} />
+    </button>
+  )
+}`,
+
+  'undo-toast': `'use client'
+
+import * as React from 'react'
+import { motion, useMotionValue, useTransform } from 'motion/react'
+import { useZTransition, type SpringName } from '@/lib/z-spring'
+
+export function UndoToast({ duration = 5000, onUndo, onCommit, spring = 'settle' }: Props) {
+  const remaining = useMotionValue(duration)
+  const progress = useTransform(remaining, (r) => Math.max(0, r / duration))
+  const x = useMotionValue(0)
+  const fade = useTransform(x, [-260, -40, 0, 40, 260], [0, 1, 1, 1, 0])
+
+  const [held, setHeld] = React.useState(false)
+  const state = held ? 'held' : 'counting'
+
+  // Pausing is a rate, not a switch: the drain eases to a stop over ~180ms,
+  // so reaching for the toast never reads as a dropped frame.
+  React.useEffect(() => {
+    let rate = 1, last = performance.now()
+    const tick = (now: number) => {
+      const dt = Math.min(64, now - last); last = now
+      rate += ((held ? 0 : 1) - rate) * Math.min(1, dt / 180)
+      remaining.set(remaining.get() - dt * rate)
+      remaining.get() <= 0 ? onCommit?.() : requestAnimationFrame(tick)
+    }
+    const id = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(id)
+  }, [held])
+
+  return (
+    <motion.div data-state={state} drag="x" style={{ x, opacity: fade }}
+      transition={useZTransition(spring)}
+      onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}>
+      {children}
+      <motion.i style={{ scaleX: progress }} />
+    </motion.div>
+  )
+}`,
+}
+
+const USAGE = {
+  'like-button': `import { LikeButton } from '@/components/z-ui/like-button'
+
+export function Post() {
+  const [liked, setLiked] = React.useState(false)
+  return <LikeButton pressed={liked} onPressedChange={setLiked} spring="bounce" />
+}`,
+  scrub: `import { Scrub } from '@/components/z-ui/scrub'
+
+export function Player() {
+  const [t, setT] = React.useState(0.3)
+  return <Scrub value={t} onValueChange={setT} buffered={0.72} />
+}`,
+  'hold-to-confirm': `import { HoldToConfirm } from '@/components/z-ui/hold-to-confirm'
+
+export function DangerZone() {
+  return <HoldToConfirm onConfirm={dropDatabase}>Delete everything</HoldToConfirm>
+}`,
+  'undo-toast': `import { UndoToast } from '@/components/z-ui/undo-toast'
+
+export function Drafts() {
+  return <UndoToast duration={5000} onUndo={restore} onCommit={purge}>Deleted “Draft”</UndoToast>
+}`,
+}
+
+const TARGET = {
+  'like-button': 'components/z-ui/like-button.tsx',
+  scrub: 'components/z-ui/scrub.tsx',
+  'hold-to-confirm': 'components/z-ui/hold-to-confirm.tsx',
+  'undo-toast': 'components/z-ui/undo-toast.tsx',
+}
+
+/* A small tokenizer. One pass over escaped text so nothing nests wrongly. */
+const RX = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('[^'\n]*'|"[^"\n]*"|`[^`]*`)|\b(import|export|from|const|let|function|return|if|else|type|interface|as|new|await|async|default|keyof|typeof)\b|\b(true|false|null|undefined)\b|(&lt;\/?[A-Z][\w.]*)|\b(\d+(?:\.\d+)?)\b/g
+
+function highlight(src) {
+  const esc = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const marked = esc.replace(RX, (m, comment, str, kw, lit, tag, num) => {
+    if (comment) return `<span class="c">${comment}</span>`
+    if (str) return `<span class="s">${str}</span>`
+    if (kw) return `<span class="k">${kw}</span>`
+    if (lit) return `<span class="b">${lit}</span>`
+    if (tag) return `<span class="t">${tag}</span>`
+    if (num) return `<span class="n">${num}</span>`
+    return m
+  })
+  return marked
+    .split('\n')
+    .map((l, i) => `<span class="l" data-n="${i + 1}">${l || ' '}</span>`)
+    .join('')
+}
+
+const K = { snap: [500, 40], bounce: [400, 14], settle: [260, 24], fling: [300, 30] }
+const zeta = (n) => (K[n][1] / (2 * Math.sqrt(K[n][0]))).toFixed(2)
+
+const list = document.getElementById('list')
+const jump = document.getElementById('jump')
+const scopes = []
+
+Object.entries(DEMOS).forEach(([key, d]) => {
+  const a = document.createElement('a')
+  a.href = `#${key}`
+  a.textContent = key
+  jump.append(a)
+
+  const cli = `npx @abenor/z-ui add ${key}`
+  const sec = document.createElement('section')
+  sec.className = 'comp'
+  sec.id = key
+  sec.innerHTML = `
+    <div class="chead">
+      <div>
+        <h2>${d.title}</h2>
+        <p class="sub">${d.why}</p>
+        <div class="meta">
+          <span class="chip">${d.cat}</span><span class="chip">spring · ${d.spring}</span>
+          <span class="chip">ζ ${zeta(d.spring)}</span><span class="chip">${d.states} states</span>
+          <span class="chip">${d.kb}</span>
+        </div>
+      </div>
+      <div class="cli">
+        <span style="color:var(--accent);font-family:var(--mono)">$</span>
+        <code>${cli}</code>
+        <button class="copy" data-copy="${cli}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="preview">
+        <div class="stage"><div class="mount"></div></div>
+        <div class="scopewrap"><canvas></canvas></div>
+        <div class="sfoot"><span>measured</span><b class="m">—</b><button class="fire">↻ replay</button></div>
+      </div>
+
+      <div class="panel">
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-tab="source">component</button>
+          <button role="tab" aria-selected="false" data-tab="usage">usage</button>
+          <button role="tab" aria-selected="false" data-tab="cli">install</button>
+          <span class="right">
+            <span class="path">${TARGET[key]}</span>
+            <button class="copy code-copy"><span>copy file</span></button>
+          </span>
+        </div>
+        <pre class="code"><code></code></pre>
+      </div>
+    </div>`
+  list.append(sec)
+
+  const api = d.build(sec.querySelector('.mount'), { size: 32, label: 'Hold' })
+  const codeEl = sec.querySelector('pre.code code')
+  const pathEl = sec.querySelector('.path')
+
+  const TABS = {
+    source: { text: SOURCE[key], path: TARGET[key] },
+    usage: { text: USAGE[key], path: 'app/page.tsx' },
+    cli: {
+      text: `# first-party CLI (writes the file into your project)\n${cli}\n\n# or through shadcn, which reads the same registry\nnpx shadcn@latest add https://z-ui.abenor.dev/r/${key}.json`,
+      path: 'terminal',
+    },
+  }
+  let tab = 'source'
+  const paint = () => {
+    codeEl.innerHTML = highlight(TABS[tab].text)
+    pathEl.textContent = TABS[tab].path
+    sec.querySelector('.code-copy span').textContent = tab === 'cli' ? 'copy command' : 'copy file'
+  }
+  paint()
+
+  sec.querySelectorAll('[data-tab]').forEach((b) => {
+    b.onclick = () => {
+      tab = b.dataset.tab
+      sec.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)))
+      paint()
+    }
+  })
+  sec.querySelector('.code-copy').onclick = function () {
+    navigator.clipboard?.writeText(TABS[tab].text).catch(() => {})
+    this.classList.add('done')
+    const s = this.querySelector('span')
+    const was = s.textContent
+    s.textContent = 'copied'
+    setTimeout(() => { s.textContent = was; this.classList.remove('done') }, 1400)
+  }
+  sec.querySelector('.fire').onclick = () => api.fire()
+
+  scopes.push({ api, canvas: sec.querySelector('canvas'), out: sec.querySelector('.m'), cap: null, idle: 999 })
+})
+
+/* The trace, kept small and secondary — it is evidence for the code above it,
+   not the reason the page exists. */
+const WINDOW = 1200
+function loop(now) {
+  for (const b of scopes) {
+    const s = b.api.primary
+    const moving = s.on || Math.abs(s.x - s.t) > 1e-6
+    if (moving && (!b.cap || b.cap.closed)) b.cap = { t0: now, from: s.x, target: s.t, pts: [], closed: false }
+    b.idle = moving ? 0 : b.idle + 1
+    if (b.cap && !b.cap.closed) {
+      const ms = now - b.cap.t0
+      b.cap.target = s.t
+      if (ms <= WINDOW) b.cap.pts.push({ ms, x: s.x })
+      if (b.idle > 40 || ms > WINDOW) { b.cap.closed = true; measure(b) }
+    }
+    draw(b)
+  }
+  requestAnimationFrame(loop)
+}
+function measure(b) {
+  const { from, target, pts } = b.cap
+  const span = target - from
+  if (!pts.length || Math.abs(span) < 1e-6) return
+  let t90 = null, over = 0
+  for (const p of pts) {
+    const done = (p.x - from) / span
+    if (t90 === null && done >= 0.9) t90 = Math.round(p.ms)
+    over = Math.max(over, done - 1)
+  }
+  b.out.textContent = `t90 ${t90 ?? '—'}ms · overshoot ${Math.round(over * 100)}%`
+}
+function draw(b) {
+  const c = b.canvas
+  const dpr = Math.min(2, devicePixelRatio || 1)
+  const w = c.clientWidth, h = c.clientHeight
+  if (!w) return
+  if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr) }
+  const ctx = c.getContext('2d')
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  ctx.clearRect(0, 0, w, h)
+  const cap = b.cap
+  if (!cap || cap.pts.length < 2) return
+  let lo = Math.min(cap.from, cap.target), hi = Math.max(cap.from, cap.target)
+  for (const p of cap.pts) { lo = Math.min(lo, p.x); hi = Math.max(hi, p.x) }
+  if (hi - lo < 1e-6) { hi += .5; lo -= .5 }
+  const pad = (hi - lo) * .22; lo -= pad; hi += pad
+  const yOf = (v) => h - ((v - lo) / (hi - lo)) * h
+  const xOf = (ms) => (Math.min(ms, WINDOW) / WINDOW) * w
+
+  ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1
+  ctx.beginPath(); ctx.moveTo(0, yOf(cap.target)); ctx.lineTo(w, yOf(cap.target)); ctx.stroke()
+  ctx.setLineDash([])
+
+  ctx.save()
+  ctx.shadowColor = 'rgba(99,102,241,.8)'; ctx.shadowBlur = 5
+  ctx.strokeStyle = '#818cf8'; ctx.lineWidth = 1.7; ctx.lineJoin = 'round'
+  ctx.beginPath()
+  cap.pts.forEach((p, i) => (i ? ctx.lineTo(xOf(p.ms), yOf(p.x)) : ctx.moveTo(xOf(p.ms), yOf(p.x))))
+  ctx.stroke()
+  ctx.restore()
+}
+requestAnimationFrame(loop)
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-copy]')
+  if (!b) return
+  navigator.clipboard?.writeText(b.dataset.copy).catch(() => {})
+  b.classList.add('done')
+  const s = b.querySelector('span')
+  s.textContent = 'copied'
+  setTimeout(() => { s.textContent = 'copy'; b.classList.remove('done') }, 1400)
+})
+</script>
+</body>
+</html>

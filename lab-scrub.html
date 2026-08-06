@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>scrub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e11; --fg:#eceae6; --dim:#7b7872; --line:#26262b;
+  --accent:#ff3b00;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);
+  font-family:"Inter",system-ui,sans-serif;display:grid;place-items:center;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+.player{width:min(640px,88vw);user-select:none}
+
+.meta{display:flex;align-items:baseline;gap:.75rem;margin-bottom:1.75rem}
+.meta .t{font-size:1.0625rem;font-weight:500}
+.meta .a{font-size:.875rem;color:var(--dim)}
+
+/* the scrub area is tall — that vertical room IS the precision axis */
+.scrub{position:relative;padding:34px 0;cursor:grab;touch-action:none}
+.scrub:active{cursor:grabbing}
+
+.track{position:relative;height:4px;border-radius:99px;background:var(--line)}
+.buf{position:absolute;inset:0 auto 0 0;border-radius:99px;background:#33333a;width:78%}
+.fill{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--accent);width:0}
+.ghost{position:absolute;top:50%;width:1px;height:16px;margin-top:-8px;background:var(--dim);
+  opacity:0;left:0}
+.knob{position:absolute;top:50%;left:0;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;
+  border-radius:99px;background:var(--fg)}
+
+.times{display:flex;justify-content:space-between;margin-top:.5rem;font-size:.75rem;color:var(--dim)}
+
+/* precision only speaks when it has something to say */
+.prec{position:absolute;left:50%;top:-2px;transform:translateX(-50%);
+  font-size:.6875rem;letter-spacing:.08em;color:var(--accent);opacity:0;white-space:nowrap}
+
+.hint{margin-top:2.5rem;font-size:.8125rem;color:var(--dim);line-height:1.6}
+.hint b{color:var(--fg);font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="player">
+  <div class="meta"><span class="t">Overshoot</span><span class="a">Abenor Labs</span></div>
+
+  <div class="scrub" id="scrub" role="slider" tabindex="0"
+       aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0:00 of 3:42">
+    <span class="prec mono" id="prec">1 : 1</span>
+    <div class="track" id="track">
+      <span class="buf"></span>
+      <span class="fill" id="fill"></span>
+      <span class="ghost" id="ghost"></span>
+      <span class="knob" id="knob"></span>
+    </div>
+  </div>
+
+  <div class="times mono"><span id="now">0:00</span><span>3:42</span></div>
+
+  <p class="hint">
+    Drag along the bar for normal seeking. <b>Keep holding and pull away from it</b> —
+    the further you go, the finer it gets. Let go with speed and it keeps travelling.
+  </p>
+</div>
+
+<script>
+'use strict';
+const DUR=222;                                  /* 3:42 */
+const RM=matchMedia('(prefers-reduced-motion: reduce)');
+
+const scrub=document.getElementById('scrub'), track=document.getElementById('track');
+const fill=document.getElementById('fill'), knob=document.getElementById('knob');
+const ghost=document.getElementById('ghost'), prec=document.getElementById('prec');
+const now=document.getElementById('now');
+
+let value=0;          /* committed value, 0..1 */
+let shown=0, shownV=0;/* what you see — springs toward value */
+let ghostV=0;         /* where 1:1 dragging would have put you */
+let dragging=false, ratio=1, lastX=0, vel=0, raf=null;
+
+const clamp=(v,a=0,b=1)=>v<a?a:v>b?b:v;
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+function draw(){
+  const w=track.clientWidth;
+  fill.style.width=(shown*100)+'%';
+  knob.style.transform=`translateX(${(shown*w).toFixed(2)}px) scale(${dragging?1.55:1})`;
+  knob.style.transition=RM.matches?'none':'transform .18s cubic-bezier(.2,0,0,1)';
+  track.style.height=dragging?'6px':'4px';
+  track.style.transition='height .18s cubic-bezier(.2,0,0,1)';
+
+  /* the ghost only earns its place once fine control has changed the answer */
+  const gap=Math.abs(ghostV-shown);
+  if(dragging&&ratio<0.92&&gap>0.004){
+    ghost.style.left=(ghostV*w).toFixed(2)+'px';
+    ghost.style.opacity='.55';
+  } else ghost.style.opacity='0';
+
+  if(dragging&&ratio<0.92){
+    prec.textContent=`1 : ${(1/ratio).toFixed(1)}`;
+    prec.style.left=(shown*w).toFixed(2)+'px';
+    prec.style.opacity='1';
+  } else prec.style.opacity='0';
+
+  now.textContent=fmt(shown*DUR);
+  scrub.setAttribute('aria-valuenow',Math.round(shown*100));
+  scrub.setAttribute('aria-valuetext',`${fmt(shown*DUR)} of ${fmt(DUR)}`);
+}
+
+/* the knob springs toward the value — it chases your finger and catches up */
+function tick(){
+  const k=460, c=34, dt=1/60;
+  const a=-k*(shown-value)-c*shownV;
+  shownV+=a*dt; shown+=shownV*dt;
+
+  if(!dragging&&Math.abs(vel)>1e-4){    /* released with speed: keep travelling */
+    value=clamp(value+vel*dt);
+    vel*=Math.pow(0.04,dt);
+    if(value<=0||value>=1)vel=0;
+  }
+  draw();
+  if(Math.abs(shown-value)>1e-4||Math.abs(shownV)>1e-3||Math.abs(vel)>1e-4||dragging)
+    raf=requestAnimationFrame(tick);
+  else{shown=value;shownV=0;draw();raf=null}
+}
+const wake=()=>{if(!raf)raf=requestAnimationFrame(tick)};
+
+function setFromX(clientX){
+  const r=track.getBoundingClientRect();
+  value=clamp((clientX-r.left)/r.width);
+  ghostV=value;
+}
+
+scrub.addEventListener('pointerdown',e=>{
+  scrub.setPointerCapture(e.pointerId);
+  dragging=true; vel=0; lastX=e.clientX; ratio=1;
+  setFromX(e.clientX);
+  if(RM.matches){shown=value;shownV=0}
+  wake();
+});
+
+scrub.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const r=track.getBoundingClientRect();
+  const cy=r.top+r.height/2;
+  const away=Math.abs(e.clientY-cy);
+
+  /* continuous, no tiers — this is the whole idea */
+  ratio=1/(1+away/45);
+
+  const dx=e.clientX-lastX; lastX=e.clientX;
+  const step=dx/r.width;
+  value=clamp(value+step*ratio);
+  ghostV=clamp(ghostV+step);          /* what 1:1 would have done */
+  vel=step*ratio*60;                  /* per-second, for the release */
+  wake();
+});
+
+function release(){
+  if(!dragging)return;
+  dragging=false;
+  if(RM.matches)vel=0;
+  wake();
+}
+scrub.addEventListener('pointerup',release);
+scrub.addEventListener('pointercancel',release);
+
+scrub.addEventListener('keydown',e=>{
+  const fine=e.shiftKey?0.002:0.02;
+  if(e.key==='ArrowRight'){value=clamp(value+fine);e.preventDefault()}
+  else if(e.key==='ArrowLeft'){value=clamp(value-fine);e.preventDefault()}
+  else if(e.key==='Home'){value=0;e.preventDefault()}
+  else if(e.key==='End'){value=1;e.preventDefault()}
+  else return;
+  ghostV=value; if(RM.matches){shown=value;shownV=0} wake();
+});
+
+addEventListener('resize',draw);
+value=0.32; shown=0.32; ghostV=0.32; draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 5 — Oscilloscope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+header.top { padding: clamp(2.5rem,6vw,4rem) 0 1.5rem; }
+header.top h1 { font-size: clamp(1.7rem,4vw,2.4rem); letter-spacing: -.03em; font-weight: 600; }
+header.top p { margin-top: 10px; max-width: 60ch; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+.bar { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-block: 1px solid var(--rule); flex-wrap: wrap; }
+.bar button { padding: 5px 11px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,.08); }
+
+.row { display: grid; grid-template-columns: 1fr; gap: 0; border-bottom: 1px solid var(--hair); }
+@media (min-width: 62rem) { .row { grid-template-columns: 240px 300px 1fr 150px; align-items: stretch; } }
+
+.cell { padding: 18px; display: flex; flex-direction: column; justify-content: center; }
+.cell + .cell { border-top: 1px solid var(--hair); }
+@media (min-width: 62rem) { .cell + .cell { border-top: 0; border-left: 1px solid var(--hair); } }
+
+.id .n { font-size: 15px; font-weight: 500; }
+.id .l { margin-top: 4px; font-family: var(--mono); font-size: 11px; line-height: 1.5; color: var(--muted); }
+.live { align-items: center; }
+
+/* the scope */
+.scope { position: relative; }
+.scope canvas { width: 100%; height: 104px; display: block; border-radius: 6px; background:
+  linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 100% 26px,
+  linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px) 0 0 / 40px 100%, #0d0d10;
+  border: 1px solid var(--hair); }
+.scope .axis { position: absolute; right: 8px; top: 6px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.scope .zero { position: absolute; left: 8px; bottom: 6px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+.num { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.9; }
+.num b { color: var(--ink); font-weight: 500; }
+.head { display: grid; grid-template-columns: 240px 300px 1fr 150px; border-bottom: 1px solid var(--rule); }
+.head span { padding: 12px 18px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 62rem) { .head { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 5</b><span>Oscilloscope — every row plots its own spring while you touch it</span>
+  <nav><a href="3-spec-sheet.html">3</a><a href="6-drill-down.html">6</a><a href="7-spring-matrix.html">7</a><a href="8-terminal.html">8</a></nav>
+</div></div>
+
+<div class="wrap">
+  <header class="top">
+    <span class="lbl">instrument</span>
+    <h1>You can see the overshoot.</h1>
+    <p>Each row traces its own spring's displacement against time, live, while you interact with
+       the component beside it. Press the like button and watch the trace pass through the target
+       and come back. This is the one claim the library makes, drawn rather than described.</p>
+  </header>
+
+  <div class="bar">
+    <span class="lbl" style="margin-right:4px">override spring</span>
+    <button data-spring="off" aria-pressed="true">each its own</button>
+    <button data-spring="snap">snap</button>
+    <button data-spring="bounce">bounce</button>
+    <button data-spring="settle">settle</button>
+    <button data-spring="fling">fling</button>
+    <span style="margin-left:auto"></span>
+    <button id="fireAll">▶ fire all</button>
+    <button id="slow" aria-pressed="false">0.25×</button>
+  </div>
+
+  <div class="head"><span>Component</span><span>Live</span><span>Displacement / time</span><span>Physics</span></div>
+  <div id="rows"></div>
+  <div style="height:90px"></div>
+</div>
+
+<script type="module">
+import { DEMOS, SPEED } from './_core.js'
+
+/* Damping ratio and friends, derived from the same k and c the spring uses,
+   so the numbers cannot drift from the trace beside them. */
+const K = { snap: [500, 40], bounce: [400, 14], settle: [260, 24], fling: [300, 30] }
+function physics(name) {
+  const [k, c] = K[name]
+  const w0 = Math.sqrt(k)
+  const z = c / (2 * Math.sqrt(k))
+  const over = z < 1 ? Math.exp((-Math.PI * z) / Math.sqrt(1 - z * z)) : 0
+  return { z, over, rest: Math.round((4 / (z * w0)) * 1000) }
+}
+
+const rows = document.getElementById('rows')
+const built = []
+
+Object.entries(DEMOS).forEach(([k, d]) => {
+  const el = document.createElement('div')
+  el.className = 'row'
+  el.innerHTML = `
+    <div class="cell id"><span class="n">${d.title}</span><span class="l">${k}</span></div>
+    <div class="cell live"><div class="mount"></div></div>
+    <div class="cell scope"><canvas></canvas><span class="axis">target</span><span class="zero">1.4s window</span></div>
+    <div class="cell num"></div>`
+  rows.append(el)
+
+  const api = d.build(el.querySelector('.mount'), { size: 26, label: 'Hold' })
+  const canvas = el.querySelector('canvas')
+  built.push({ api, canvas, numEl: el.querySelector('.num'), own: d.spring, trace: [] })
+})
+
+function writeNums(b, name) {
+  const p = physics(name)
+  b.numEl.innerHTML = `<div><b>${name}</b></div>
+    <div>ζ ${p.z.toFixed(2)}</div>
+    <div>over ${p.over < 0.01 ? '<1' : Math.round(p.over * 100)}%</div>
+    <div>rest ${p.rest}ms</div>`
+}
+built.forEach((b) => writeNums(b, b.own))
+
+/* One rAF for every scope. Each samples its component's primary spring, keeps
+   1.4 seconds of history, and normalises against the range it has actually
+   travelled — otherwise a spring resting at 1 draws a flat line at the top. */
+function loop() {
+  for (const b of built) {
+    const s = b.api.primary
+    // Keep rolling while the spring is awake, then for a short tail after it
+    // sleeps — and then stop. A buffer that scrolls forever would erase the
+    // waveform you just made and leave a flat line, which is the opposite of
+    // what this page is for.
+    const moving = s.on || Math.abs(s.x - s.t) > 1e-6
+    b.idle = moving ? 0 : (b.idle ?? 999) + 1
+    if (b.idle < 45) {
+      b.trace.push({ x: s.x, t: s.t })
+      if (b.trace.length > 190) b.trace.shift()
+      draw(b)
+    }
+  }
+  requestAnimationFrame(loop)
+}
+
+function draw(b) {
+  const c = b.canvas
+  const dpr = Math.min(2, devicePixelRatio || 1)
+  const w = c.clientWidth
+  const h = c.clientHeight
+  if (c.width !== w * dpr) {
+    c.width = w * dpr
+    c.height = h * dpr
+  }
+  const ctx = c.getContext('2d')
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  ctx.clearRect(0, 0, w, h)
+  if (b.trace.length < 2) return
+
+  let lo = Infinity
+  let hi = -Infinity
+  for (const p of b.trace) {
+    lo = Math.min(lo, p.x, p.t)
+    hi = Math.max(hi, p.x, p.t)
+  }
+  if (hi - lo < 1e-6) {
+    hi += 0.5
+    lo -= 0.5
+  }
+  const pad = (hi - lo) * 0.18
+  lo -= pad
+  hi += pad
+  const yOf = (v) => h - ((v - lo) / (hi - lo)) * h
+  const xOf = (i) => (i / (b.trace.length - 1)) * w
+
+  // Target line: the value the spring is heading for.
+  ctx.strokeStyle = 'rgba(255,255,255,.22)'
+  ctx.setLineDash([3, 4])
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  b.trace.forEach((p, i) => (i ? ctx.lineTo(xOf(i), yOf(p.t)) : ctx.moveTo(xOf(i), yOf(p.t))))
+  ctx.stroke()
+  ctx.setLineDash([])
+
+  // The trace itself.
+  ctx.strokeStyle = '#6366f1'
+  ctx.lineWidth = 1.8
+  ctx.lineJoin = 'round'
+  ctx.beginPath()
+  b.trace.forEach((p, i) => (i ? ctx.lineTo(xOf(i), yOf(p.x)) : ctx.moveTo(xOf(i), yOf(p.x))))
+  ctx.stroke()
+
+  // Live head.
+  const lastP = b.trace[b.trace.length - 1]
+  ctx.fillStyle = '#a5b4fc'
+  ctx.beginPath()
+  ctx.arc(w - 1, yOf(lastP.x), 2.6, 0, Math.PI * 2)
+  ctx.fill()
+}
+requestAnimationFrame(loop)
+
+document.querySelectorAll('[data-spring]').forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll('[data-spring]').forEach((x) => x.setAttribute('aria-pressed', String(x === btn)))
+    const s = btn.dataset.spring
+    built.forEach((b) => {
+      const use = s === 'off' ? b.own : s
+      b.api.spring(use)
+      writeNums(b, use)
+    })
+    document.getElementById('fireAll').click()
+  }
+})
+document.getElementById('fireAll').onclick = () =>
+  built.forEach((b, i) => setTimeout(() => b.api.fire(), i * 60))
+document.getElementById('slow').onclick = function () {
+  const on = this.getAttribute('aria-pressed') === 'true'
+  SPEED.value = on ? 1 : 0.25
+  this.setAttribute('aria-pressed', String(!on))
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 4 — Live wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+header.top { padding: clamp(2.5rem,6vw,4rem) 0 1.75rem; }
+header.top h1 { font-size: clamp(1.8rem,4.5vw,2.6rem); letter-spacing: -.03em; font-weight: 600; max-width: 20ch; }
+header.top p { margin-top: 12px; max-width: 54ch; color: var(--muted); font-size: 16px; line-height: 1.6; }
+
+/* the global console — the idea that makes this concept different */
+.console { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px;
+  padding: 12px clamp(1rem,4vw,4rem); border-block: 1px solid var(--rule);
+  background: rgba(9,9,11,.82); backdrop-filter: blur(14px); flex-wrap: wrap; }
+.console .fire { padding: 9px 18px; border-radius: 8px; background: var(--ink); color: var(--bg); font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.console .fire:hover { background: #fff; }
+.console button.tog { padding: 6px 12px; border: 1px solid var(--rule); border-radius: 7px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.console button.tog[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,.08); }
+.console .sep { width: 1px; height: 20px; background: var(--rule); margin-inline: 4px; }
+
+/* bento */
+.wall { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-block: 28px 90px; }
+@media (min-width: 60rem) { .wall { grid-template-columns: repeat(4, 1fr); gap: 18px; } }
+
+.tile { position: relative; display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--rule); border-radius: 14px; background: var(--panel);
+  transition: border-color .2s, box-shadow .2s, transform .2s; }
+.tile:hover { border-color: var(--accent); box-shadow: 0 0 26px -6px rgba(99,102,241,.45); transform: translateY(-2px); }
+.tile.big { grid-column: span 2; }
+@media (min-width: 60rem) { .tile.big { grid-column: span 2; grid-row: span 2; } }
+
+.tile .pad { flex: 1; display: grid; place-items: center; padding: 30px 20px; min-height: 150px;
+  background: radial-gradient(80% 80% at 50% 35%, rgba(99,102,241,.09), transparent 70%); }
+.tile.big .pad { min-height: 260px; }
+.tile.big .pad .mount { transform: scale(1.35); }
+.tile .foot { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--hair); background: var(--surface); }
+.tile .foot .n { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.tile .foot .s { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.tile .beam { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(50% 50% at 50% 40%, rgba(99,102,241,.30), transparent 70%); }
+.tile.hit .beam { animation: hit .7s ease-out; }
+@keyframes hit { from { opacity: 1 } to { opacity: 0 } }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 4</b><span>Live wall — bento grid with one console that fires every component at once</span>
+  <nav><a href="1-focus-stage.html">1</a><a href="2-editorial.html">2</a><a href="3-spec-sheet.html">3</a></nav>
+</div></div>
+
+<header class="top wrap">
+  <span class="lbl">catalog</span>
+  <h1>Press one button. Watch ten springs disagree.</h1>
+  <p>Every tile is live and shares one console. Fire them together to feel the scale as a
+     scale — <span style="color:var(--ink)">bounce</span> arrives first and keeps moving,
+     <span style="color:var(--ink)">snap</span> arrives late and stops dead. Slow it to a
+     quarter speed and the difference stops being subtle.</p>
+</header>
+
+<div class="console">
+  <button class="fire" id="fireAll">▶ Fire all</button>
+  <div class="sep"></div>
+  <span class="lbl">override spring</span>
+  <button class="tog" data-spring="off" aria-pressed="true">each its own</button>
+  <button class="tog" data-spring="snap">snap</button>
+  <button class="tog" data-spring="bounce">bounce</button>
+  <button class="tog" data-spring="settle">settle</button>
+  <button class="tog" data-spring="fling">fling</button>
+  <div class="sep"></div>
+  <button class="tog" id="slow" aria-pressed="false">0.25×</button>
+</div>
+
+<div class="wrap"><div class="wall" id="wall"></div></div>
+
+<script type="module">
+import { DEMOS, SPEED } from './_core.js'
+
+const BIG = new Set(['scrub', 'undo-toast'])
+const wall = document.getElementById('wall')
+const built = []
+
+Object.entries(DEMOS).forEach(([k, d]) => {
+  const t = document.createElement('div')
+  t.className = 'tile' + (BIG.has(k) ? ' big' : '')
+  t.innerHTML = `<span class="beam"></span>
+    <div class="pad"><div class="mount"></div></div>
+    <div class="foot"><span class="n">${d.title}</span><span class="s">${d.spring} · ${d.kb}</span></div>`
+  wall.append(t)
+  const api = d.build(t.querySelector('.mount'), { size: 30 })
+  built.push({ tile: t, api, own: d.spring, foot: t.querySelector('.s'), kb: d.kb })
+})
+
+document.getElementById('fireAll').onclick = () => {
+  built.forEach(({ tile, api }, i) => {
+    setTimeout(() => {
+      api.fire()
+      tile.classList.remove('hit')
+      void tile.offsetWidth
+      tile.classList.add('hit')
+    }, i * 45)
+  })
+}
+
+document.querySelectorAll('[data-spring]').forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-spring]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+    const s = b.dataset.spring
+    built.forEach((d) => {
+      const use = s === 'off' ? d.own : s
+      d.api.spring(use)
+      d.foot.textContent = `${use} · ${d.kb}`
+    })
+    document.getElementById('fireAll').click()
+  }
+})
+
+document.getElementById('slow').onclick = function () {
+  const on = this.getAttribute('aria-pressed') === 'true'
+  SPEED.value = on ? 1 : 0.25
+  this.setAttribute('aria-pressed', String(!on))
+}
+</script>
+</body>
+</html>

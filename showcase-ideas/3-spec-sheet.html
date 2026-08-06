@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 3 — Spec sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+header.top { padding: clamp(2.5rem,6vw,4rem) 0 1.5rem; }
+header.top h1 { font-size: clamp(1.7rem,4vw,2.4rem); letter-spacing: -.03em; font-weight: 600; }
+header.top p { margin-top: 10px; max-width: 56ch; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+.bar { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-block: 1px solid var(--rule); flex-wrap: wrap; }
+.bar button { padding: 5px 11px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.bar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,.08); }
+
+table { width: 100%; border-collapse: collapse; }
+thead th { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); cursor: pointer; white-space: nowrap; }
+thead th:hover { color: var(--ink); }
+thead th .car { opacity: .35; }
+thead th[aria-sort] .car { opacity: 1; color: var(--accent); }
+tbody td { padding: 14px; border-bottom: 1px solid var(--hair); vertical-align: middle; }
+tbody tr:hover { background: rgba(255,255,255,.025); }
+.name { font-size: 15px; font-weight: 500; }
+.name small { display: block; margin-top: 3px; font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 400; }
+.demo-cell { width: 380px; min-width: 300px; }
+.demo-box { display: flex; align-items: center; justify-content: center; min-height: 72px; padding: 10px 16px; border: 1px solid var(--hair); border-radius: 8px; background: var(--panel); }
+td.num { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .add { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--rule); border-radius: 6px; padding: 5px 10px; white-space: nowrap; }
+td .add:hover { color: var(--accent); border-color: var(--accent); }
+@media (max-width: 60rem) { .hide-sm { display: none; } .demo-cell { width: auto; min-width: 0; } }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 3</b><span>Spec sheet — dense, sortable, engineer-first. Demo lives inside the row</span>
+  <nav><a href="1-focus-stage.html">1</a><a href="2-editorial.html">2</a><a href="4-live-wall.html">4</a></nav>
+</div></div>
+
+<div class="wrap">
+  <header class="top">
+    <span class="lbl">registry</span>
+    <h1>Every component, one screen.</h1>
+    <p>Built for the reader who already knows what a spring is and wants to know which one, how
+       many states, and how much it weighs. Sort any column. The demo in each row is live.</p>
+  </header>
+
+  <div class="bar">
+    <span class="lbl" style="margin-right:4px">category</span>
+    <button data-cat="all" aria-pressed="true">all</button>
+    <button data-cat="tactile-feedback">tactile-feedback</button>
+    <button data-cat="input-utility">input-utility</button>
+    <span style="margin-left:auto" class="lbl" id="count"></span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th data-sort="title">Component <span class="car">↕</span></th>
+        <th class="demo-cell">Live</th>
+        <th data-sort="spring" class="hide-sm">Spring <span class="car">↕</span></th>
+        <th data-sort="states" class="hide-sm">States <span class="car">↕</span></th>
+        <th data-sort="kb" class="hide-sm">Size <span class="car">↕</span></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div style="height:80px"></div>
+</div>
+
+<script type="module">
+import { DEMOS } from './_core.js'
+
+const items = Object.entries(DEMOS).map(([k, d]) => ({ key: k, ...d, kbn: parseFloat(d.kb) }))
+let cat = 'all'
+let sort = { col: 'title', dir: 1 }
+
+function render() {
+  const rows = document.getElementById('rows')
+  rows.innerHTML = ''
+  const shown = items
+    .filter((i) => cat === 'all' || i.cat === cat)
+    .sort((a, b) => {
+      const c = sort.col
+      const va = c === 'states' ? a.states : c === 'kb' ? a.kbn : a[c]
+      const vb = c === 'states' ? b.states : c === 'kb' ? b.kbn : b[c]
+      return (va > vb ? 1 : va < vb ? -1 : 0) * sort.dir
+    })
+
+  for (const it of shown) {
+    const tr = document.createElement('tr')
+    tr.innerHTML = `<td><div class="name">${it.title}<small>${it.line}</small></div></td>
+      <td class="demo-cell"><div class="demo-box"><div class="mount"></div></div></td>
+      <td class="num hide-sm">${it.spring}</td>
+      <td class="num hide-sm">${it.states}</td>
+      <td class="num hide-sm">${it.kb}</td>
+      <td style="text-align:right"><button class="add">add →</button></td>`
+    rows.append(tr)
+    it.build(tr.querySelector('.mount'), { size: 24, label: 'Hold' })
+    tr.querySelector('.add').onclick = function () {
+      navigator.clipboard?.writeText(`npx @abenor/z-ui add ${it.key}`).catch(() => {})
+      this.textContent = 'copied'
+      setTimeout(() => (this.textContent = 'add →'), 1300)
+    }
+  }
+  document.getElementById('count').textContent = `${shown.length} of ${items.length}`
+  document.querySelectorAll('th[data-sort]').forEach((th) => {
+    if (th.dataset.sort === sort.col) th.setAttribute('aria-sort', sort.dir === 1 ? 'ascending' : 'descending')
+    else th.removeAttribute('aria-sort')
+  })
+}
+
+document.querySelectorAll('th[data-sort]').forEach((th) => {
+  th.onclick = () => {
+    const c = th.dataset.sort
+    sort = { col: c, dir: sort.col === c ? -sort.dir : 1 }
+    render()
+  }
+})
+document.querySelectorAll('[data-cat]').forEach((b) => {
+  b.onclick = () => {
+    cat = b.dataset.cat
+    document.querySelectorAll('[data-cat]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+    render()
+  }
+})
+
+render()
+</script>
+</body>
+</html>
