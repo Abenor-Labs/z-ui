@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "hold-to-confirm",
+  "type": "registry:component",
+  "title": "Hold To Confirm",
+  "description": "A destructive action that costs a second of deliberate pressure, and unwinds if you let go.",
+  "dependencies": ["motion"],
+  "registryDependencies": ["z-spring", "z-cn"],
+  "files": [
+    { "path": "hold-to-confirm.tsx", "type": "registry:component" }
+  ],
+  "meta": {
+    "category": "input-utility",
+    "states": ["idle", "hover", "holding", "releasing", "confirmed"],
+    "spring": "snap"
+  }
+}

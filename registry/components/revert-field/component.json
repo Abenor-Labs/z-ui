@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "revert-field",
+  "type": "registry:component",
+  "title": "Revert Field",
+  "description": "A text field where Escape rewinds an edit as a watched un-typing, deleting to the shared prefix and typing the prior value back in, instead of silently snapping the string back.",
+  "dependencies": ["motion"],
+  "registryDependencies": ["use-controllable-state", "z-spring", "z-cn"],
+  "files": [
+    { "path": "revert-field.tsx", "type": "registry:component" }
+  ],
+  "meta": {
+    "category": "input-utility",
+    "states": ["idle", "hover", "editing", "reverting"],
+    "spring": "snap"
+  }
+}

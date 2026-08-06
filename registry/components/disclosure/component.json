@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "disclosure",
+  "type": "registry:component",
+  "title": "Disclosure",
+  "description": "An accordion panel whose height is a spring you can interrupt mid-flight, not a duration that has to finish first.",
+  "dependencies": ["motion"],
+  "registryDependencies": ["use-controllable-state", "z-spring", "z-cn"],
+  "files": [
+    { "path": "disclosure.tsx", "type": "registry:component" }
+  ],
+  "meta": {
+    "category": "state-morphing",
+    "states": ["closed", "hover", "opening", "open", "closing"],
+    "spring": "settle"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sheet",
+  "type": "registry:component",
+  "title": "Sheet",
+  "description": "A draggable panel that snaps to the detent your release velocity projects toward, not the one nearest where your hand happened to stop.",
+  "dependencies": ["motion"],
+  "registryDependencies": ["z-spring", "z-cn"],
+  "files": [
+    { "path": "sheet.tsx", "type": "registry:component" }
+  ],
+  "meta": {
+    "category": "input-utility",
+    "states": ["closed", "dragging", "settling", "open"],
+    "spring": "settle"
+  }
+}

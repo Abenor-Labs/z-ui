@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slide-to-confirm",
+  "type": "registry:component",
+  "title": "Slide To Confirm",
+  "description": "A drag-to-commit gesture that fails safe with a recoil carrying your release velocity, so how close the attempt got is something you feel, not just a snap back to zero.",
+  "dependencies": ["motion"],
+  "registryDependencies": ["z-spring", "z-cn"],
+  "files": [
+    { "path": "slide-to-confirm.tsx", "type": "registry:component" }
+  ],
+  "meta": {
+    "category": "input-utility",
+    "states": ["idle", "hover", "dragging", "snapping-back", "confirmed"],
+    "spring": "bounce"
+  }
+}
