@@ -52,5 +52,17 @@ jobs:
       - name: Check generated registry is current
         run: pnpm registry:check
 
+      # Every workspace package that has tests. Today that is the CLI, whose
+      # suite includes a tripwire asserting its copy of the spring constants
+      # still matches registry/lib/z-spring — the CLI cannot import that file,
+      # so nothing else would notice the two drifting apart.
+      - name: Test
+        run: pnpm test
+
       - name: Build site
         run: pnpm --filter @z-ui/web build
+
+      # The CLI is published from dist/, so a package that typechecks but does
+      # not emit is still broken for everyone who installs it.
+      - name: Build CLI
+        run: pnpm --filter @abenor/z-ui build

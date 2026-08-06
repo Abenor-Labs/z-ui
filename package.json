@@ -25,7 +25,7 @@
     "lint:registry:test": "node scripts/lint-registry.test.mjs",
     "lint:contrast": "node scripts/lint-contrast.mjs",
     "lint:contrast:test": "node scripts/lint-contrast.test.mjs",
-    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check"
+    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check && pnpm test"
   },
   "devDependencies": {
     "ajv": "^8.20.0",
