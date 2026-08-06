@@ -147,26 +147,56 @@ const LIGHT_CONSUMER = '#ffffff'
  */
 const PAIRS = [
   // --- the page ground ---------------------------------------------------
-  { fg: 'silkscreen', bg: 'chassis', kind: 'text', role: 'body copy and headings' },
+  { fg: 'ink', bg: 'chassis', kind: 'text', role: 'body copy and headings' },
   { fg: 'muted', bg: 'chassis', kind: 'text', role: 'lbl labels, lead paragraphs, footer' },
-  { fg: 'mint', bg: 'chassis', kind: 'text', role: 'brandmark, CTA label' },
-  { fg: 'mint', bg: 'chassis', kind: 'ui', role: 'CTA border, focus ring' },
+  { fg: 'accent', bg: 'chassis', kind: 'text', role: 'section index, install path label' },
+  { fg: 'accent', bg: 'chassis', kind: 'ui', role: 'focus ring, hovered CTA border' },
   {
     fg: 'rule',
     bg: 'chassis',
     kind: 'decorative',
-    role: 'section rules and the header underline',
+    role: 'section rules and the fading header hairline',
     why: '1.4.11 exempts boundaries that carry no information; these separate sections that whitespace already separates, and removing them loses nothing but taste',
+  },
+  {
+    fg: 'hair',
+    bg: 'chassis',
+    kind: 'decorative',
+    role: 'the quieter of the two rules, used between rows inside a section',
+    why: 'same exemption as rule, one step fainter; it never carries state or boundary information a reader must perceive',
+  },
+
+  // --- surface: the stack bar, footer, and every card footer -------------
+  { fg: 'ink', bg: 'surface', kind: 'text', role: 'component titles in card footers, footer wordmark' },
+  { fg: 'muted', bg: 'surface', kind: 'text', role: 'footer links, category and state chips' },
+  { fg: 'accent', bg: 'surface', kind: 'text', role: 'hovered footer title, active filter label' },
+  { fg: 'accent', bg: 'surface', kind: 'ui', role: 'active category chip border' },
+  {
+    fg: 'hair',
+    bg: 'surface',
+    kind: 'decorative',
+    role: 'the divider between a card body and its footer',
+    why: 'the footer is already separated by its own background; this hairline is taste, not information',
   },
 
   // --- panels: catalog cards, bench, code, install ------------------------
-  { fg: 'silkscreen', bg: 'panel', kind: 'text', role: 'component names, inline code, readouts' },
+  { fg: 'ink', bg: 'panel', kind: 'text', role: 'component names, inline code, readouts' },
   { fg: 'muted', bg: 'panel', kind: 'text', role: 'descriptions, lbl, inactive tab labels' },
-  { fg: 'mint', bg: 'panel', kind: 'text', role: 'data-state readout, active tab, selector column' },
-  { fg: 'mint', bg: 'panel', kind: 'ui', role: 'active chip border, lit indicator dot' },
-  { fg: 'muted', bg: 'panel', kind: 'ui', role: 'card hover border, chip hover border' },
+  { fg: 'accent', bg: 'panel', kind: 'text', role: 'data-state readout, active tab, selector column' },
+  { fg: 'accent', bg: 'panel', kind: 'ui', role: 'active chip border, lit indicator dot, card hover ring' },
+  { fg: 'muted', bg: 'panel', kind: 'ui', role: 'chip hover border' },
+  { fg: 'control', bg: 'chassis', kind: 'ui', role: 'resting control border on the page ground' },
+  { fg: 'control', bg: 'surface', kind: 'ui', role: 'resting control border in footers and bars' },
+  { fg: 'control', bg: 'panel-2', kind: 'ui', role: 'resting control border inside a demo' },
   {
     fg: 'rule',
+    bg: 'panel',
+    kind: 'decorative',
+    role: 'table and bench row rules',
+    why: 'the states table has a header and aligned columns; these rules only reduce tracking effort and carry no state',
+  },
+  {
+    fg: 'control',
     bg: 'panel',
     kind: 'ui',
     // Not decorative, and this is the distinction the whole kind field exists
@@ -175,23 +205,23 @@ const PAIRS = [
     // is the only thing saying that chip is a control.
     role: 'resting chip border, unlit indicator dot',
   },
+  {
+    fg: 'hair',
+    bg: 'panel',
+    kind: 'decorative',
+    role: 'row dividers inside the states table and the bench',
+    why: 'the table has a header and aligned columns; the rules only reduce tracking effort',
+  },
 
-  // --- panel-2 -----------------------------------------------------------
-  // Declared ahead of first use so the token is covered by rule A, and so the
-  // first use is vetted before it is written rather than after someone notices.
-  { fg: 'silkscreen', bg: 'panel-2', kind: 'text', role: 'declared ahead of first use' },
-  { fg: 'muted', bg: 'panel-2', kind: 'text', role: 'declared ahead of first use' },
+  // --- panel-2: the inner chrome of a demo -------------------------------
+  { fg: 'ink', bg: 'panel-2', kind: 'text', role: 'command palette input, toast body' },
+  { fg: 'muted', bg: 'panel-2', kind: 'text', role: 'placeholder text, keyboard badges' },
 
-  // --- control (the hover step) ------------------------------------------
-  { fg: 'silkscreen', bg: 'control', kind: 'text', role: 'label inside a hovered control' },
-  { fg: 'muted', bg: 'control', kind: 'text', role: 'secondary label, hovered' },
-  { fg: 'rule', bg: 'control', kind: 'ui', role: 'control boundary at hover' },
-
-  // --- mint as a fill ----------------------------------------------------
-  // hover:bg-mint hover:text-chassis on the CTA, and ::selection. Mint is a
-  // surface here, which is why the dark-only rule above is about the absence
-  // of a light theme and not about refusing bright surfaces that exist.
-  { fg: 'chassis', bg: 'mint', kind: 'text', role: 'CTA label on hover fill, ::selection' },
+  // --- accent as a fill ---------------------------------------------------
+  // The morph button and ::selection both paint accent as a surface. The
+  // dark-only rule elsewhere is about the absence of a light theme, not about
+  // refusing bright surfaces that genuinely exist.
+  { fg: 'chassis', bg: 'accent', kind: 'text', role: 'CTA label on hover fill in spring-race' },
 ]
 
 // ---- tokens --------------------------------------------------------------

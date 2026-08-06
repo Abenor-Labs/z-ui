@@ -5,18 +5,35 @@
 @source '../../registry/**/*.tsx';
 
 @theme {
-  /* The Instrument Panel. Ink chassis, silkscreen markings, one mint
-     indicator that lights only while something is moving. */
-  --color-chassis: #0a0a0b;
-  --color-panel: #121214;
-  --color-panel-2: #1a1a1e;
-  --color-silkscreen: #e8e4dc;
-  --color-muted: #7a756d;
-  --color-rule: #232327;
-  --color-mint: #00e5a0;
+  /* Near-black ground, one electric indigo, and nothing else that carries
+     meaning. Every border is white at low alpha rather than a grey, so the
+     chrome sits on whatever surface it lands on. */
+  --color-chassis: #09090b;
+  --color-surface: #131315;
+  --color-panel: #18181b;
+  --color-panel-2: #27272a;
+  --color-ink: #e5e1e4;
+  --color-muted: #a1a1aa;
+  --color-rule: #2a2a2e;
+  --color-hair: #1c1c1f;
+  /* indigo-400, not indigo-500. #6366f1 measures 3.97:1 on the panel surface,
+     under the 4.5:1 AA floor for text, and this token labels tabs and section
+     indices. Lightening one step clears every surface at 5.94:1 or better
+     without leaving the hue. */
+  --color-accent: #818cf8;
+  /* Interactive boundaries only. `rule` and `hair` are dividers and exempt
+     under 1.4.11; a chip border is the only thing saying a chip is a control,
+     so it owes 3:1 and gets its own token rather than borrowing a decorative
+     one. */
+  --color-control: #71717a;
 
-  --font-sans: 'Inter var', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Bound to the next/font variables set on <html> in the root layout. */
+  --font-sans: var(--font-geist), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
 }
 
 @layer base {
@@ -27,30 +44,88 @@
 
   body {
     background: var(--color-chassis);
-    color: var(--color-silkscreen);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
   ::selection {
-    background: var(--color-mint);
+    background: var(--color-accent);
     color: var(--color-chassis);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-mint);
-    outline-offset: 2px;
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
-  /* Mono uppercase is the panel's silkscreen: every label, every unit. */
+  /* Mono is the site's label voice: every eyebrow, every unit, every path.
+     Not uppercased here — the few labels that shout are written that way. */
   .lbl {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
     color: var(--color-muted);
+  }
+
+  /* The two display sizes. Everything else is body or mono. */
+  .t-xl {
+    font-size: clamp(2rem, 7vw, 3rem);
+    line-height: 1.16;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+  }
+
+  .t-lg {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .t-lg {
+      font-size: 2rem;
+      line-height: 2.5rem;
+      letter-spacing: -0.02em;
+    }
+  }
+
+  /* Engineering-drawing grid. It sits under the hero at very low contrast to
+     give the shader something to be measured against — a gradient alone reads
+     as a screensaver, a gradient over a grid reads as an instrument. */
+  .grid-paper {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 100%);
+  }
+
+  /* A hairline that fades out at both ends, so section boundaries stop short of
+     the page edge instead of boxing the content in. */
+  .rule-fade {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-rule) 12%,
+      var(--color-rule) 88%,
+      transparent
+    );
   }
 
   /* Shiki emits its own background; the panel supplies the ground instead. */

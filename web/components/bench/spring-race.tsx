@@ -1,8 +1,8 @@
 'use client'
 
 import * as React from 'react'
+import { motion } from 'motion/react'
 import { springs, type SpringName } from '@/lib/z-spring'
-import { LikeButton } from '@/components/z-ui/like-button'
 
 /**
  * Derived from the same stiffness and damping the components animate from, so
@@ -44,26 +44,27 @@ const NAMES = Object.keys(springs) as SpringName[]
 
 /**
  * The only honest answer to "what does bounce feel like". One trigger, four
- * presets, same component, same size. Reading that bounce has a damping ratio
- * of 0.35 conveys nothing; firing these together conveys all of it.
+ * presets, fired together.
+ *
+ * Deliberately not a component. This ran on a like-button for a while, which
+ * meant every component's page demonstrated its springs using a different
+ * component — four hearts on the scrub page, explaining nothing about scrub.
+ * A bare travelling mark isolates the spring from whatever it happens to be
+ * driving, and the dashed line marks the target so overshoot is a thing you can
+ * see the mark cross rather than a number in the table underneath.
  */
 export function SpringRace() {
-  const [nonce, setNonce] = React.useState(0)
-  const [pressed, setPressed] = React.useState(false)
-
-  const fire = () => {
-    setPressed((p) => !p)
-    setNonce((n) => n + 1)
-  }
+  const [out, setOut] = React.useState(false)
+  const fire = () => setOut((o) => !o)
 
   return (
-    <div className="border border-rule bg-panel">
-      <div className="flex items-center justify-between border-b border-rule px-5 py-3">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
+      <div className="flex items-center justify-between border-b border-hair px-5 py-3">
         <span className="lbl">the same press, four presets</span>
         <button
           type="button"
           onClick={fire}
-          className="border border-mint px-3 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-mint transition-colors hover:bg-mint hover:text-chassis"
+          className="border border-accent px-3 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-accent transition-colors hover:bg-accent hover:text-chassis"
         >
           fire all
         </button>
@@ -75,27 +76,32 @@ export function SpringRace() {
           return (
             <div
               key={name}
-              className="flex flex-col items-center gap-3 border-b border-r border-rule px-3 py-6 last:border-r-0 sm:border-b-0"
+              className="flex flex-col items-center gap-3 border-b border-r border-hair px-3 py-6 last:border-r-0 sm:border-b-0"
             >
-              <LikeButton
-                key={`${name}-${nonce}`}
-                spring={name}
-                pressed={pressed}
-                onPressedChange={setPressed}
-                aria-label={`Like, ${name} spring`}
-              />
-              <span className="lbl !text-mint">{name}</span>
+              {/* The track. The dashed rule is the target, so a mark that goes
+                  past it and comes back is overshoot you watched happen. */}
+              <div className="relative h-10 w-full" aria-hidden>
+                <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/10" />
+                <span className="absolute right-2 top-1/2 h-4 w-px -translate-y-1/2 border-l border-dashed border-white/30" />
+                <motion.span
+                  className="absolute top-1/2 size-2.5 -translate-y-1/2 rounded-full bg-accent"
+                  initial={false}
+                  animate={{ left: out ? 'calc(100% - 0.5rem - 5px)' : '5px' }}
+                  transition={springs[name]}
+                />
+              </div>
+              <span className="lbl !text-accent">{name}</span>
               <dl className="grid grid-cols-[auto_auto] gap-x-2 gap-y-0.5 font-mono text-[0.6875rem] tabular-nums text-muted">
                 <dt>ζ</dt>
-                <dd className="text-right text-silkscreen">{p.z.toFixed(2)}</dd>
+                <dd className="text-right text-ink">{p.z.toFixed(2)}</dd>
                 <dt>t90</dt>
-                <dd className="text-right text-silkscreen">{p.t90}ms</dd>
+                <dd className="text-right text-ink">{p.t90}ms</dd>
                 <dt>over</dt>
-                <dd className="text-right text-silkscreen">
+                <dd className="text-right text-ink">
                   {p.overshoot < 0.01 ? '<1' : Math.round(p.overshoot * 100)}%
                 </dd>
                 <dt>rest</dt>
-                <dd className="text-right text-silkscreen">{p.rest}ms</dd>
+                <dd className="text-right text-ink">{p.rest}ms</dd>
               </dl>
             </div>
           )

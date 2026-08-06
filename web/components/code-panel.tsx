@@ -29,8 +29,8 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
   }
 
   return (
-    <div className="border border-rule bg-panel">
-      <div className="flex flex-wrap items-center gap-1 border-b border-rule px-2 py-2">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
+      <div className="flex flex-wrap items-center gap-1 border-b border-hair px-2 py-2">
         {files.map((f, i) => (
           <button
             key={f.key}
@@ -39,7 +39,7 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
             aria-pressed={i === active}
             className={
               'px-2.5 py-1 font-mono text-[0.6875rem] transition-colors ' +
-              (i === active ? 'text-mint' : 'text-muted hover:text-silkscreen')
+              (i === active ? 'text-accent' : 'text-muted hover:text-ink')
             }
           >
             {f.target}
@@ -48,7 +48,7 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
         <button
           type="button"
           onClick={copy}
-          className="ml-auto border border-rule px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted transition-colors hover:border-mint hover:text-mint"
+          className="ml-auto border border-control px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-accent"
         >
           {copied ? 'copied' : 'copy'}
         </button>
@@ -56,10 +56,10 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
 
       <div className="code" dangerouslySetInnerHTML={{ __html: file.html }} />
 
-      <div className="flex flex-wrap items-center gap-x-6 border-t border-rule px-5 py-2.5">
+      <div className="flex flex-wrap items-center gap-x-6 border-t border-hair px-5 py-2.5">
         <span className="lbl">{file.lines} lines</span>
         <span className="lbl">sha {file.sha}</span>
-        <span className="lbl !text-mint">matches /r/</span>
+        <span className="lbl !text-accent">matches /r/</span>
       </div>
     </div>
   )

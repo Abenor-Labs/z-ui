@@ -41,6 +41,16 @@ function fire(el: Element, type: string) {
 export type BenchProps = {
   states: string[]
   defaultSpring: SpringName
+  /**
+   * Whether the states can be driven from the chips.
+   *
+   * A state is forceable only when it is a combination of pointer presence and
+   * pointer pressure, which is what `decompose` knows how to reconstruct. A
+   * component whose states come out of a continuous gesture — how far the
+   * pointer has travelled, whether it is still moving — cannot be put into one
+   * by dispatching two events, so it opts out and the reader drives it by hand.
+   */
+  forceable?: boolean
   render: (args: {
     pressed: boolean
     setPressed: (v: boolean) => void
@@ -48,7 +58,7 @@ export type BenchProps = {
   }) => React.ReactNode
 }
 
-export function Bench({ states, defaultSpring, render }: BenchProps) {
+export function Bench({ states, defaultSpring, forceable = true, render }: BenchProps) {
   const [spring, setSpring] = React.useState<SpringName>(defaultSpring)
   const [reduced, setReduced] = React.useState(false)
   const [pressed, setPressed] = React.useState(false)
@@ -125,12 +135,12 @@ export function Bench({ states, defaultSpring, render }: BenchProps) {
   }
 
   return (
-    <div className="border border-rule bg-panel">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
       {/* stage */}
       <div
         ref={stageRef}
         key={nonce}
-        className="grid min-h-52 place-items-center border-b border-rule px-6 py-12"
+        className="grid min-h-52 place-items-center border-b border-hair px-6 py-12"
       >
         <MotionConfig reducedMotion={reduced ? 'always' : 'user'}>
           {render({ pressed, setPressed, spring })}
@@ -138,36 +148,45 @@ export function Bench({ states, defaultSpring, render }: BenchProps) {
       </div>
 
       {/* readout */}
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-2 border-b border-rule px-5 py-3">
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-2 border-b border-hair px-5 py-3">
         <span className="flex items-center gap-2.5">
           <span
             aria-hidden
             className={
               'size-1.5 rounded-full transition-colors duration-150 ' +
-              (moving ? 'bg-mint' : 'bg-rule')
+              (moving ? 'bg-accent' : 'bg-rule')
             }
           />
           <span className="lbl">data-state</span>
-          <code className="font-mono text-sm text-mint">{live}</code>
+          <code className="font-mono text-sm text-accent">{live}</code>
         </span>
         <span className="flex items-center gap-2.5">
           <span className="lbl">spring</span>
-          <code className="font-mono text-sm text-silkscreen">{spring}</code>
+          <code className="font-mono text-sm text-ink">{spring}</code>
         </span>
       </div>
 
       {/* controls */}
       <div className="grid gap-3 px-5 py-4">
-        <Row label="state">
-          {states.map((s) => (
-            <Chip key={s} active={forced === s} onClick={() => applyForce(s)}>
-              {s}
+        {forceable ? (
+          <Row label="state">
+            {states.map((s) => (
+              <Chip key={s} active={forced === s} onClick={() => applyForce(s)}>
+                {s}
+              </Chip>
+            ))}
+            <Chip active={forced === null} onClick={() => applyForce(null)}>
+              release
             </Chip>
-          ))}
-          <Chip active={forced === null} onClick={() => applyForce(null)}>
-            release
-          </Chip>
-        </Row>
+          </Row>
+        ) : (
+          <Row label="state">
+            <span className="text-sm text-muted">
+              Driven by the gesture, not by a pointer state the bench can dispatch. Use the
+              component itself.
+            </span>
+          </Row>
+        )}
 
         <Row label="spring">
           {(Object.keys(springs) as SpringName[]).map((s) => (
@@ -221,8 +240,8 @@ function Chip({
       className={
         'border px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] transition-colors ' +
         (active
-          ? 'border-mint text-mint'
-          : 'border-rule text-muted hover:border-muted hover:text-silkscreen')
+          ? 'border-accent text-accent'
+          : 'border-control text-muted hover:border-muted hover:text-ink')
       }
     >
       {children}

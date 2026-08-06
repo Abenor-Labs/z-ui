@@ -121,15 +121,20 @@ const seen = new Set(base)
  * The unmutated tree, asserted directly. These are the claims no mutation can
  * make, because they are about what the linter does *not* do.
  *
- * The scope-split one has teeth: silkscreen is #e8e4dc, so if web/ tokens were
+ * The scope-split one has teeth: ink is #e8e4dc, so if web/ tokens were
  * ever measured against a light surface it would land at 1.27:1 and that
  * assertion would fire immediately.
  */
 const baseline = [
   ['the linter fails on the real tree', () => base.length > 0],
   [
-    'web tokens are measured against the dark panels',
-    () => base.some((l) => /^web: muted on panel is \d/.test(l)),
+    // Was: assert measurement by finding `web: muted on panel` in the failures.
+    // The redesigned palette passes every declared pair, so there is no failure
+    // left to find and the old claim could only ever break. That measurement
+    // still happens is proved by the mutations below, which do emit `web:`
+    // lines. What is worth asserting here is the stronger, positive fact.
+    'every declared web pair currently meets its floor',
+    () => !base.some((l) => /^web: /.test(l)),
   ],
   [
     'registry colour is measured against a white consumer app',
@@ -148,35 +153,35 @@ const baseline = [
  * `expect` must match a failure the mutation introduced, or be null when the
  * whole claim is that nothing appears. `absent` must match nothing at all,
  * which is how a threshold or a surface is proved to be doing work rather than
- * merely present: mint at 3.66:1 has to fail as text and pass as UI, and a
+ * merely present: accent at 3.68:1 has to fail as text and pass as UI, and a
  * registry colour has to fail on one surface without the other coming along
  * for the ride.
  */
 const mutations = [
   ['text floor is 4.5 and the UI floor is genuinely not', () =>
-    edit(CSS, '--color-mint: #00e5a0;', '--color-mint: #6a6a6a;'),
-    /^web: mint on chassis is 3\.66:1, below the 4\.5:1 floor for text/,
-    /mint on chassis is .+ floor for non-text/],
+    edit(CSS, '--color-accent: #818cf8;', '--color-accent: #6a6a6a;'),
+    /^web: accent on chassis is 3\.68:1, below the 4\.5:1 floor for text/,
+    /accent on chassis is .+ floor for non-text/],
 
   ['new token with no declared pair', () =>
-    edit(CSS, '  --color-mint: #00e5a0;', '  --color-mint: #00e5a0;\n  --color-alarm: #ff2d2d;'),
+    edit(CSS, '  --color-accent: #818cf8;', '  --color-accent: #818cf8;\n  --color-alarm: #ff2d2d;'),
     /--color-alarm \(#ff2d2d\) appears in no declared pair/],
 
   ['text- utility with no declared text pair', () =>
-    edit(CARD, 'className="lbl mt-1"', 'className="lbl mt-1 text-rule"'),
+    edit(CARD, 'className="lbl mt-2.5"', 'className="lbl mt-2.5 text-rule"'),
     /^web\/components\/catalog-card\.tsx: "text-rule" is used here but "rule" is the foreground of no declared text pair/],
 
   ['token renamed out from under a pair', () =>
-    edit(CSS, '--color-mint:', '--color-accent:'),
-    /^PAIRS: pair "mint on chassis" names unknown token "mint"/],
+    edit(CSS, '--color-accent:', '--color-glow:'),
+    /^PAIRS: pair "accent on chassis" names unknown token "accent"/],
 
-  // chassis, not mint, because chassis is the one token the linter consumes by
+  // chassis, not accent, because chassis is the one token the linter consumes by
   // name outside PAIRS — as the dark surface for the registry check — and so
   // the one rule C cannot vouch for. Renaming it used to throw a TypeError out
   // of ratio() rather than report anything. `absent` is the whole point of the
   // case: a stack trace is not a catch.
   ['the dark surface token renamed out from under the registry check', () =>
-    edit(CSS, '--color-chassis:', '--color-ink:'),
+    edit(CSS, '--color-chassis:', '--color-ground:'),
     /^web\/app\/globals\.css: --color-chassis is not declared in @theme/,
     /^linter crashed/],
 
@@ -192,13 +197,13 @@ const mutations = [
 
   ['registry colour fails on the dark chassis only', () =>
     edit(SRC, "'#a3a3a3'", "'#1a1a1a'"),
-    /^like-button\/like-button\.tsx: iconVariants #1a1a1a \(idle\) on #0a0a0b is 1\.14:1/,
+    /^like-button\/like-button\.tsx: iconVariants #1a1a1a \(idle\) on #09090b is 1\.14:1/,
     /#1a1a1a \(idle\) on #ffffff/],
 
   ['registry colour fails on the light surface only', () =>
     edit(SRC, "'#a3a3a3'", "'#fff'"),
     /^like-button\/like-button\.tsx: iconVariants #fff \(idle\) on #ffffff is 1\.00:1/,
-    /#fff \(idle\) on #0a0a0b/],
+    /#fff \(idle\) on #09090b/],
 
   // #f43f5e on purpose: it is already used inside iconVariants, so a rule D
   // that collected hex strings rather than source positions would wave this
@@ -211,9 +216,9 @@ const mutations = [
   // without this the whole suite is satisfiable by a linter that fails on
   // everything.
   ['a passing pair stays passing', () =>
-    edit(CSS, '--color-silkscreen: #e8e4dc;', '--color-silkscreen: #ffffff;'),
+    edit(CSS, '--color-ink: #e5e1e4;', '--color-ink: #ffffff;'),
     null,
-    /silkscreen on (chassis|panel|panel-2)/],
+    /ink on (chassis|panel|panel-2)/],
 ]
 
 let held = 0

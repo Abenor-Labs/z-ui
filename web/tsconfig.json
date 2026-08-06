@@ -19,6 +19,21 @@
       "@/components/z-ui/like-button": [
         "../registry/components/like-button/like-button.tsx"
       ],
+      "@/components/z-ui/scrub": ["../registry/components/scrub/scrub.tsx"],
+      "@/components/z-ui/undo-toast": ["../registry/components/undo-toast/undo-toast.tsx"],
+      "@/components/z-ui/hold-to-confirm": [
+        "../registry/components/hold-to-confirm/hold-to-confirm.tsx"
+      ],
+      "@/components/z-ui/disclosure": ["../registry/components/disclosure/disclosure.tsx"],
+      "@/components/z-ui/sheet": ["../registry/components/sheet/sheet.tsx"],
+      "@/components/z-ui/reorder": ["../registry/components/reorder/reorder.tsx"],
+      "@/components/z-ui/slide-to-confirm": [
+        "../registry/components/slide-to-confirm/slide-to-confirm.tsx"
+      ],
+      "@/components/z-ui/revert-field": [
+        "../registry/components/revert-field/revert-field.tsx"
+      ],
+      "@/components/z-ui/scheduler": ["../registry/components/scheduler/scheduler.tsx"],
       "@/*": ["./*"]
     }
   },
