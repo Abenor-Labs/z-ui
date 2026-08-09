@@ -5,8 +5,26 @@ import { UserError } from '../ui/log.ts'
 
 export const CONFIG_FILE = 'z-ui.json'
 
+/**
+ * The generator's output directory, not the source tree.
+ *
+ * `web/scripts/build-registry.mjs` writes the published manifests to
+ * `web/public/r/`, and a remote read appends `r/index.json` or `r/<name>.json`
+ * to this base — so the base has to stop one level above that folder. Pointed
+ * at `main/registry` this resolved to `main/registry/r/index.json`, which has
+ * never existed: `registry/` is where components are authored and no `.json`
+ * manifest is ever written into it.
+ *
+ * That was invisible for as long as every path 404'd for the same reason
+ * (nothing was on `main`). The merge on 2026-08-10 made `main` real and left
+ * exactly one URL still wrong, which is the same drift `5f33a80` fixed across
+ * three site call sites and did not reach into here.
+ *
+ * `web/lib/registry.ts` holds the site's copy of this constant. They are two
+ * packages that cannot import from each other; if one moves, move both.
+ */
 export const DEFAULT_REGISTRY =
-  'https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry'
+  'https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/web/public'
 
 /**
  * Shape is fixed by registry/schema/config.schema.json, which is committed and

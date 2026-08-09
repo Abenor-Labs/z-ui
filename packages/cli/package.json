@@ -1,6 +1,6 @@
 {
   "name": "@abenor/z-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Install Z-UI micro-interaction components as source you own.",
   "license": "MIT",
   "type": "module",

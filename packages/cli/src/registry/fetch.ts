@@ -100,14 +100,14 @@ export class Registry {
       )
     }
     if (res.status === 404) {
-      // The one error every user of the published CLI hits first, because the
-      // default registry lives on a branch that is not merged yet. A bare
-      // "HTTP 404" reads as "you typed the name wrong" and sends people looking
-      // in the wrong place; naming the actual blocker and the path that works
-      // costs three lines and saves the issue.
+      // A bare "HTTP 404" reads as "you typed the name wrong" and sends people
+      // looking in the wrong place. Both real causes are worth naming: the
+      // component may not exist, or the base may be pointing at the source tree
+      // rather than the generator's output — which is the mistake this CLI's
+      // own default shipped with in 0.1.0.
       throw new UserError(
         `Registry returned HTTP 404 for ${url}`,
-        'The hosted registry is not published yet — nothing is on `main` to serve. Clone the repo and pass --registry ./registry to install from disk in the meantime.',
+        'Either no component by that name is published, or the registry base is wrong — it must point one level above the generated `r/` folder. `z-ui list` shows what is actually there.',
       )
     }
     if (!res.ok) throw new UserError(`Registry returned HTTP ${res.status} for ${url}`)

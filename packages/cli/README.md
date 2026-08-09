@@ -14,19 +14,18 @@ npx @abenor/z-ui add disclosure
 
 ## Status
 
-**The hosted registry is not live yet.** `init` writes a registry URL pointing
-at `main`, and the components are not merged there, so `add` returns 404 against
-the default. Everything works today against a clone:
+The registry is live on `main` as of 2026-08-10, so `add` resolves with no
+flags from **0.1.1 onward**. If you are on `0.1.0`, upgrade — it shipped a
+default registry URL pointing at the source tree rather than the generated
+manifests, and every `add` returns 404 against it.
 
 ```sh
-git clone https://github.com/Abenor-Labs/z-ui
-npx @abenor/z-ui init
-npx @abenor/z-ui add disclosure --registry ./z-ui/registry
+npx @abenor/z-ui@latest add disclosure
 ```
 
-That path is not a workaround bolted on for the gap — `--registry` takes a URL
-or a filesystem path by design, so contributors can install an uncommitted
-component. It is how the test suite runs with no network at all.
+`--registry` still takes a filesystem path as well as a URL, which is how you
+install an uncommitted component from a clone, and how the test suite runs with
+no network at all.
 
 ## Commands
 

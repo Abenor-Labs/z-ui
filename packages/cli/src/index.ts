@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createRequire } from 'node:module'
 import { parseArgs } from 'node:util'
 import { log, c, setSilent, UserError } from './ui/log.ts'
 import { init } from './commands/init.ts'
@@ -7,7 +8,19 @@ import { list } from './commands/list.ts'
 import { doctor } from './commands/doctor.ts'
 import { spring } from './commands/spring.ts'
 
-const VERSION = '0.1.0'
+/**
+ * Read, not retyped. This was a literal `'0.1.0'`, and the 0.1.1 release caught
+ * it printing the old number in the banner, in `--version` and in the
+ * `_generatedBy` stamp `doctor` compares against — three lies from one constant
+ * nobody remembered to bump.
+ *
+ * `createRequire` rather than a JSON import: import attributes are still behind
+ * a flag on the Node versions in `engines`, and this file has to run both from
+ * `dist/` and straight from source under `--experimental-strip-types`.
+ * `../package.json` resolves from either, because `src/` and `dist/` sit at the
+ * same depth.
+ */
+const VERSION = createRequire(import.meta.url)('../package.json').version as string
 
 const HELP = `
   ${c.bold('z-ui')} ${c.grey(VERSION)}  ${c.grey('micro-interaction components as source you own')}
