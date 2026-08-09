@@ -1,22 +1,32 @@
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
-const SRC = 'registry/components/like-button/like-button.tsx'
-const MAN = 'registry/components/like-button/component.json'
+const SRC = 'registry/components/disclosure/disclosure.tsx'
+const MAN = 'registry/components/disclosure/component.json'
 
 /**
  * This harness proves the linter by breaking a real component and checking it
- * complains. With the registry emptied on 2026-08-09 there is nothing to break,
- * so it skips rather than crashing on ENOENT — but it skips *loudly*, because a
- * mutation harness that silently passes while testing nothing is the exact
- * failure mode the linter it guards exists to prevent.
+ * complains. It was pointed at `like-button` until that component was deleted,
+ * and then skipped loudly through the empty-registry window rather than
+ * pretending to pass.
  *
- * Re-point SRC/MAN at the first new component that lands. Until then this file
- * is a placeholder holding the shape of the checks, not a passing suite.
+ * It now mutates `disclosure`, which is a deliberate choice over
+ * `scramble-reveal`: disclosure imports motion, so it is the only component in
+ * the registry that exercises the motion-scoped branches at all. Those branches
+ * are the ones most recently changed and the ones most likely to be loosened by
+ * accident.
+ *
+ * Disclosure drives a MotionValue rather than a variants table, so the two
+ * mutations that used to inject variant drift are replaced by one that matters
+ * more: it adds an `animate` prop and asserts the linter *starts* demanding
+ * `initial={false}` and a variants object. That is the exact boundary of the
+ * scoping — a component that declares a motion target owes both; one that
+ * integrates a value owes neither — and it is worth a test precisely because
+ * getting it wrong looks like a passing build.
  */
 if (!existsSync(SRC) || !existsSync(MAN)) {
-  console.error('SKIPPED lint-registry.test: no component to mutate — the registry is empty.')
-  console.error(`         re-point SRC/MAN in this file once a component exists.`)
+  console.error(`SKIPPED lint-registry.test: ${SRC} is gone.`)
+  console.error(`         re-point SRC/MAN in this file at a component that imports motion.`)
   process.exit(0)
 }
 
@@ -24,27 +34,48 @@ const orig = { src: readFileSync(SRC, 'utf8'), man: readFileSync(MAN, 'utf8') }
 
 const mutations = [
   ['STATES vs meta.states drift', () => {
-    const m = JSON.parse(orig.man); m.meta.states = ['idle', 'liked']
+    const m = JSON.parse(orig.man); m.meta.states = ['closed', 'open']
     writeFileSync(MAN, JSON.stringify(m, null, 2))
   }],
   ['icon library import', () =>
-    writeFileSync(SRC, orig.src.replace("import { zcn } from '@/lib/z-cn'", "import { Heart } from 'lucide-react'\nimport { zcn } from '@/lib/z-cn'"))],
-  ['missing initial={false}', () =>
-    writeFileSync(SRC, orig.src.replace('      initial={false}\n', ''))],
+    writeFileSync(SRC, orig.src.replace(
+      "import * as React from 'react'",
+      "import * as React from 'react'\nimport { ChevronRight } from 'lucide-react'",
+    ))],
+  ['import outside the allowlist', () =>
+    writeFileSync(SRC, orig.src.replace(
+      "import * as React from 'react'",
+      "import * as React from 'react'\nimport { create } from 'zustand'",
+    ))],
   ['whileHover reintroduced', () =>
-    writeFileSync(SRC, orig.src.replace('      animate={state}', '      animate={state}\n      whileHover="hover"'))],
+    writeFileSync(SRC, orig.src.replace('        aria-hidden="true"', '        aria-hidden="true"\n        whileHover="lift"'))],
   ['data-state removed', () =>
     writeFileSync(SRC, orig.src.replace(/      data-state=\{state\}\n/, ''))],
-  ['variants key drift', () =>
-    writeFileSync(SRC, orig.src.replace("  'liked-hover': { scale: 1.08 },", "  'liked-hovered': { scale: 1.08 },"))],
+  ['STATES tuple removed', () =>
+    writeFileSync(SRC, orig.src.replace(/const STATES = \[[^\]]*\] as const/, 'const STATES_LIST = []'))],
+  ['default export added', () =>
+    writeFileSync(SRC, orig.src + '\nexport default Disclosure\n')],
+  ['fake spring cubic-bezier', () =>
+    writeFileSync(SRC, orig.src.replace(
+      'const SPRING = {',
+      "const fake = 'cubic-bezier(0.34, 1.56, 0.64, 1)'\nconst SPRING = {",
+    ))],
+  [
+    // The scoping boundary. Adding a declared motion target must switch both
+    // motion-scoped checks back on; if this is MISSED, a component could ship
+    // an animate prop with no initial={false} and no state-keyed variants.
+    'animate target added without variants or initial={false}',
+    () => writeFileSync(SRC, orig.src.replace(
+      '        style={{ rotate }}',
+      '        style={{ rotate }}\n        animate={{ opacity: 1 }}',
+    )),
+  ],
   ['file dropped from files[]', () => {
     const m = JSON.parse(orig.man); m.files = []
     writeFileSync(MAN, JSON.stringify(m, null, 2))
   }],
-  ['fake spring cubic-bezier', () =>
-    writeFileSync(SRC, orig.src.replace("const rootVariants = {", "const fake = 'cubic-bezier(0.34, 1.56, 0.64, 1)'\nconst rootVariants = {"))],
   ['unknown registryDependency', () => {
-    const m = JSON.parse(orig.man); m.registryDependencies.push('does-not-exist')
+    const m = JSON.parse(orig.man); m.registryDependencies = ['does-not-exist']
     writeFileSync(MAN, JSON.stringify(m, null, 2))
   }],
 ]

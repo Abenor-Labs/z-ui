@@ -128,14 +128,29 @@ for (const entry of index.items) {
 
     check(src.startsWith("'use client'"), at, "'use client' must be the first line")
     check(!/export default/.test(src), at, 'no default export; components are named exports')
-    // Scoped to files that actually import motion. The rule reads "every motion
-    // element needs initial={false}", and a file with no motion elements passes
-    // it vacuously — the substring test was only ever a proxy for that. Asserted
-    // unconditionally it forces a `motion.*` node onto components whose movement
-    // has nothing to interpolate (scramble-reveal walks a boundary along a
-    // string one tick at a time), and a motion element added to satisfy a linter
-    // is the same class of lie these checks exist to catch.
-    if (usesMotion) {
+    /**
+     * Scoped twice, for two different reasons.
+     *
+     * First to files that import motion at all: a file with no motion elements
+     * passes "every motion element needs initial={false}" vacuously, and
+     * asserting it unconditionally forces a `motion.*` node onto components
+     * whose movement has nothing to interpolate (scramble-reveal walks a
+     * boundary along a string one tick at a time).
+     *
+     * Then to files that declare motion *targets* — an `animate` or `variants`
+     * prop. `initial={false}` suppresses the enter animation from a declared
+     * target, so a component with no declared target has no enter animation to
+     * suppress and the prop would be a no-op added to satisfy a linter, which
+     * is the same class of lie the scoping above exists to avoid. Disclosure is
+     * the case: its motion elements carry a MotionValue in `style` and nothing
+     * else, so `initial` has nothing to act on.
+     */
+    // Comments stripped first. Disclosure's header names `animate={{ height }}`
+    // as the implementation it rejects, and a file explaining why it does not
+    // declare a motion target must not be read as declaring one.
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '')
+    const declaresTargets = /\banimate=|\bvariants=/.test(code)
+    if (usesMotion && declaresTargets) {
       check(/initial=\{false\}/.test(src), at, 'every motion element needs initial={false}')
     }
     check(/data-state=/.test(src), at, 'interactive root must carry data-state')
@@ -180,13 +195,35 @@ for (const entry of index.items) {
           `${m[1]} keys ${JSON.stringify(keys)} != STATES ${JSON.stringify(declared)}`,
         )
       }
-      // Same scoping as initial={false}: a variants object is the thing that
-      // maps a state onto a motion target, so only a file that imports motion
-      // owes one. The key-drift loop above still runs everywhere — it just
-      // matches nothing when there are no variants, which is the correct answer
-      // rather than a skipped check.
-      if (usesMotion) {
+      /**
+       * A variants object is the thing that maps a state onto a motion target,
+       * so a file owes one exactly when it declares targets — same condition as
+       * `initial={false}` above, and for the same reason.
+       *
+       * The rule this enforces is "a motion component's states must be mapped
+       * onto motion somewhere the linter can see". There are two ways to do
+       * that, not one. Variants is the declarative way and gets checked here
+       * key-for-key. The other is a MotionValue the component integrates
+       * directly — disclosure springs a height and derives both `data-state`
+       * and its chevron from it, so there is no per-state target list, and
+       * therefore nothing for a key-drift check to drift against. Requiring
+       * variants of it would mean writing a target table the component does not
+       * read.
+       *
+       * What survives in both cases is the check that matters: STATES in the
+       * source equals meta.states in the manifest. That is the invariant that
+       * makes `data-state` mean what the catalogue promises, and it is asserted
+       * unconditionally above.
+       */
+      if (usesMotion && declaresTargets) {
         check(variantObjects > 0, at, 'no variants object found; expected `const xVariants = {...} satisfies`')
+      }
+      if (usesMotion && !declaresTargets) {
+        check(
+          /useMotionValue|useSpring|useTransform/.test(src),
+          at,
+          'imports motion but declares neither a variants/animate target nor a MotionValue; its states drive nothing',
+        )
       }
     }
   }
