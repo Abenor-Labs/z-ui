@@ -13,6 +13,7 @@
       //
       // Each new item needs an entry here and in registry/tsconfig.json;
       // lint-registry fails the build when either one is missing.
+      "@/components/z-ui/disclosure": ["../registry/components/disclosure/disclosure.tsx"],
       "@/components/z-ui/scramble-reveal": [
         "../registry/components/scramble-reveal/scramble-reveal.tsx"
       ],

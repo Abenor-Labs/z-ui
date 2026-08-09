@@ -5,6 +5,12 @@
   "homepage": "https://github.com/Abenor-Labs/z-ui",
   "items": [
     {
+      "name": "disclosure",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/disclosure"
+    },
+    {
       "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",

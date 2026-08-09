@@ -14,6 +14,7 @@
     // lint-registry fails the build when one is missing, so a forgotten entry
     // cannot reach CI.
     "paths": {
+      "@/components/z-ui/disclosure": ["./components/disclosure/disclosure.tsx"],
       "@/components/z-ui/scramble-reveal": ["./components/scramble-reveal/scramble-reveal.tsx"]
     }
   },

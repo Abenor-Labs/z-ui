@@ -4,6 +4,21 @@
   "homepage": "https://github.com/Abenor-Labs/z-ui",
   "items": [
     {
+      "name": "disclosure",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/disclosure",
+      "title": "Disclosure",
+      "description": "A panel whose height is an interruptible spring. Press again mid-open and it reverses from wherever it got to, carrying the speed it was already moving at.",
+      "spring": "snap",
+      "states": [
+        "closed",
+        "opening",
+        "open",
+        "closing"
+      ]
+    },
+    {
       "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",

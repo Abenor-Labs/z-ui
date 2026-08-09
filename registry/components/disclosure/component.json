@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "disclosure",
+  "type": "registry:component",
+  "title": "Disclosure",
+  "description": "A panel whose height is an interruptible spring. Press again mid-open and it reverses from wherever it got to, carrying the speed it was already moving at.",
+  "dependencies": ["motion"],
+  "registryDependencies": [],
+  "files": [{ "path": "disclosure.tsx", "type": "registry:component" }],
+  "meta": {
+    "category": "state-morphing",
+    "gesture": "press",
+    "states": ["closed", "opening", "open", "closing"],
+    "spring": "snap"
+  }
+}
