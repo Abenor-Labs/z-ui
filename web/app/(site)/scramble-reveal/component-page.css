@@ -1,0 +1,335 @@
+/**
+ * This route's token layer, aliased onto Z-UI's palette.
+ *
+ * The design arrived carrying its own ramp — cool neutrals around hue 265 and a
+ * green signal at hue 143, written as literal oklch values. None of those
+ * survive here. Every name below now resolves to a token declared in
+ * app/globals.css, so this page cannot drift from the site a second time:
+ * re-mix `--color-panel` there and the demo card, the code panel and the
+ * customize rail all move with it, without anyone remembering this file exists.
+ *
+ * The names stay short and generic and stay behind `.component-page` for the
+ * reason they always did: `--bg`, `--fg` and `--acc` are exactly the names
+ * another sheet would claim at `:root`, and whichever loaded last would win.
+ *
+ * Loaded by app/(site)/scramble-reveal/page.tsx only; nothing else imports it.
+ */
+
+.component-page {
+  --bg: var(--color-chassis);
+  --s1: var(--color-panel);
+  /* Declared but unpainted: the design's third surface step has no user in the
+     current markup. It is kept so a panel that needs to sit above `--s1` has a
+     token to reach for rather than inventing one. */
+  --s2: var(--color-panel-2);
+
+  /* `rule`, not `hair`. Every `--line` on this page is a structural boundary —
+     the nav's base, panel and card edges, section-head rules, props-table row
+     rules — and globals' contrast pairs already assign `rule` to exactly
+     "section rules" and "table and bench row rules". `hair` is one step fainter
+     and belongs to the card-body/footer split, which this page never draws.
+     Both are 1.4.11-exempt dividers, which is why they can sit at ~1.2:1;
+     control borders were moved off `--line` entirely, see `.cp-ghost` below. */
+  --line: var(--color-rule);
+  --line2: var(--color-control);
+
+  --fg: var(--color-ink);
+  --fg2: var(--color-muted);
+  /*
+   * The design's text ramp has three steps; Z-UI's has two. `--fg3` is the
+   * missing third, derived rather than invented: muted walked 12% toward the
+   * chassis, which is the darkest it can go and still clear 4.5:1 as text on
+   * every ground this page paints — 5.62:1 on chassis, 5.19:1 on panel, 4.66:1
+   * on panel-2. It carries 10-11px eyebrows, hints and card descriptions, so
+   * the AA floor is the binding constraint, not the design's step size. The
+   * design's own fg2→fg3 gap is roughly 18 L*; this one is 7, because the
+   * Contrast Floor Rule will not let the third step go where the design put it.
+   */
+  --fg3: color-mix(in srgb, var(--color-muted) 88%, var(--color-chassis));
+
+  --acc: var(--color-accent);
+  /* Signal Mint at 30% over the chassis: the copied state needs a fill, and the
+     palette has no tint of the accent because nothing else fills with it. Dark
+     enough to stay a tint rather than a surface, light enough that ink reads on
+     it at 10.1:1 and the accent border that rings it holds 3.8:1. */
+  --acc2: color-mix(in srgb, var(--color-accent) 30%, var(--color-chassis));
+  --accfg: var(--color-chassis);
+
+  /* The design uses exactly two curves. `--ease` is the house curve at 220ms
+     for hover; `--spring` overshoots and is reserved for the copy button's icon
+     exchange. */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* What the site's fixed bar costs at the top of the viewport: `SiteNav` is
+     `position: fixed` at `h-16`. Every sticky top and every `scroll-margin-top`
+     on this page is expressed against this rather than against a literal, so
+     the bar's height is one number here instead of a hunt.
+
+     The design shipped a second, page-local nav underneath it and a `--k-nav`
+     to offset against; that nav is deleted, so the second term is gone with it
+     — leaving it in the sums would park the customize rail 60px below a bar
+     that is not there. */
+  --cp-chrome: 64px;
+
+  /*
+   * The light theme is gone, not ported.
+   *
+   * The design shipped a `[data-theme="light"]` block and a nav toggle to drive
+   * it. There is nothing to point that block at: DESIGN.md's Contrast Floor
+   * Rule makes the system dark-first by necessity — Signal Mint measures ~3.3:1
+   * on white, so it is forbidden on text, icon-only controls and focus rings
+   * over light surfaces, and every accent use on this page is one of those.
+   * globals.css follows the rule to its conclusion, setting `color-scheme: dark`
+   * and painting chassis onto `html`; there is no light Z-UI palette to map a
+   * second block onto, and writing one would mean inventing the exact colours
+   * the rule exists to forbid. The 240ms cross-fade the root used to run went
+   * with it — it animated the theme swap and nothing else, so it could no
+   * longer fire.
+   *
+   * `color-scheme` is restated here rather than inherited because the range
+   * inputs below draw native parts from it, and a subtree that paints its own
+   * ground should not be relying on an ancestor to say which way round it is.
+   */
+  color-scheme: dark;
+  /* Minus the chrome: this box starts below the fixed bar's 64px, so a flat
+     100vh would push the footer that far past the fold on a short page. */
+  min-height: calc(100vh - var(--cp-chrome));
+  background: var(--bg);
+  color: var(--fg);
+  /* The site's own stack, fallbacks included, so this page can never end up on
+     a different sans than the rest of Z-UI. Both faces are already on <html>
+     from the root layout's next/font loaders. */
+  font-family: var(--font-sans);
+}
+
+/* globals.css draws the same mint ring at a 3px offset. This one exists only
+   for the 2px the design specified, which is what keeps the ring tight against
+   the 26-32px controls in the demo toolbar. */
+.component-page :focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+.cp-mono {
+  font-family: var(--font-mono);
+}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+
+/* The design filled this with the accent. Under the Moving Part Rule a resting
+   CTA is not a moving part, so it takes the site's primary fill instead — the
+   same `bg-ink text-chassis` pair site-nav.tsx and the home hero already use.
+   Hover dims rather than brightens: 1.1 on Silkscreen Sand clips to pure white,
+   which the palette forbids by name. */
+.cp-primary {
+  background: var(--color-ink);
+  color: var(--accfg);
+  border-radius: 6px;
+  font-weight: 600;
+  transition:
+    filter 220ms var(--ease),
+    transform 220ms var(--ease);
+}
+.cp-primary:hover {
+  filter: brightness(0.9);
+}
+.cp-primary:active {
+  transform: scale(0.97);
+}
+
+/*
+ * Control borders do not come from `--line`.
+ *
+ * The design rested every button on the same hairline it drew panels with. That
+ * works on its ramp and not on this one: `rule` sits at ~1.2:1 on chassis, and
+ * a divider is allowed to (1.4.11 exempts boundaries carrying no information)
+ * while the border of a ghost button is the only thing saying it is a button.
+ * So the resting boundary is `control`, the token globals.css declares for
+ * exactly this, and hover brightens to `muted` — the pair already audited as
+ * "chip hover border".
+ */
+.cp-ghost {
+  border: 1px solid var(--color-control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg2);
+  transition:
+    border-color 220ms var(--ease),
+    color 220ms var(--ease);
+}
+.cp-ghost:hover {
+  border-color: var(--color-muted);
+  color: var(--fg);
+}
+
+/* Segmented options: demo mode, easing, charset. The design lit the selected
+   border with the accent; a segment that is merely selected is not moving, so
+   selection is carried by the border stepping control → muted and the label
+   stepping --fg3 → ink. Two channels, neither of them hue, which is what the
+   Second Channel Rule asks for anyway. */
+.cp-seg {
+  border: 1px solid var(--color-control);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--fg3);
+  transition:
+    border-color 220ms var(--ease),
+    color 220ms var(--ease);
+}
+.cp-seg[aria-pressed='true'] {
+  border-color: var(--color-muted);
+  color: var(--color-ink);
+}
+
+/* Same correction as `.cp-seg`: the selected snippet tab is static, so its
+   underline is ink rather than mint. At 1px it is the strongest neutral the
+   palette has and still reads as a marking rather than a fill. */
+.cp-tab {
+  border-bottom: 1px solid transparent;
+  color: var(--fg3);
+  transition:
+    border-color 220ms var(--ease),
+    color 220ms var(--ease);
+}
+.cp-tab[aria-selected='true'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+/**
+ * The design gives the sliders `height:2px; accent-color:var(--acc)`. Those two
+ * facts do not co-exist natively: a 2px-tall native range clips its own thumb
+ * to invisibility in Chromium. So the track is the 2px rule the design asked
+ * for and the thumb is drawn back on at 12px in the accent — which is what
+ * `accent-color` would have produced at a native height anyway. Mint is correct
+ * here under the Moving Part Rule: the thumb is the thing the reader drags.
+ */
+.cp-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--line2);
+  accent-color: var(--acc);
+  cursor: pointer;
+}
+.cp-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--acc);
+}
+.cp-range::-moz-range-track {
+  height: 2px;
+  border-radius: 999px;
+  background: var(--line2);
+}
+.cp-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--acc);
+}
+
+/* ── copy button ────────────────────────────────────────────────────────── */
+
+/* Accent stays on the copied state: it is a state the reader just caused and
+   that decays on its own, which is the one thing the Moving Part Rule is for. */
+.cp-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--color-control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg2);
+  font-size: 12px;
+  transition:
+    border-color 220ms var(--ease),
+    background-color 220ms var(--ease),
+    color 220ms var(--ease);
+}
+.cp-copy[data-size='sm'] {
+  height: 30px;
+}
+.cp-copy[data-copied='true'] {
+  border-color: var(--acc);
+  background: var(--acc2);
+  color: var(--fg);
+}
+
+.cp-copy-slot {
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.cp-copy-slot svg {
+  position: absolute;
+  inset: 0;
+}
+
+/* Two curves, deliberately mismatched: opacity crosses on the house ease so
+   the exchange is even, while scale runs on the overshoot so the check lands
+   with a snap the fade alone would not give it. The check's 260ms trails the
+   glyph's 220ms, which is what keeps it reading as an arrival rather than a
+   swap. */
+.cp-copy-glyph {
+  transition:
+    opacity 160ms var(--ease),
+    transform 220ms var(--spring);
+}
+.cp-copy-check {
+  transition:
+    opacity 160ms var(--ease),
+    transform 260ms var(--spring);
+}
+.cp-copy[data-copied='false'] .cp-copy-glyph {
+  opacity: 1;
+  transform: scale(1);
+}
+.cp-copy[data-copied='false'] .cp-copy-check {
+  opacity: 0;
+  transform: scale(0.55);
+}
+.cp-copy[data-copied='true'] .cp-copy-glyph {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.cp-copy[data-copied='true'] .cp-copy-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Fixed track for the word, so "copy" → "copied" cannot resize the button and
+   shove the install command's ellipsis around mid-transition. */
+.cp-copy-label {
+  width: 48px;
+  text-align: left;
+}
+
+/* ── related cards ──────────────────────────────────────────────────────── */
+
+.cp-card {
+  transition: border-color 220ms var(--ease);
+}
+.cp-card:hover {
+  border-color: var(--line2);
+}
+
+/* The design's three cards each ran a live hover preview — a weight wave, a
+   clip-path wipe — of a component that has never existed here. related.tsx now
+   builds its cards from the manifest, so the preview rules went with the
+   markup they selected: `.cp-card-preview`, `.cp-wave-letter` and
+   `.cp-mask-line` had no elements left to match. The hover treatment that
+   survives is the one the remaining markup still has, the border step above.
+   Whatever restores a preview will bring its own selectors for a real
+   component, not inherit a fictional one's. */
