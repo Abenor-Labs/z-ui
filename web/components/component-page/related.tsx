@@ -1,8 +1,7 @@
 import * as React from 'react'
+import Link from 'next/link'
 import { components } from '@/__generated__/meta.js'
-
-/** The page this section sits on. Everything else in the manifest is a sibling. */
-const CURRENT = 'scramble-reveal'
+import { componentHref, hasComponentPage } from '@/lib/registry'
 
 /**
  * Derived from the built manifest, never from a hand-written list.
@@ -15,11 +14,10 @@ const CURRENT = 'scramble-reveal'
  * it is the same manifest the CLI installs from, so a card can appear here only
  * once the component is real enough to be installed.
  *
- * Today that leaves nothing, and the section says so in a sentence rather than
- * filling the grid with placeholders. An empty shelf photographed as a full one
- * is the failure this replaces.
+ * `current` is a prop rather than a module constant because there is now more
+ * than one component page, and a hardcoded name would have made the second one
+ * list itself as its own sibling.
  */
-const siblings = components.filter((c) => c.name !== CURRENT)
 
 const PANEL: React.CSSProperties = {
   border: '1px solid var(--line)',
@@ -35,7 +33,9 @@ const TAG: React.CSSProperties = {
   color: 'var(--fg3)',
 }
 
-export function RelatedCards() {
+export function RelatedCards({ current }: { current: string }) {
+  const siblings = components.filter((c) => c.name !== current)
+
   if (siblings.length === 0) {
     const count = components.length
 
@@ -48,8 +48,8 @@ export function RelatedCards() {
           registry · {count} {count === 1 ? 'component' : 'components'}
         </span>
         <p style={{ marginTop: 8, fontSize: 13.5, lineHeight: 1.55, color: 'var(--fg2)' }}>
-          Scramble reveal is the whole registry today. The next component shows up here the moment
-          it is in the manifest.
+          This is the whole registry today. The next component shows up here the moment it is in
+          the manifest.
         </p>
       </div>
     )
@@ -57,31 +57,42 @@ export function RelatedCards() {
 
   return (
     <>
-      {siblings.map((c) => (
-        // `<article>`, not a link: this route is the only component page that
-        // exists, so an anchor would assert a route the site does not serve and
-        // put a dead stop in the tab order. No preview either — a live one needs
-        // a demo per component, and a still of a motion component is the one
-        // thumbnail that cannot be checked against its own description.
-        <article key={c.name} className="cp-card" style={PANEL}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 10,
-            }}
-          >
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)' }}>{c.title}</h3>
-            <span className="cp-mono" style={TAG}>
-              {c.category}
-            </span>
-          </div>
-          <p style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--fg3)' }}>
-            {c.description}
-          </p>
-        </article>
-      ))}
+      {siblings.map((c) => {
+        const body = (
+          <>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10,
+              }}
+            >
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg)' }}>{c.title}</h3>
+              <span className="cp-mono" style={TAG}>
+                {c.gesture}
+              </span>
+            </div>
+            <p style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'var(--fg3)' }}>
+              {c.description}
+            </p>
+          </>
+        )
+
+        // A link only where the route exists. An anchor to a component without a
+        // page would assert a route the site does not serve and put a dead stop
+        // in the tab order, which is why this was an `<article>` for as long as
+        // scramble-reveal was the only page.
+        return hasComponentPage(c.name) ? (
+          <Link key={c.name} href={componentHref(c.name)} className="cp-card" style={PANEL}>
+            {body}
+          </Link>
+        ) : (
+          <article key={c.name} className="cp-card" style={PANEL}>
+            {body}
+          </article>
+        )
+      })}
     </>
   )
 }

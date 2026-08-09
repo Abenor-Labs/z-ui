@@ -5,7 +5,7 @@ import Link from 'next/link'
 // there is a status page, and there is not.
 const FOOTER_LINKS = [
   { label: 'Docs', href: '/docs' },
-  { label: 'Components', href: '/#components' },
+  { label: 'Components', href: '/components' },
   { label: 'Install', href: '/#install' },
   { label: 'GitHub', href: 'https://github.com/Abenor-Labs/z-ui', external: true },
 ]

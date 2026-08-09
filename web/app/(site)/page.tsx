@@ -5,7 +5,7 @@ import { ShaderBackground } from '@/components/hero/shader-bg'
 import { SpringCoil } from '@/components/hero/spring-coil'
 import { Reveal } from '@/components/reveal'
 import { SectionHead } from '@/components/section-head'
-import { manifestUrl } from '@/lib/registry'
+import { componentHref, manifestUrl } from '@/lib/registry'
 
 /**
  * A real component name when there is one, the placeholder only while the
@@ -106,10 +106,10 @@ export default function Home() {
                   <CopyIcon size={17} />
                 </CopyButton>
                 <Link
-                  href="#components"
+                  href="/components"
                   className="flex items-center justify-center rounded-lg border border-white/10 px-6 py-3.5 font-mono text-xs font-semibold tracking-[0.05em] transition-colors hover:border-accent hover:bg-accent/5"
                 >
-                  Explore primitives
+                  Explore components
                 </Link>
               </div>
             </Reveal>
@@ -197,21 +197,54 @@ export default function Home() {
 
       {/* ── catalog ── */}
       <section id="components" className="mx-auto max-w-[80rem] scroll-mt-20 px-4 pb-24 md:px-16">
-        <SectionHead index="02" eyebrow="Catalog" title="Being rebuilt.">
-          The previous set was removed rather than patched. What lands here next is designed
-          first and built against the same gates that were already in place — the manifest
-          schema, the state-machine lint, and the contrast floor all survived the clear-out.
+        <SectionHead
+          index="02"
+          eyebrow="Catalog"
+          title={components.length === 0 ? 'Being rebuilt.' : 'Being rebuilt, in public.'}
+        >
+          The previous set was removed rather than patched. What lands here is designed first
+          and built against the same gates that were already in place — the manifest schema,
+          the state-machine lint, and the contrast floor all survived the clear-out.
         </SectionHead>
 
-        {/* An empty grid is worse than an honest sentence. This block exists to
-            be deleted the moment the first new item is in the registry. */}
+        {/* An empty grid is worse than an honest sentence, and a sentence
+            claiming emptiness over a registry that has items is worse than
+            both. Which one shows is `components.length`, the same value the
+            stat above counts, so the two cannot contradict each other. */}
         <Reveal>
-          <div className="rounded-xl border border-dashed border-white/10 px-6 py-14 text-center">
-            <p className="text-base text-ink">Nothing is published yet.</p>
-            <p className="lbl mx-auto mt-2 max-w-md">
-              the registry is empty on purpose · new designs in progress
-            </p>
-          </div>
+          {components.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-white/10 px-6 py-14 text-center">
+              <p className="text-base text-ink">Nothing is published yet.</p>
+              <p className="lbl mx-auto mt-2 max-w-md">
+                the registry is empty on purpose · new designs in progress
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {/* Names only. The full card — gesture, spring, states — is what
+                  /components is for, and duplicating it here would be a second
+                  place to keep true. */}
+              {components.map((c) => (
+                <Link
+                  key={c.name}
+                  href={componentHref(c.name)}
+                  className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-xl border border-control bg-panel px-5 py-4 transition-colors hover:border-muted"
+                >
+                  <span className="text-base font-semibold tracking-tight text-ink">
+                    {c.title}
+                  </span>
+                  <span className="font-mono text-xs text-muted">{c.name}</span>
+                  <span className="lbl ml-auto">{c.category}</span>
+                </Link>
+              ))}
+              <Link
+                href="/components"
+                className="lbl self-start py-2 transition-colors hover:!text-accent"
+              >
+                the whole catalog →
+              </Link>
+            </div>
+          )}
         </Reveal>
       </section>
 

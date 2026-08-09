@@ -39,3 +39,19 @@ export const manifestUrl = (name: string) => `${REGISTRY_BASE}/${name}.json`
  * call site.
  */
 export const componentHref = (name: string) => `/${name}`
+
+/**
+ * Which components actually have that route.
+ *
+ * The convention above is a convention, not a guarantee — nothing asserts that
+ * an item in the manifest has a page. The catalogue and the related grid both
+ * ask this before rendering a link, so neither can advertise a route that 404s;
+ * that is the same failure the install commands were already fixed for.
+ *
+ * Add the name here in the same change that adds the route, never before. One
+ * line in one place, which is the reason this is a set and not a guess repeated
+ * at each call site.
+ */
+const PAGES = new Set(['scramble-reveal', 'disclosure'])
+
+export const hasComponentPage = (name: string) => PAGES.has(name)

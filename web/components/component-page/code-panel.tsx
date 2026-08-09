@@ -2,19 +2,24 @@
 
 import * as React from 'react'
 import { CopyButton } from './copy-button'
-import { snippetsFor, type ScrambleSettings } from './snippets'
+import { Code } from './highlight'
+import type { Snippet } from './snippets'
 
 /**
- * The left half of the customize pair. Nothing here is stored: the snippets are
- * derived from `settings` on every render, which is the whole reason the panel
- * on the right can claim it "writes to code" — there is no second copy of the
- * options to fall out of date.
+ * A tabbed source panel. It stores nothing but which tab is showing.
+ *
+ * Snippets arrive already written, rather than being derived here from a
+ * settings object. That is what lets scramble-reveal's page rebuild them on
+ * every render from the values its customize panel edits — the "writes to code"
+ * claim is only true if there is exactly one place that knows what
+ * `ease: "snap"` means, and it is not this file — while a page with no controls
+ * hands over two fixed strings and gets the same tabs, copy button and
+ * scrollable region for free.
  */
-export function CodePanel({ settings }: { settings: ScrambleSettings }) {
+export function CodePanel({ snippets }: { snippets: Snippet[] }) {
   const [active, setActive] = React.useState(0)
   const id = React.useId()
 
-  const snippets = snippetsFor(settings)
   // Clamped rather than trusted: `active` outlives a snippet list, and
   // `noUncheckedIndexedAccess` is right to insist the read can miss.
   const current = snippets[Math.min(active, snippets.length - 1)] ?? snippets[0]!
@@ -64,11 +69,25 @@ export function CodePanel({ settings }: { settings: ScrambleSettings }) {
           </button>
         ))}
 
+        {/* The language, so the colouring is attributable to something rather
+            than being decoration a reader has to decode. `ml-auto` moves here
+            off the copy button, which now sits next to it. */}
+        <span
+          className="cp-mono ml-auto"
+          style={{
+            fontSize: 10,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: 'var(--fg3)',
+            paddingRight: 4,
+          }}
+        >
+          {current.lang}
+        </span>
         <CopyButton
           value={current.code}
           size="sm"
           label={`copy the ${current.label} snippet`}
-          className="ml-auto"
         />
       </div>
 
@@ -90,7 +109,10 @@ export function CodePanel({ settings }: { settings: ScrambleSettings }) {
           margin: 0,
         }}
       >
-        {current.code}
+        {/* Keyed by tab so the token spans are rebuilt rather than reconciled
+            across two different snippets, which would otherwise leave a span
+            carrying the previous tab's class for a frame. */}
+        <Code key={current.key} code={current.code} lang={current.lang} />
       </pre>
     </div>
   )

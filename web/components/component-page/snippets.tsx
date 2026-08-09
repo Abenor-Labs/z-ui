@@ -57,7 +57,16 @@ export const TRIGGERS: readonly { key: TriggerKey; label: string; live: string }
   { key: 'view', label: 'in view', live: 'in view' },
 ]
 
-export type Snippet = { key: string; label: string; code: string }
+import type { Lang } from './highlight'
+
+export type Snippet = {
+  key: string
+  label: string
+  code: string
+  /** Which rule set colours it. Carried per snippet because one panel can hold
+   *  more than one language — disclosure's third tab is CSS. */
+  lang: Lang
+}
 
 /**
  * Where `add` puts the file — `components/z-ui/scramble-reveal.tsx` — reached
@@ -135,7 +144,7 @@ ${options}
 }`
 
   return [
-    { key: 'component', label: 'component', code: component },
-    { key: 'hook', label: 'hook', code: hook },
+    { key: 'component', label: 'component', code: component, lang: 'tsx' },
+    { key: 'hook', label: 'hook', code: hook, lang: 'tsx' },
   ]
 }

@@ -7,9 +7,9 @@ import { CodePanel } from './code-panel'
 import { CopyButton } from './copy-button'
 import { CustomizePanel } from './customize-panel'
 import { DemoCard } from './demo-card'
-import { PropsTable } from './props-table'
+import { PropsTable, SCRAMBLE_PROPS } from './props-table'
 import { RelatedCards } from './related'
-import { DEFAULTS, type ScrambleSettings } from './snippets'
+import { DEFAULTS, snippetsFor, type ScrambleSettings } from './snippets'
 
 const INSTALL = 'npx @abenor/z-ui add scramble-reveal'
 
@@ -120,11 +120,11 @@ export function ComponentPage() {
             </li>
             <li aria-hidden>/</li>
             <li>
-              {/* `/components` and `/c/<name>` went with the registry that filled
-                  them. The home page keeps a `#components` section, which is
-                  where SiteNav sends the same word, so the crumb resolves to a
-                  real place instead of a 404. */}
-              <Link href="/#components" className={CRUMB_LINK}>
+              {/* The catalogue route, same destination SiteNav sends this word
+                  to. A crumb has to name the level above this page, and while
+                  `/components` was gone this pointed at a home-page section —
+                  which was the nearest true thing, not the parent. */}
+              <Link href="/components" className={CRUMB_LINK}>
                 components
               </Link>
             </li>
@@ -355,7 +355,7 @@ export function ComponentPage() {
           className="grid grid-cols-1 lg:grid-cols-[1.42fr_1fr]"
           style={{ marginTop: 52, gap: 20, alignItems: 'start' }}
         >
-          <CodePanel settings={settings} />
+          <CodePanel snippets={snippetsFor(settings)} />
           <CustomizePanel
             settings={settings}
             onChange={setSettings}
@@ -371,7 +371,7 @@ export function ComponentPage() {
               useScramble(options)
             </span>
           </div>
-          <PropsTable />
+          <PropsTable rows={SCRAMBLE_PROPS} />
         </section>
 
         {/* ── related ── */}
@@ -389,7 +389,7 @@ export function ComponentPage() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             style={{ marginTop: 24, gap: 20 }}
           >
-            <RelatedCards />
+            <RelatedCards current="scramble-reveal" />
           </div>
         </section>
       </main>

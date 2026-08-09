@@ -1,13 +1,13 @@
 import * as React from 'react'
 
-type Prop = {
+export type Prop = {
   name: string
   type: string
   fallback: string
   description: string
 }
 
-const PROPS: Prop[] = [
+export const SCRAMBLE_PROPS: Prop[] = [
   {
     name: 'text',
     type: 'string',
@@ -117,7 +117,7 @@ const CELL: React.CSSProperties = {
  * as a table to anything that is not looking at it, and a `role="table"` div
  * stack is a reimplementation of markup the browser already ships.
  */
-export function PropsTable() {
+export function PropsTable({ rows }: { rows: Prop[] }) {
   return (
     <div style={{ overflowX: 'auto' }}>
       <table
@@ -153,7 +153,7 @@ export function PropsTable() {
           </tr>
         </thead>
         <tbody>
-          {PROPS.map((p) => (
+          {rows.map((p) => (
             <tr key={p.name}>
               <th
                 className="cp-mono"

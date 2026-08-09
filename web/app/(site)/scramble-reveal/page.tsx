@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { ComponentPage } from '@/components/component-page/component-page'
-import './component-page.css'
+// Moved out of this route folder when a second component page appeared. Both
+// routes import the same sheet; it is the page's visual language, not this
+// component's.
+import '@/components/component-page/component-page.css'
 
 export const metadata: Metadata = {
   title: 'Scramble reveal',

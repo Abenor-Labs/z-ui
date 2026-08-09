@@ -333,3 +333,51 @@
    survives is the one the remaining markup still has, the border step above.
    Whatever restores a preview will bring its own selectors for a real
    component, not inherit a fictional one's. */
+
+/* ── syntax colours ─────────────────────────────────────────────────────── */
+
+/**
+ * Three hues over the existing text ramp, not a theme.
+ *
+ * The panel is warm — chassis through panel-2 are all R > G > B — and a stock
+ * editor theme dropped on top of it reads as a screenshot of a different app.
+ * These are picked from the same family: terracotta for structure, sage for
+ * literals, gold for numbers, and everything else falls back to the ink ramp
+ * the rest of the page already uses.
+ *
+ * Measured against every ground this page paints, because a code panel is text
+ * and owes 4.5:1 like any other text — on panel / chassis / panel-2:
+ * terracotta 7.75 / 8.50 / 6.96, sage 8.66 / 9.50 / 7.77, gold 8.90 / 9.75 /
+ * 7.98. None of them is the accent: syntax colour is the most static ink on
+ * the page and the Moving Part Rule spends mint elsewhere.
+ */
+.component-page {
+  --tk-structure: #e09b7d;
+  --tk-literal: #93bfa4;
+  --tk-number: #d8b26c;
+}
+
+.component-page .tk-comment {
+  color: var(--fg3);
+  font-style: italic;
+}
+.component-page .tk-keyword,
+.component-page .tk-tag {
+  color: var(--tk-structure);
+}
+.component-page .tk-string {
+  color: var(--tk-literal);
+}
+.component-page .tk-number {
+  color: var(--tk-number);
+}
+/* Ink, because an attribute name and a called function are what the reader is
+   scanning for; the hues above are structure, and structure should not compete
+   with the identifiers. */
+.component-page .tk-attr,
+.component-page .tk-fn {
+  color: var(--fg);
+}
+.component-page .tk-punct {
+  color: var(--fg3);
+}

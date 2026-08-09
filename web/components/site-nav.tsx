@@ -4,14 +4,18 @@ import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { CopyButton, CopyIcon } from '@/components/copy-button'
+import { components } from '@/__generated__/meta.js'
+import { componentHref } from '@/lib/registry'
 
 const CLI = 'npx @abenor/z-ui add <component>'
 
-// `/components` and `/c/<name>` are gone with the registry they listed. The
-// home page keeps a `#components` section that says what is happening there,
-// so the label survives without pointing at a 404.
+// `/components` is a route again. It was a `/#components` hash for as long as
+// the registry was empty and the only honest thing under that label was a
+// paragraph on the home page; a nav item that scrolls instead of navigating is
+// a workaround, and the registry no longer needs it. `/c/<name>` is still gone
+// — a component's page is `/<name>`, via `componentHref`.
 const LINKS = [
-  { href: '/#components', label: 'Components' },
+  { href: '/components', label: 'Components' },
   { href: '/docs', label: 'Docs' },
   { href: '/#install', label: 'Install' },
   { href: 'https://github.com/Abenor-Labs/z-ui', label: 'GitHub', external: true },
@@ -20,14 +24,20 @@ const LINKS = [
 /**
  * "You are here", as an aria value rather than a boolean.
  *
- * A hash link never claims the marker: /#install and /#components address
- * sections of the home route, and a visitor sitting at the top of / is not at
- * either. The 'true' case used to cover /c/<name>, which belonged under
- * Components without being it; those routes went with the registry.
+ * A hash link never claims the marker: /#install addresses a section of the
+ * home route, and a visitor sitting at the top of / is not at it.
+ *
+ * 'true' rather than 'page' for a component's own route. `/scramble-reveal`
+ * belongs under Components without being it, so the nav says "you are within
+ * this" instead of "you are on this" — which is the distinction aria-current
+ * has the two values for.
  */
+const COMPONENT_ROUTES = new Set(components.map((c) => componentHref(c.name)))
+
 function activeMark(link: (typeof LINKS)[number], pathname: string): 'page' | 'true' | undefined {
   if (link.external || link.href.includes('#')) return undefined
   if (pathname === link.href) return 'page'
+  if (link.href === '/components' && COMPONENT_ROUTES.has(pathname)) return 'true'
   return undefined
 }
 
