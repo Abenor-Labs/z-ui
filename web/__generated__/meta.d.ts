@@ -2,6 +2,8 @@
 export type ZFile = { key: string; target: string; sha: string }
 export type ZInstall = { name: string; files: ZFile[] }
 export type ZItemType = 'registry:component' | 'registry:hook' | 'registry:lib'
+/** The input that drives the component's signature motion. */
+export type ZGesture = 'press' | 'drag' | 'hold' | 'hover' | 'type'
 
 export type ZItem = {
   name: string
@@ -9,16 +11,18 @@ export type ZItem = {
   title: string
   description: string
   category: string | null
+  gesture: ZGesture | null
   states: string[] | null
   spring: string | null
   dependencies: string[]
   installs: ZInstall[]
 }
 
-/** Components always declare a category, states, and a default spring. */
+/** Components always declare a category, a gesture, states, and a default spring. */
 export type ZComponent = ZItem & {
   type: 'registry:component'
   category: string
+  gesture: ZGesture
   states: string[]
   spring: string
 }

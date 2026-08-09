@@ -52,6 +52,10 @@
         "category": {
           "enum": ["primitive", "tactile-feedback", "state-morphing", "input-utility"]
         },
+        "gesture": {
+          "enum": ["press", "drag", "hold", "hover", "type"],
+          "description": "The input that drives the component's signature motion. `category` says what kind of thing it is; this says what the reader has to do to see it work, which is the axis the catalogue actually filters on."
+        },
         "states": {
           "type": "array",
           "minItems": 2,
@@ -68,9 +72,9 @@
       "then": {
         "required": ["meta"],
         "properties": {
-          "meta": { "required": ["category", "states", "spring"] }
+          "meta": { "required": ["category", "gesture", "states", "spring"] }
         },
-        "description": "Components must declare their state machine and default spring; the showcase builds its state inspector from these."
+        "description": "Components must declare their state machine, driving gesture, and default spring; the showcase builds its state inspector and its catalogue filter from these."
       }
     }
   ]

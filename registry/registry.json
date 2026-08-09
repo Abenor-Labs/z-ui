@@ -5,79 +5,10 @@
   "homepage": "https://github.com/Abenor-Labs/z-ui",
   "items": [
     {
-      "name": "like-button",
-      "type": "registry:component",
-      "category": "tactile-feedback",
-      "path": "components/like-button"
-    },
-    {
-      "name": "scrub",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/scrub"
-    },
-    {
-      "name": "hold-to-confirm",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/hold-to-confirm"
-    },
-    {
-      "name": "undo-toast",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/undo-toast"
-    },
-    {
-      "name": "disclosure",
+      "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",
-      "path": "components/disclosure"
-    },
-    {
-      "name": "sheet",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/sheet"
-    },
-    {
-      "name": "reorder",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/reorder"
-    },
-    {
-      "name": "slide-to-confirm",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/slide-to-confirm"
-    },
-    {
-      "name": "revert-field",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/revert-field"
-    },
-    {
-      "name": "scheduler",
-      "type": "registry:component",
-      "category": "input-utility",
-      "path": "components/scheduler"
-    },
-    {
-      "name": "use-controllable-state",
-      "type": "registry:hook",
-      "path": "hooks/use-controllable-state"
-    },
-    {
-      "name": "z-cn",
-      "type": "registry:lib",
-      "path": "lib/z-cn"
-    },
-    {
-      "name": "z-spring",
-      "type": "registry:lib",
-      "path": "lib/z-spring"
+      "path": "components/scramble-reveal"
     }
   ]
 }

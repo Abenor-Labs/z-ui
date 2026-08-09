@@ -9,28 +9,12 @@
     // nests each source one level deeper than it lands in a consumer project
     // (lib/z-spring/z-spring.ts here, lib/z-spring.ts there), and tsconfig
     // paths allow only one wildcard per pattern.
+    //
+    // Every new item needs its entry added here and in web/tsconfig.json;
+    // lint-registry fails the build when one is missing, so a forgotten entry
+    // cannot reach CI.
     "paths": {
-      "@/lib/z-spring": ["./lib/z-spring/z-spring.ts"],
-      "@/lib/z-cn": ["./lib/z-cn/z-cn.ts"],
-      "@/hooks/use-controllable-state": [
-        "./hooks/use-controllable-state/use-controllable-state.ts"
-      ],
-      "@/components/z-ui/like-button": [
-        "./components/like-button/like-button.tsx"
-      ],
-      "@/components/z-ui/scrub": ["./components/scrub/scrub.tsx"],
-      "@/components/z-ui/undo-toast": ["./components/undo-toast/undo-toast.tsx"],
-      "@/components/z-ui/hold-to-confirm": [
-        "./components/hold-to-confirm/hold-to-confirm.tsx"
-      ],
-      "@/components/z-ui/disclosure": ["./components/disclosure/disclosure.tsx"],
-      "@/components/z-ui/sheet": ["./components/sheet/sheet.tsx"],
-      "@/components/z-ui/reorder": ["./components/reorder/reorder.tsx"],
-      "@/components/z-ui/slide-to-confirm": [
-        "./components/slide-to-confirm/slide-to-confirm.tsx"
-      ],
-      "@/components/z-ui/revert-field": ["./components/revert-field/revert-field.tsx"],
-      "@/components/z-ui/scheduler": ["./components/scheduler/scheduler.tsx"]
+      "@/components/z-ui/scramble-reveal": ["./components/scramble-reveal/scramble-reveal.tsx"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

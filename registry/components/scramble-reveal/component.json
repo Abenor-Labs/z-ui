@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "scramble-reveal",
+  "type": "registry:component",
+  "title": "Scramble Reveal",
+  "description": "Text that decodes out of random glyphs on hover, on mount, or when it first enters view.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [{ "path": "scramble-reveal.tsx", "type": "registry:component" }],
+  "meta": {
+    "category": "state-morphing",
+    "gesture": "hover",
+    "states": ["idle", "scrambling", "settled"],
+    "spring": "snap"
+  }
+}
