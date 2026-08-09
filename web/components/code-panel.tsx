@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { CopyButton } from '@/components/copy-button'
 
 export type CodeFile = {
   key: string
@@ -19,14 +20,7 @@ export type CodeFile = {
  */
 export function CodePanel({ files }: { files: CodeFile[] }) {
   const [active, setActive] = React.useState(0)
-  const [copied, setCopied] = React.useState(false)
   const file = files[active]!
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(file.raw)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1600)
-  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
@@ -38,20 +32,20 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
             onClick={() => setActive(i)}
             aria-pressed={i === active}
             className={
-              'px-2.5 py-1 font-mono text-[0.6875rem] transition-colors ' +
+              'px-2.5 py-1 txt-xs transition-colors ' +
               (i === active ? 'text-accent' : 'text-muted hover:text-ink')
             }
           >
             {f.target}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={copy}
-          className="ml-auto border border-control px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-accent"
+        <CopyButton
+          value={file.raw}
+          copiedLabel="copied"
+          className="ml-auto border border-control px-2.5 py-1 lbl-xs text-muted transition-colors hover:border-accent hover:text-accent"
         >
-          {copied ? 'copied' : 'copy'}
-        </button>
+          copy
+        </CopyButton>
       </div>
 
       <div className="code" dangerouslySetInnerHTML={{ __html: file.html }} />
@@ -59,7 +53,7 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
       <div className="flex flex-wrap items-center gap-x-6 border-t border-hair px-5 py-2.5">
         <span className="lbl">{file.lines} lines</span>
         <span className="lbl">sha {file.sha}</span>
-        <span className="lbl !text-accent">matches /r/</span>
+        <span className="lbl">matches /r/</span>
       </div>
     </div>
   )
