@@ -25,31 +25,33 @@ Restraint is the whole strategy. The surface is nearly monochrome so that the on
 
 ## 2. Colors
 
-Restrained: tinted neutrals carry the entire surface, and one saturated mint is rationed to the moving part.
+Restrained: tinted neutrals carry the entire surface, and one desaturated signal color is rationed to the moving part.
+
+**Revision note (2026-08-09):** the original palette here — `#00E5A0` mint at near-maximum saturation on a near-black that measured closer to neutral-cool than warm — was, structurally, the exact "near-black plus one neon accent" template this section's own Overview names and rejects. The hue was never the problem; the shape was. This revision keeps every rule below (mint is still the only signal color, still rationed to the moving part, still never static) and re-mixes the actual values so the palette matches an OP-1 body — warm, desaturated, printed — rather than a generic dark-mode default. `--color-accent` in code carries this token; the CSS variable name did not change, only its value.
 
 ### Primary
-- **Signal Mint** (`#00E5A0`): The indicator. Reserved for the element currently in motion or in an active state the user just caused: a fill sweeping in, a trail, a stroke drawing, a toggle that has just landed. It is never a background, never body text, never a decorative accent on a static element. Its rarity is what makes it legible as "something happened here".
+- **Signal Mint** (`#479C78`): The indicator. Reserved for the element currently in motion or in an active state the user just caused: a fill sweeping in, a trail, a stroke drawing, a toggle that has just landed. It is never a background, never body text, never a decorative accent on a static element. Its rarity is what makes it legible as "something happened here". Desaturated and shifted toward teal rather than spring-green — closer to a mixed pigment than a glowing LED — and clears 4.5:1 text contrast on every ground it appears on (5.3–5.9:1), well past the floor rather than riding it.
 
 ### Neutral
-- **Chassis Ink** (`#0A0A0B`): The base surface. Near-black, tinted a fraction toward the brand hue rather than pure `#000`, which reads as a hole in the screen.
+- **Chassis Ink** (`#0F0C09`): The base surface. Near-black with a genuine warm undertone (R > G > B), tinted toward the brand hue rather than pure `#000` or a cool near-black that reads as default dark-mode grey.
 - **Silkscreen Sand** (`#E8E4DC`): Primary text and control markings on ink. Warm, printed, deliberately not white. This is the color that keeps the system from reading as a terminal.
-- **Panel Grey** (tonal ramp `[to be resolved during implementation]`): Borders, dividers, inactive control fills, and the second surface layer for panels and toolbars. Derived from ink with lifted lightness and near-zero chroma.
+- **Panel Grey** (tonal ramp): `#151109` (surface) → `#1C1712` (panel) → `#29201A` (panel-2 / fill) → `#7E7161` (control border). Borders, dividers, inactive control fills, and the second surface layer for panels and toolbars. Every step is warm — R > G > B — derived from ink with lifted lightness and near-zero chroma, not from a default Tailwind zinc/slate ramp.
 
 ### Named Rules
 
 **The Moving Part Rule.** Mint marks what moves, never what means. If a color is carrying semantics on a static element (an error, a label, a category, a link), mint is the wrong color and something in the neutral ramp is the right one. An interface at rest shows no mint at all.
 
-**The Contrast Floor Rule.** Signal Mint measures roughly 1.7:1 on white. It is forbidden on text, icon-only controls, and focus indicators over light surfaces. This is not a style preference; it is why the system is dark-first. Any light-theme component that reaches for mint to convey meaning has to solve contrast with a neutral instead.
+**The Contrast Floor Rule.** Signal Mint measures roughly 3.3:1 on white — enough to clear a non-text (1.4.11) use, still short of the 4.5:1 text floor. It is forbidden on text, icon-only controls, and focus indicators over light surfaces. This is not a style preference; it is why the system is dark-first. Any light-theme component that reaches for mint to convey meaning has to solve contrast with a neutral instead.
 
 **The Second Channel Rule.** State is never encoded in hue alone. Every state change carries shape, fill, or position alongside color, so the component still reads in forced-colors mode and to a color-blind user with the animation disabled.
 
 ## 3. Typography
 
-**Display Font:** Inter (with `system-ui, sans-serif`)
-**Body Font:** Inter (with `system-ui, sans-serif`)
+**Display Font:** Geist (with `system-ui, sans-serif`)
+**Body Font:** Geist (with `system-ui, sans-serif`)
 **Label/Mono Font:** JetBrains Mono (with `ui-monospace, monospace`)
 
-**Character:** One sans doing all structural work, one mono doing all machine work. Inter is chosen precisely because it is invisible: it must not compete with the motion, which is the actual subject. JetBrains Mono is the panel's silkscreen, used for install commands, prop names, spring values, and state labels. The pairing reads as instrument labelling rather than editorial voice.
+**Character:** One sans doing all structural work, one mono doing all machine work. Geist is chosen precisely because it is invisible: it must not compete with the motion, which is the actual subject. JetBrains Mono is the panel's silkscreen, used for install commands, prop names, spring values, and state labels. The pairing reads as instrument labelling rather than editorial voice.
 
 ### Hierarchy
 
