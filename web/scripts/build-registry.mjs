@@ -55,6 +55,7 @@ function collect() {
       title: manifest.title,
       description: manifest.description,
       category: manifest.meta?.category ?? entry.category ?? null,
+      gesture: manifest.meta?.gesture ?? null,
       states: manifest.meta?.states ?? null,
       spring: manifest.meta?.spring ?? null,
       dependencies: manifest.dependencies ?? [],
@@ -110,6 +111,7 @@ for (const item of items) {
         // the transport — the same claim the site makes on every source panel.
         meta: {
           category: item.category,
+          gesture: item.gesture,
           states: item.states,
           spring: item.spring,
           digests: Object.fromEntries(item.files.map((f) => [f.path, f.sha])),
@@ -149,6 +151,7 @@ const meta = items.map((item) => ({
   title: item.title,
   description: item.description,
   category: item.category,
+  gesture: item.gesture,
   states: item.states,
   spring: item.spring,
   dependencies: item.dependencies,
@@ -176,6 +179,8 @@ emit(
 export type ZFile = { key: string; target: string; sha: string }
 export type ZInstall = { name: string; files: ZFile[] }
 export type ZItemType = 'registry:component' | 'registry:hook' | 'registry:lib'
+/** The input that drives the component's signature motion. */
+export type ZGesture = 'press' | 'drag' | 'hold' | 'hover' | 'type'
 
 export type ZItem = {
   name: string
@@ -183,16 +188,18 @@ export type ZItem = {
   title: string
   description: string
   category: string | null
+  gesture: ZGesture | null
   states: string[] | null
   spring: string | null
   dependencies: string[]
   installs: ZInstall[]
 }
 
-/** Components always declare a category, states, and a default spring. */
+/** Components always declare a category, a gesture, states, and a default spring. */
 export type ZComponent = ZItem & {
   type: 'registry:component'
   category: string
+  gesture: ZGesture
   states: string[]
   spring: string
 }

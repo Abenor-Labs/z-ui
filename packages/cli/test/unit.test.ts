@@ -11,7 +11,7 @@ import { matches, window } from '../src/ui/select.ts'
 import { nearest } from '../src/commands/add.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const config: Config = {
   registry: './registry',
@@ -257,14 +257,24 @@ describe('did-you-mean', () => {
   })
 })
 
+/**
+ * `registry/lib/z-spring/z-spring.ts` was deleted with the rest of the registry
+ * on 2026-08-09. The CLI's own copy of the scale is still the thing it ships, so
+ * the rest of this suite stays meaningful; only the cross-check against the
+ * registry has nothing to compare against.
+ *
+ * Skipped by presence rather than deleted, so it re-arms by itself the moment a
+ * spring scale exists again — and if the new scale differs from the CLI's copy,
+ * this is the test that will say so instead of the drift reaching a consumer.
+ */
+const Z_SPRING = new URL('../../../registry/lib/z-spring/z-spring.ts', import.meta.url)
+const hasRegistrySpring = existsSync(Z_SPRING)
+
 describe('spring constants stay in step with the registry', () => {
-  test('every preset matches registry/lib/z-spring/z-spring.ts', () => {
+  test('every preset matches registry/lib/z-spring/z-spring.ts', { skip: !hasRegistrySpring }, () => {
     // The CLI keeps its own copy because the registry file is a React module.
     // This is the tripwire that stops the copy drifting silently.
-    const src = readFileSync(
-      new URL('../../../registry/lib/z-spring/z-spring.ts', import.meta.url),
-      'utf8',
-    )
+    const src = readFileSync(Z_SPRING, 'utf8')
     // A literal regex, not one built from a template string: `\s` inside a
     // template literal is not an escape sequence and silently collapses to `s`,
     // which makes the pattern match nothing and the tripwire useless.

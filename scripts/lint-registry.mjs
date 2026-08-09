@@ -114,6 +114,7 @@ for (const entry of index.items) {
     const at = `${where}/${f}`
 
     const imports = [...src.matchAll(/from '([^']+)'/g)].map((m) => m[1])
+    const usesMotion = imports.includes('motion/react')
     for (const imp of imports) {
       check(ALLOWED_IMPORTS.has(imp), at, `import "${imp}" is outside the allowlist`)
       check(
@@ -127,7 +128,16 @@ for (const entry of index.items) {
 
     check(src.startsWith("'use client'"), at, "'use client' must be the first line")
     check(!/export default/.test(src), at, 'no default export; components are named exports')
-    check(/initial=\{false\}/.test(src), at, 'every motion element needs initial={false}')
+    // Scoped to files that actually import motion. The rule reads "every motion
+    // element needs initial={false}", and a file with no motion elements passes
+    // it vacuously — the substring test was only ever a proxy for that. Asserted
+    // unconditionally it forces a `motion.*` node onto components whose movement
+    // has nothing to interpolate (scramble-reveal walks a boundary along a
+    // string one tick at a time), and a motion element added to satisfy a linter
+    // is the same class of lie these checks exist to catch.
+    if (usesMotion) {
+      check(/initial=\{false\}/.test(src), at, 'every motion element needs initial={false}')
+    }
     check(/data-state=/.test(src), at, 'interactive root must carry data-state')
     check(/aria-/.test(src), at, 'interactive root must carry an aria attribute')
     // A cubic-bezier overshoots when either control point's y falls outside
@@ -170,7 +180,14 @@ for (const entry of index.items) {
           `${m[1]} keys ${JSON.stringify(keys)} != STATES ${JSON.stringify(declared)}`,
         )
       }
-      check(variantObjects > 0, at, 'no variants object found; expected `const xVariants = {...} satisfies`')
+      // Same scoping as initial={false}: a variants object is the thing that
+      // maps a state onto a motion target, so only a file that imports motion
+      // owes one. The key-drift loop above still runs everywhere — it just
+      // matches nothing when there are no variants, which is the correct answer
+      // rather than a skipped check.
+      if (usesMotion) {
+        check(variantObjects > 0, at, 'no variants object found; expected `const xVariants = {...} satisfies`')
+      }
     }
   }
 }

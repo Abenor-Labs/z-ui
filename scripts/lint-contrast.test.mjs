@@ -23,7 +23,7 @@
  * depend on the happy path being taken.
  */
 import { execSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -40,6 +40,23 @@ const CARD = 'web/components/catalog-card.tsx'
 const FILES = [CSS, SRC, CARD]
 // Repo-relative for the messages, absolute for every actual write.
 const abs = (f) => join(ROOT, f)
+
+/**
+ * Same skip as lint-registry.test, for the same reason: the registry-colour and
+ * `text-` utility mutations need a real registry component and a real site file
+ * that paints a token, and the 2026-08-09 clear-out removed both. The CSS-only
+ * mutations could still run, but a partial harness reporting "all caught" would
+ * overstate what it checked, so the whole file stands down until there is
+ * something to break.
+ *
+ * Re-point SRC and CARD when the first new component and its preview land.
+ */
+const missing = FILES.filter((f) => !existsSync(abs(f)))
+if (missing.length) {
+  console.error(`SKIPPED lint-contrast.test: ${missing.join(', ')} not on disk — the registry is empty.`)
+  console.error('         re-point SRC and CARD in this file once a component exists.')
+  process.exit(0)
+}
 
 const orig = Object.fromEntries(FILES.map((f) => [f, readFileSync(abs(f), 'utf8')]))
 const restore = () => {
@@ -167,16 +184,16 @@ const baseline = [
  */
 const mutations = [
   ['text floor is 4.5 and the UI floor is genuinely not', () =>
-    edit(CSS, '--color-accent: #818cf8;', '--color-accent: #6a6a6a;'),
-    /^web: accent on chassis is 3\.68:1, below the 4\.5:1 floor for text/,
+    edit(CSS, '--color-accent: #479c78;', '--color-accent: #6a6a6a;'),
+    /^web: accent on chassis is 3\.61:1, below the 4\.5:1 floor for text/,
     /accent on chassis is .+ floor for non-text/],
 
   ['new token with no declared pair', () =>
-    edit(CSS, '  --color-accent: #818cf8;', '  --color-accent: #818cf8;\n  --color-alarm: #ff2d2d;'),
+    edit(CSS, '  --color-accent: #479c78;', '  --color-accent: #479c78;\n  --color-alarm: #ff2d2d;'),
     /--color-alarm \(#ff2d2d\) appears in no declared pair/],
 
   ['text- utility with no declared text pair', () =>
-    edit(CARD, 'className="lbl mt-2.5"', 'className="lbl mt-2.5 text-rule"'),
+    edit(CARD, 'className="mt-1 truncate text-sm text-muted"', 'className="mt-1 truncate text-sm text-rule"'),
     /^web\/components\/catalog-card\.tsx: "text-rule" is used here but "rule" is the foreground of no declared text pair/],
 
   ['token renamed out from under a pair', () =>
@@ -205,13 +222,13 @@ const mutations = [
 
   ['registry colour fails on the dark chassis only', () =>
     edit(SRC, "'#6a6a71'", "'#1a1a1a'"),
-    /^like-button\/like-button\.tsx: iconVariants #1a1a1a \(idle\) on #09090b is 1\.14:1/,
+    /^like-button\/like-button\.tsx: iconVariants #1a1a1a \(idle\) on #0f0c09 is 1\.12:1/,
     /#1a1a1a \(idle\) on #ffffff/],
 
   ['registry colour fails on the light surface only', () =>
     edit(SRC, "'#6a6a71'", "'#fff'"),
     /^like-button\/like-button\.tsx: iconVariants #fff \(idle\) on #ffffff is 1\.00:1/,
-    /#fff \(idle\) on #09090b/],
+    /#fff \(idle\) on #0f0c09/],
 
   // #f43f5e on purpose: it is already used inside iconVariants, so a rule D
   // that collected hex strings rather than source positions would wave this
@@ -224,7 +241,7 @@ const mutations = [
   // without this the whole suite is satisfiable by a linter that fails on
   // everything.
   ['a passing pair stays passing', () =>
-    edit(CSS, '--color-ink: #e5e1e4;', '--color-ink: #ffffff;'),
+    edit(CSS, '--color-ink: #e8e4dc;', '--color-ink: #ffffff;'),
     null,
     /ink on (chassis|panel|panel-2)/],
 ]

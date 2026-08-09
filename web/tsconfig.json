@@ -8,32 +8,14 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       // Registry sources import through `@/` exactly as a consumer will after
-      // the CLI rewrites them. These explicit entries win over the `@/*`
-      // wildcard below, so the same file typechecks in both workspaces and
-      // what runs here is what ships.
-      "@/lib/z-spring": ["../registry/lib/z-spring/z-spring.ts"],
-      "@/lib/z-cn": ["../registry/lib/z-cn/z-cn.ts"],
-      "@/hooks/use-controllable-state": [
-        "../registry/hooks/use-controllable-state/use-controllable-state.ts"
+      // the CLI rewrites them. Explicit entries go here, above the `@/*`
+      // wildcard, so they win and the same file typechecks in both workspaces.
+      //
+      // Each new item needs an entry here and in registry/tsconfig.json;
+      // lint-registry fails the build when either one is missing.
+      "@/components/z-ui/scramble-reveal": [
+        "../registry/components/scramble-reveal/scramble-reveal.tsx"
       ],
-      "@/components/z-ui/like-button": [
-        "../registry/components/like-button/like-button.tsx"
-      ],
-      "@/components/z-ui/scrub": ["../registry/components/scrub/scrub.tsx"],
-      "@/components/z-ui/undo-toast": ["../registry/components/undo-toast/undo-toast.tsx"],
-      "@/components/z-ui/hold-to-confirm": [
-        "../registry/components/hold-to-confirm/hold-to-confirm.tsx"
-      ],
-      "@/components/z-ui/disclosure": ["../registry/components/disclosure/disclosure.tsx"],
-      "@/components/z-ui/sheet": ["../registry/components/sheet/sheet.tsx"],
-      "@/components/z-ui/reorder": ["../registry/components/reorder/reorder.tsx"],
-      "@/components/z-ui/slide-to-confirm": [
-        "../registry/components/slide-to-confirm/slide-to-confirm.tsx"
-      ],
-      "@/components/z-ui/revert-field": [
-        "../registry/components/revert-field/revert-field.tsx"
-      ],
-      "@/components/z-ui/scheduler": ["../registry/components/scheduler/scheduler.tsx"],
       "@/*": ["./*"]
     }
   },

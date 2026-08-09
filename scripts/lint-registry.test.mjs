@@ -1,8 +1,25 @@
 import { execSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
 const SRC = 'registry/components/like-button/like-button.tsx'
 const MAN = 'registry/components/like-button/component.json'
+
+/**
+ * This harness proves the linter by breaking a real component and checking it
+ * complains. With the registry emptied on 2026-08-09 there is nothing to break,
+ * so it skips rather than crashing on ENOENT — but it skips *loudly*, because a
+ * mutation harness that silently passes while testing nothing is the exact
+ * failure mode the linter it guards exists to prevent.
+ *
+ * Re-point SRC/MAN at the first new component that lands. Until then this file
+ * is a placeholder holding the shape of the checks, not a passing suite.
+ */
+if (!existsSync(SRC) || !existsSync(MAN)) {
+  console.error('SKIPPED lint-registry.test: no component to mutate — the registry is empty.')
+  console.error(`         re-point SRC/MAN in this file once a component exists.`)
+  process.exit(0)
+}
+
 const orig = { src: readFileSync(SRC, 'utf8'), man: readFileSync(MAN, 'utf8') }
 
 const mutations = [
