@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+/* The components live in the registry, outside this workspace entirely;
+   Tailwind is told explicitly rather than left to infer, so a utility used only
+   inside a component file is never silently dropped from the build. */
+@source '../../registry/components/**/*.tsx';
+@source './**/*.tsx';

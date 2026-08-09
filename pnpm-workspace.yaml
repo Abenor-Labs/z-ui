@@ -1,4 +1,5 @@
 packages:
+  - components
   - registry
   - packages/*
   - web
