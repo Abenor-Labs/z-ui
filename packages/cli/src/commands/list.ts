@@ -1,4 +1,5 @@
 import { Registry } from '../registry/fetch.ts'
+import { intro } from '../ui/art.ts'
 import { log, c } from '../ui/log.ts'
 
 /**
@@ -6,19 +7,23 @@ import { log, c } from '../ui/log.ts'
  * index, which the generator enriches with title, spring and states so this does
  * not have to fetch every item to print a useful table.
  */
-export async function list(opts: { registry: string; json: boolean }) {
+export async function list(opts: { version: string; registry: string; json: boolean }) {
   const registry = new Registry(opts.registry)
   const index = await registry.index()
 
   const components = index.items.filter((i) => i.type === 'registry:component')
   const primitives = index.items.filter((i) => i.type !== 'registry:component')
 
+  // The banner is for a human. `--json` exists so a script can pipe this
+  // output straight into `jq` or a file, and anything ahead of the `[` on
+  // stdout breaks that — same reason `--json` skips every line below too.
   if (opts.json) {
     log.raw(JSON.stringify(index.items, null, 2))
     return
   }
 
-  log.line()
+  intro(opts.version, 'browse the registry')
+
   log.line(`${c.bold(index.name)} ${c.grey(index.version)}  ${c.grey(registry.describe())}`)
   log.line()
 

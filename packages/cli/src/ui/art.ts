@@ -6,12 +6,13 @@ import { isInteractive } from './tty.ts'
 /**
  * The banner and the structured log frame.
  *
- * `Doom` over `Slant` or `Standard`: its strokes are built from pipes and
- * underscores rather than bare slashes, which gives the letterforms enough
- * weight to survive being tinted. Slant reads as skeletal once the lower rows
- * dim toward charcoal.
+ * `ANSI Shadow` over `Doom`, `Slant` or `Standard`: solid double-line blocks
+ * with a built-in bevel, not a thin stroke skeleton. At four letters, a
+ * lighter face reads as noise before it reads as a mark — this is the one
+ * weight class that survives a name this short and still looks intentional
+ * once tinted top-to-bottom.
  */
-const FONT = 'Doom' as const
+const FONT = 'ANSI Shadow' as const
 
 /**
  * White at the crown fading to charcoal at the baseline.
@@ -81,7 +82,7 @@ function banner(): string[] {
  */
 export function intro(version: string, subtitle: string) {
   if (!isInteractive()) {
-    stdout.write(`z-ui ${version}\n`)
+    stdout.write(`z-ui ${version} · Abenor Labs\n`)
     bannerLines = 1
     return
   }
@@ -90,9 +91,15 @@ export function intro(version: string, subtitle: string) {
     '',
     ...banner(),
     '',
-    `${CORNER_TOP}  ${pill('z-ui')}`,
+    `${CORNER_TOP}  ${pill('z-ui')}  ${c.grey('by Abenor Labs')}`,
     BAR,
     `${DIAMOND}  ${c.grey(subtitle)}  ${c.grey('•')}  ${c.grey(version)}`,
+    BAR,
+    // No Abenor Labs site to link yet — the plan that scoped this CLI already
+    // calls a `z-ui.abenor.dev` URL fabricated and says the real registry
+    // stays the raw GitHub base "until a domain exists" (ADR 0003). Link the
+    // one URL that is actually real.
+    `${DIAMOND}  ${c.grey('github.com/Abenor-Labs/z-ui')}`,
     BAR,
   ]
   stdout.write(lines.join('\n') + '\n')

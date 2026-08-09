@@ -5,6 +5,7 @@ import { Registry } from '../registry/fetch.ts'
 import { readConfig } from '../project/config.ts'
 import { rewriteImports, resolveTarget } from '../project/write.ts'
 import { missingDependencies, detectPackageManager, installCommand } from '../project/deps.ts'
+import { intro } from '../ui/art.ts'
 import { log, c } from '../ui/log.ts'
 
 type Finding = {
@@ -24,13 +25,11 @@ type Finding = {
  * accessibility contract while customising their own copy, and no
  * general-purpose registry client would know to look.
  */
-export async function doctor(opts: { cwd: string; registry?: string }) {
+export async function doctor(opts: { version: string; cwd: string; registry?: string }) {
+  intro(opts.version, `checking ${opts.cwd}`)
+
   const config = await readConfig(opts.cwd)
   const registry = new Registry(opts.registry ?? config.registry)
-
-  log.line()
-  log.line(`${c.bold('z-ui doctor')}  ${c.grey(opts.cwd)}`)
-  log.line()
 
   const index = await registry.index()
   const components = index.items.filter((i) => i.type === 'registry:component')

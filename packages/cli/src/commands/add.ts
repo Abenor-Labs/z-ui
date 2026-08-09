@@ -9,10 +9,12 @@ import { confirm } from '../ui/prompt.ts'
 import { multiselect } from '../ui/select.ts'
 import { spinner } from '../ui/spinner.ts'
 import { isInteractive } from '../ui/tty.ts'
+import { intro } from '../ui/art.ts'
 import type { RegistryIndex } from '../registry/fetch.ts'
 import { log, c, UserError } from '../ui/log.ts'
 
 export type AddOptions = {
+  version: string
   components: string[]
   cwd: string
   registry?: string
@@ -31,6 +33,11 @@ export type AddOptions = {
  * shape of the change first.
  */
 export async function add(opts: AddOptions) {
+  // The banner, not just `init`'s. `add` is the command on every install
+  // block on the site — it is the first thing most people ever run, not
+  // `init` — so it is the one place a first impression is actually spent.
+  intro(opts.version, 'micro-interactions as source you own')
+
   const config = await readConfig(opts.cwd)
   const registry = new Registry(opts.registry ?? config.registry)
 

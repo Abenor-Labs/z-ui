@@ -5,6 +5,7 @@ import { init } from './commands/init.ts'
 import { add } from './commands/add.ts'
 import { list } from './commands/list.ts'
 import { doctor } from './commands/doctor.ts'
+import { spring } from './commands/spring.ts'
 
 const VERSION = '0.1.0'
 
@@ -19,6 +20,7 @@ const HELP = `
     ${c.cyan('add')} <name...>     add components and their dependencies
     ${c.cyan('list')}              list what the registry offers
     ${c.cyan('doctor')}            check what is installed, change nothing
+    ${c.cyan('spring')} [name]     draw the actual curve before you pick one
 
   ${c.bold('Options')}
     -y, --yes         accept defaults, skip prompts
@@ -28,6 +30,9 @@ const HELP = `
     -s, --silent      suppress output
         --spring <p>  install with a different default preset
                       ${c.grey('snap · bounce · settle · fling')}
+        --stiffness   custom physics for spring (with --damping, --mass)
+        --damping     ${c.grey('z-ui spring --stiffness 300 --damping 20 --mass 1')}
+        --mass
         --dry-run     show the plan, write nothing
         --json        machine-readable output (list)
         --force       overwrite z-ui.json (init)
@@ -41,6 +46,7 @@ const HELP = `
     ${c.grey('z-ui add undo-toast --dry-run')}
     ${c.grey('z-ui add scrub --registry ./registry')}
     ${c.grey('z-ui doctor')}
+    ${c.grey('z-ui spring bounce')}
 `
 
 async function main() {
@@ -55,6 +61,9 @@ async function main() {
       cwd: { type: 'string', short: 'c', default: process.cwd() },
       silent: { type: 'boolean', short: 's', default: false },
       spring: { type: 'string' },
+      stiffness: { type: 'string' },
+      damping: { type: 'string' },
+      mass: { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
       force: { type: 'boolean', default: false },
@@ -83,6 +92,7 @@ async function main() {
       })
     case 'add':
       return add({
+        version: VERSION,
         components: rest,
         cwd,
         registry: values.registry,
@@ -92,16 +102,38 @@ async function main() {
         spring: values.spring,
       })
     case 'doctor':
-      return doctor({ cwd, registry: values.registry })
+      return doctor({ version: VERSION, cwd, registry: values.registry })
+    case 'spring':
+      return spring({
+        version: VERSION,
+        name: rest[0],
+        stiffness: toNumber(values.stiffness, 'stiffness'),
+        damping: toNumber(values.damping, 'damping'),
+        mass: toNumber(values.mass, 'mass'),
+      })
     case 'list':
     case 'ls':
       return list({
+        version: VERSION,
         registry: values.registry ?? (await registryFromConfig(cwd)),
         json: values.json!,
       })
     default:
       throw new UserError(`Unknown command: ${command}`, 'Run `z-ui --help`.')
   }
+}
+
+/** `undefined` stays `undefined` — `spring` distinguishes "not passed" from
+ *  "passed and invalid" to decide whether it is drawing a preset or a custom
+ *  transition. `Number('')` is `0`, not `NaN`, so an explicit empty check
+ *  comes first. */
+function toNumber(v: string | undefined, flag: string): number | undefined {
+  if (v === undefined) return undefined
+  const n = Number(v)
+  if (v.trim() === '' || Number.isNaN(n)) {
+    throw new UserError(`--${flag} must be a number, got "${v}".`)
+  }
+  return n
 }
 
 /** `list` should work before `init` has ever run, so a missing config falls

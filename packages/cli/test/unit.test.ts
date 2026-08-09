@@ -10,6 +10,7 @@ import { retargetSpring, assertPreset } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
 import { nearest } from '../src/commands/add.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
+import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { readFileSync } from 'node:fs'
 
 const config: Config = {
@@ -286,5 +287,57 @@ describe('spring constants stay in step with the registry', () => {
     for (const n of ['snap', 'settle', 'fling'] as const) {
       assert.ok(dampingRatio(n) > 0.7, `${n} should be near-critically damped`)
     }
+  })
+})
+
+describe('spring curve simulation', () => {
+  test('bounce overshoots by roughly the documented amount', () => {
+    const { overshootPct } = simulateSpring(springs.bounce.stiffness, springs.bounce.damping, springs.bounce.mass)
+    // z-spring.ts documents 31%. Semi-implicit Euler at 1ms is not the same
+    // integrator motion uses, so this is a tolerance band, not an exact match.
+    assert.ok(overshootPct > 25 && overshootPct < 37, `expected roughly 31%, got ${overshootPct.toFixed(1)}%`)
+  })
+
+  test('snap, settle and fling overshoot far less than bounce', () => {
+    const bounce = simulateSpring(springs.bounce.stiffness, springs.bounce.damping, springs.bounce.mass)
+    for (const n of ['snap', 'settle', 'fling'] as const) {
+      const { overshootPct } = simulateSpring(springs[n].stiffness, springs[n].damping, springs[n].mass)
+      assert.ok(overshootPct < bounce.overshootPct / 4, `${n} overshot ${overshootPct.toFixed(1)}%, too close to bounce`)
+    }
+  })
+
+  test('reaches 90% before it settles, for an underdamped spring', () => {
+    const { t90, settleMs } = simulateSpring(springs.bounce.stiffness, springs.bounce.damping, springs.bounce.mass)
+    assert.ok(t90 !== null && t90 < settleMs)
+  })
+
+  test('a heavily overdamped spring never overshoots', () => {
+    const { overshootPct } = simulateSpring(200, 400, 1)
+    assert.equal(overshootPct, 0)
+  })
+
+  test('a stiffer spring of the same damping ratio settles faster', () => {
+    const slow = simulateSpring(200, 2 * Math.sqrt(200), 1) // zeta = 1
+    const fast = simulateSpring(800, 2 * Math.sqrt(800), 1) // zeta = 1, 4x stiffness
+    assert.ok(fast.settleMs < slow.settleMs)
+  })
+
+  test('regime label matches the damping ratio', () => {
+    assert.match(regimeOf(dampingRatioOf(400, 14, 1)), /underdamped/)
+    assert.match(regimeOf(dampingRatioOf(200, 2 * Math.sqrt(200), 1)), /critically/)
+    assert.match(regimeOf(dampingRatioOf(200, 400, 1)), /overdamped/)
+  })
+
+  test('renderCurve produces a rectangular grid at the requested size', () => {
+    const { samples } = simulateSpring(springs.snap.stiffness, springs.snap.damping, springs.snap.mass)
+    const rows = renderCurve(samples, { width: 40, height: 8, windowMs: 300 })
+    assert.equal(rows.length, 8)
+    for (const row of rows) assert.equal(row.length, 40)
+  })
+
+  test('renderCurve draws something, not a blank grid', () => {
+    const { samples } = simulateSpring(springs.bounce.stiffness, springs.bounce.damping, springs.bounce.mass)
+    const rows = renderCurve(samples, { width: 40, height: 8, windowMs: 300 })
+    assert.ok(rows.some((row) => row.includes('#')))
   })
 })
