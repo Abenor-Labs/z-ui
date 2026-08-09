@@ -99,6 +99,17 @@ export class Registry {
         'Unauthenticated raw.githubusercontent.com allows ~60 requests an hour per IP. Wait, or use --registry ./registry against a clone.',
       )
     }
+    if (res.status === 404) {
+      // The one error every user of the published CLI hits first, because the
+      // default registry lives on a branch that is not merged yet. A bare
+      // "HTTP 404" reads as "you typed the name wrong" and sends people looking
+      // in the wrong place; naming the actual blocker and the path that works
+      // costs three lines and saves the issue.
+      throw new UserError(
+        `Registry returned HTTP 404 for ${url}`,
+        'The hosted registry is not published yet — nothing is on `main` to serve. Clone the repo and pass --registry ./registry to install from disk in the meantime.',
+      )
+    }
     if (!res.ok) throw new UserError(`Registry returned HTTP ${res.status} for ${url}`)
     return res.text()
   }

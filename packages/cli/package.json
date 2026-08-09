@@ -5,16 +5,24 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "z-ui": "./dist/index.js"
+    "z-ui": "dist/index.js"
   },
   "files": [
     "dist"
   ],
+  "homepage": "https://github.com/Abenor-Labs/z-ui#readme",
+  "bugs": {
+    "url": "https://github.com/Abenor-Labs/z-ui/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20.9.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build",
     "dev": "node --experimental-strip-types src/index.ts",
     "test": "node --test --experimental-strip-types test/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -28,7 +36,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Abenor-Labs/z-ui.git",
+    "url": "git+https://github.com/Abenor-Labs/z-ui.git",
     "directory": "packages/cli"
   },
   "devDependencies": {
