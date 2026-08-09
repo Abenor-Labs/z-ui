@@ -1,13 +1,39 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { components } from '@/__generated__/meta.js'
+import { byName, components } from '@/__generated__/meta.js'
 import { CopyButton } from '@/components/copy-button'
+import { componentHref, manifestUrl } from '@/lib/registry'
 
 export const metadata: Metadata = {
   title: 'Docs',
   description:
     'How Z-UI is installed, what lands in your repository, and the two contracts every component keeps.',
 }
+
+/** The component the install commands demonstrate with. */
+const EXAMPLE = components[0]?.name ?? '<component>'
+
+/**
+ * The file tree, read from the manifest rather than typed.
+ *
+ * `installs[].files[].target` is the exact path the CLI writes to, and the
+ * npm dependency line is the union the resolver installs — so this block
+ * cannot outlive the component it describes the way the hardcoded `scrub`
+ * tree did.
+ */
+const LANDS = (() => {
+  const item = byName[EXAMPLE]
+  if (!item) return 'The registry is empty, so nothing lands yet.'
+
+  const files = item.installs.flatMap((i) => i.files)
+  const width = Math.max(...files.map((f) => f.target.length)) + 3
+  const tree = files.map((f) => `${f.target.padEnd(width)}${f.sha}`).join('\n')
+
+  const deps = item.dependencies
+  return deps.length === 0
+    ? `${tree}\n\nnpm packages added: none`
+    : `${tree}\n\nnpm packages added: ${deps.join(', ')}`
+})()
 
 const SPRINGS = [
   { name: 'snap', zeta: '0.89', t90: '152ms', overshoot: '<1%', rest: '200ms', use: 'State morphs, where recoil would read as noise. The default.' },
@@ -31,32 +57,38 @@ export default function DocsPage() {
 
       <Section title="Install a component">
         <p className="mb-5 max-w-2xl text-sm text-muted">
-          The manifests are a strict superset of shadcn&rsquo;s registry-item schema, so its
-          CLI works today. The first-party CLI is not published yet and this page says so
-          rather than pretending otherwise.
+          Neither command resolves yet. The manifests are a strict superset of shadcn&rsquo;s
+          registry-item schema and are correct as written, but they are not on{' '}
+          <code className="font-mono text-ink">main</code> yet, so both paths are waiting on
+          the same merge and the first-party CLI is waiting on an npm publish after it.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
           <Cmd
             label="shadcn"
-            ready
-            cmd="npx shadcn@latest add https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry/r/scrub.json"
+            status="needs the merge"
+            cmd={`npx shadcn@latest add ${manifestUrl(EXAMPLE)}`}
           />
-          <Cmd label="z-ui" ready={false} cmd="npx @abenor/z-ui add scrub" />
+          <Cmd
+            label="z-ui"
+            status="needs the merge, then npm"
+            cmd={`npx @abenor/z-ui add ${EXAMPLE}`}
+          />
         </div>
       </Section>
 
       <Section title="What lands in your repository">
         <p className="mb-5 max-w-2xl text-sm text-muted">
-          The component, plus the primitives it depends on. Nothing else, and nothing is
-          added to <code className="font-mono text-ink">package.json</code> except{' '}
-          <code className="font-mono text-ink">motion</code>, which is a real dependency
-          because interruptible springs are the product.
+          The component, plus the primitives it depends on, and nothing else. What gets added
+          to <code className="font-mono text-ink">package.json</code> is whatever those files
+          actually import — the list below is read from the manifest, so it cannot claim a
+          file the CLI does not write.
         </p>
-        <pre className="overflow-x-auto rounded-xl border border-white/10 bg-panel px-5 py-4 font-mono text-sm text-muted">
-{`components/ui/scrub.tsx           the component
-lib/z-spring.ts                   the spring scale
-lib/z-cn.ts                       class merge
-hooks/use-controllable-state.ts   controlled/uncontrolled`}
+        {/* Was a hand-typed tree for `scrub`, a component the registry no
+            longer holds, listing four files and asserting `motion` as the only
+            dependency. Both were wrong: the manifest is the only thing that
+            knows what `add` writes, so it is what prints. */}
+        <pre className="overflow-x-auto rounded-xl border border-control bg-panel px-5 py-4 font-mono text-sm text-muted">
+          {LANDS}
         </pre>
       </Section>
 
@@ -83,7 +115,7 @@ hooks/use-controllable-state.ts   controlled/uncontrolled`}
             <tbody className="font-mono">
               {SPRINGS.map((s) => (
                 <tr key={s.name}>
-                  <td className="border-b border-hair px-5 py-2.5 text-accent">{s.name}</td>
+                  <td className="border-b border-hair px-5 py-2.5 text-ink">{s.name}</td>
                   <td className="border-b border-hair px-5 py-2.5 tabular-nums">{s.zeta}</td>
                   <td className="border-b border-hair px-5 py-2.5 tabular-nums">{s.t90}</td>
                   <td className="border-b border-hair px-5 py-2.5 tabular-nums">{s.overshoot}</td>
@@ -114,45 +146,50 @@ hooks/use-controllable-state.ts   controlled/uncontrolled`}
       </Section>
 
       <Section title="Components">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {components.map((c) => (
-            <Link
-              key={c.name}
-              href={`/c/${c.name}`}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-panel px-5 py-4 transition-colors hover:border-accent"
-            >
-              <span className="font-mono text-sm text-ink">{c.name}</span>
-              <span className="lbl ml-auto">{c.category}</span>
-            </Link>
-          ))}
-        </div>
+        {components.length === 0 ? (
+          // The registry was cleared to be rebuilt. This renders from the same
+          // manifest the list does, so it disappears on its own as soon as the
+          // first new item is generated rather than needing to be remembered.
+          <div className="rounded-xl border border-dashed border-white/10 px-5 py-10 text-center">
+            <p className="text-sm text-ink">No components are published yet.</p>
+            <p className="lbl mt-2">the contracts above still hold for everything that lands</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {components.map((c) => (
+              <Link
+                key={c.name}
+                href={componentHref(c.name)}
+                className="flex items-center gap-3 rounded-xl border border-control bg-panel px-5 py-4 transition-colors hover:border-muted"
+              >
+                <span className="font-mono text-sm text-ink">{c.name}</span>
+                <span className="lbl ml-auto">{c.category}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </Section>
     </main>
   )
 }
 
-function Cmd({ label, cmd, ready }: { label: string; cmd: string; ready: boolean }) {
+function Cmd({ label, cmd, status }: { label: string; cmd: string; status: string }) {
   return (
-    <div className="flex flex-col rounded-xl border border-white/10 bg-panel">
+    <div className="flex flex-col rounded-xl border border-control bg-panel">
       <div className="flex items-center gap-3 border-b border-hair px-5 py-3">
-        <span className="lbl !text-accent">{label}</span>
-        <span
-          className={
-            'rounded-lg px-2 py-0.5 font-mono text-[0.6875rem] ' +
-            (ready ? 'bg-accent/15 text-accent' : 'bg-white/5 text-muted')
-          }
-        >
-          {ready ? 'ready' : 'unpublished'}
-        </span>
+        <span className="lbl">{label}</span>
+        <span className="rounded-lg bg-panel-2 px-2 py-0.5 txt-xs text-muted">{status}</span>
         <CopyButton
           value={cmd}
           copiedLabel="copied"
-          className="lbl ml-auto rounded-lg border border-white/10 px-2.5 py-1 transition-colors hover:!text-ink"
+          className="lbl ml-auto rounded-lg border border-control px-2.5 py-1 transition-colors hover:!text-ink"
         >
           copy
         </CopyButton>
       </div>
-      <pre className="overflow-x-auto px-5 py-4 font-mono text-sm text-ink">{cmd}</pre>
+      <pre className="whitespace-pre-wrap break-all px-5 py-4 font-mono text-sm text-ink">
+        {cmd}
+      </pre>
     </div>
   )
 }

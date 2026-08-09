@@ -1,29 +1,25 @@
 'use client'
 
 import * as React from 'react'
-
-const REGISTRY_BASE =
-  'https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry'
+import { CopyButton } from '@/components/copy-button'
+import { manifestUrl } from '@/lib/registry'
 
 /**
- * Two install paths, both real. The shadcn one works today because the
- * manifests are a strict superset of its registry-item schema; the first-party
- * CLI is not published yet and says so rather than pretending.
+ * Two install paths, neither live yet.
+ *
+ * The shadcn one is one merge away — the manifests are already a strict
+ * superset of its registry-item schema, they are just not on `main`. The
+ * first-party CLI needs that and an npm publish. This block used to badge the
+ * shadcn tab `ready` over a URL that 404s, which is the opposite of the thing
+ * the rest of the site is careful about.
  */
 export function InstallBlock({ name }: { name: string }) {
   const commands = [
-    { label: 'z-ui', cmd: `npx @abenor/z-ui add ${name}`, ready: false },
-    { label: 'shadcn', cmd: `npx shadcn@latest add ${REGISTRY_BASE}/r/${name}.json`, ready: true },
+    { label: 'z-ui', cmd: `npx @abenor/z-ui add ${name}`, status: 'needs the merge, then npm' },
+    { label: 'shadcn', cmd: `npx shadcn@latest add ${manifestUrl(name)}`, status: 'needs the merge' },
   ]
   const [active, setActive] = React.useState(1)
-  const [copied, setCopied] = React.useState(false)
   const current = commands[active]!
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(current.cmd)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1600)
-  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
@@ -35,31 +31,33 @@ export function InstallBlock({ name }: { name: string }) {
             onClick={() => setActive(i)}
             aria-pressed={i === active}
             className={
-              'px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] transition-colors ' +
+              'px-2.5 py-1 lbl-xs transition-colors ' +
               (i === active ? 'text-accent' : 'text-muted hover:text-ink')
             }
           >
             {c.label}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={copy}
-          className="ml-auto border border-control px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-accent"
+        <CopyButton
+          value={current.cmd}
+          copiedLabel="copied"
+          className="ml-auto border border-control px-2.5 py-1 lbl-xs text-muted transition-colors hover:border-accent hover:text-accent"
         >
-          {copied ? 'copied' : 'copy'}
-        </button>
+          copy
+        </CopyButton>
       </div>
 
-      <pre className="overflow-x-auto px-5 py-4 font-mono text-sm text-ink">
+      {/* Wraps rather than scrolls: the shadcn command is a 90-char URL, and a
+          scroll track hides most of the one string on the card the reader is
+          here to copy. */}
+      <pre className="whitespace-pre-wrap break-all px-5 py-4 font-mono text-sm text-ink">
         {current.cmd}
       </pre>
 
-      {!current.ready && (
-        <p className="border-t border-hair px-5 py-2.5 font-mono text-[0.6875rem] text-muted">
-          Not published yet. Use the shadcn tab; it reads the same registry.
-        </p>
-      )}
+      {/* Always rendered, so switching tabs cannot resize the card — the note
+          row used to be absent on the tab that opened first and appear on the
+          reader's first click. Both tabs have something true to say now. */}
+      <p className="border-t border-hair px-5 py-2.5 txt-xs text-muted">{current.status}</p>
     </div>
   )
 }

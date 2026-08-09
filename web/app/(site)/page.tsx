@@ -1,32 +1,31 @@
 import Link from 'next/link'
-import { components, items } from '@/__generated__/meta.js'
-import { CatalogCard } from '@/components/catalog-card'
+import { components } from '@/__generated__/meta.js'
 import { CopyButton, CopyIcon } from '@/components/copy-button'
 import { ShaderBackground } from '@/components/hero/shader-bg'
 import { SpringCoil } from '@/components/hero/spring-coil'
 import { Reveal } from '@/components/reveal'
 import { SectionHead } from '@/components/section-head'
-
-const INIT = 'npx @abenor/z-ui add like-button'
+import { manifestUrl } from '@/lib/registry'
 
 /**
- * The four the landing page leads with: one from each category, then the widest
- * behaviour gap between them. Anything not in the registry falls out of the
- * list automatically rather than 404ing from the home page.
+ * A real component name when there is one, the placeholder only while the
+ * registry is empty. A command a reader can copy and run beats a command they
+ * have to edit first, and `<component>` was being printed next to a live
+ * catalogue.
  */
-const FEATURED_NAMES = ['like-button', 'scrub', 'undo-toast', 'reorder']
-const FEATURED = FEATURED_NAMES.map((n) => components.find((c) => c.name === n)).filter(
-  (c): c is (typeof components)[number] => Boolean(c),
-)
+const EXAMPLE = components[0]?.name ?? '<component>'
+const INIT = `npx @abenor/z-ui add ${EXAMPLE}`
 
-/** Counted from the manifest rather than typed in, so the hero cannot drift. */
-const FILE_COUNT = new Set(
-  items.flatMap((i) => i.installs.flatMap((x) => x.files.map((f) => f.key))),
-).size
-
+/**
+ * The registry was emptied on 2026-08-09 to be rebuilt from new designs, so
+ * every number here reads from the manifest rather than being typed in. While
+ * the catalogue is empty this page says so instead of showing a grid of
+ * nothing — `components.length` going to zero is the whole point of counting it
+ * rather than asserting it.
+ */
 const STATS = [
   { value: String(components.length), label: 'components' },
-  { value: String(FILE_COUNT), label: 'files in the registry' },
+  { value: '173ms', label: 'to 90% of target' },
   { value: '0', label: 'runtime dependencies' },
 ]
 
@@ -72,13 +71,13 @@ export default function Home() {
           <div className="flex flex-col">
             <Reveal>
               <div className="mb-7 flex items-center gap-3">
-                <span className="size-1.5 rounded-full bg-accent shadow-[0_0_10px_2px_rgba(99,102,241,0.7)]" />
+                <span className="size-1.5 rounded-full bg-control" />
                 <span className="lbl">Micro-interaction registry</span>
-                <span className="lbl !text-accent">pre-alpha</span>
+                <span className="lbl">pre-alpha</span>
               </div>
             </Reveal>
 
-            <Reveal delay={0.06}>
+            <Reveal>
               <h1 className="t-xl text-ink">
                 Physics-driven
                 <br />
@@ -86,7 +85,7 @@ export default function Home() {
               </h1>
             </Reveal>
 
-            <Reveal delay={0.12}>
+            <Reveal>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted">
                 Kinetic components for React, built on springs rather than curves. The CLI
                 writes the source into your project — from then on it is your file, with
@@ -94,12 +93,12 @@ export default function Home() {
               </p>
             </Reveal>
 
-            <Reveal delay={0.18}>
+            <Reveal>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <CopyButton
                   value={INIT}
                   copiedLabel="Copied to clipboard"
-                  className="group flex items-center justify-between gap-4 rounded-lg bg-white px-5 py-3.5 font-mono text-xs text-black transition-transform duration-200 hover:scale-[0.98] active:scale-[0.96] sm:px-6 sm:text-sm"
+                  className="group flex items-center justify-between gap-4 rounded-lg bg-ink px-5 py-3.5 font-mono text-xs text-chassis transition-transform duration-200 hover:scale-[0.98] active:scale-[0.96] sm:px-6 sm:text-sm"
                 >
                   {/* The command is one token to a reader; breaking it across
                       two lines makes it look like two commands. */}
@@ -108,14 +107,14 @@ export default function Home() {
                 </CopyButton>
                 <Link
                   href="#components"
-                  className="flex items-center justify-center rounded-lg border border-white/10 px-6 py-3.5 font-mono text-xs font-semibold tracking-[0.05em] transition-[border-color,box-shadow,background-color] hover:border-accent hover:bg-accent/5 hover:shadow-[0_0_20px_-2px_rgba(99,102,241,0.35)]"
+                  className="flex items-center justify-center rounded-lg border border-white/10 px-6 py-3.5 font-mono text-xs font-semibold tracking-[0.05em] transition-colors hover:border-accent hover:bg-accent/5"
                 >
                   Explore primitives
                 </Link>
               </div>
             </Reveal>
 
-            <Reveal delay={0.24}>
+            <Reveal>
               <dl className="mt-12 flex flex-wrap gap-x-10 gap-y-4 border-t border-hair pt-6">
                 {STATS.map((s) => (
                   <div key={s.label}>
@@ -127,32 +126,15 @@ export default function Home() {
             </Reveal>
           </div>
 
-          {/* Shown on every width. The coil is the best argument on the page,
-              and a mobile hero without it is three paragraphs and a button. */}
-          <Reveal delay={0.1} y={26} className="order-first lg:order-none">
-            <div className="relative h-[280px] w-full overflow-hidden rounded-2xl border border-white/10 bg-panel shadow-[0_40px_80px_-24px_rgba(0,0,0,0.8)] sm:h-[360px] lg:h-[520px]">
-              <span className="absolute left-4 top-4 z-20 rounded-lg border border-white/20 bg-white/10 px-2 py-1 font-mono text-[0.6875rem] font-medium text-white backdrop-blur">
-                LIVE PHYSICS
-              </span>
+          {/* Back to the coil while the registry is empty. The scrub hero that
+              stood here demonstrated the shipped component, which is the right
+              instinct and no longer possible — it imported `@/components/z-ui/scrub`.
+              This one owes nothing to the registry, so the hero keeps working
+              through the rebuild and gets replaced the moment there is a real
+              component worth putting here. */}
+          <Reveal className="order-first lg:order-none">
+            <div className="relative h-[320px] w-full overflow-hidden rounded-2xl border border-white/10 bg-panel-2 sm:h-[360px] lg:h-[440px]">
               <SpringCoil className="absolute inset-0 size-full" />
-              <span className="absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-lg bg-black/50 px-3 py-1.5 font-mono text-xs text-muted backdrop-blur">
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                >
-                  <path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11" />
-                  <path d="M12 11V4.5a1.5 1.5 0 0 1 3 0V11" />
-                  <path d="M15 11V6.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5.2-3l-2.2-3.8a1.5 1.5 0 0 1 2.6-1.5L9 15" />
-                </svg>
-                Press and hold
-              </span>
             </div>
           </Reveal>
         </div>
@@ -195,82 +177,73 @@ export default function Home() {
           one library rather than a folder of snippets.
         </SectionHead>
 
-        <div className="grid gap-px overflow-hidden rounded-xl border border-white/10 bg-rule md:grid-cols-3">
-          {PRINCIPLES.map((p, i) => (
-            <Reveal key={p.k} delay={i * 0.07} className="bg-panel">
-              <div className="flex h-full flex-col gap-3 p-7">
-                <span className="lbl !text-accent">{p.k}</span>
-                <h3 className="text-base font-semibold tracking-tight">{p.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{p.body}</p>
+        {/* A manifest, not a feature grid — three uniform cards in a row is
+            the templated shape this section used to be. A spec sheet reads
+            these as an ordered list with a strong leading numeral, not as
+            interchangeable tiles, and it costs nothing to build: no card
+            frame, no forced equal height, no rounded container. */}
+        <div className="border-t border-hair">
+          {PRINCIPLES.map((p) => (
+            <Reveal key={p.k} className="grid gap-3 border-b border-hair py-9 sm:grid-cols-[4.5rem_1fr] sm:gap-8 sm:py-10">
+              <span className="font-mono text-3xl tabular-nums text-muted/50 sm:text-4xl">{p.k}</span>
+              <div className="flex flex-col gap-2.5">
+                <h3 className="text-base font-semibold tracking-tight sm:text-lg">{p.title}</h3>
+                <p className="max-w-xl text-sm leading-relaxed text-muted">{p.body}</p>
               </div>
             </Reveal>
           ))}
         </div>
       </section>
 
-      {/* ── catalog teaser ── */}
+      {/* ── catalog ── */}
       <section id="components" className="mx-auto max-w-[80rem] scroll-mt-20 px-4 pb-24 md:px-16">
-        <SectionHead index="02" eyebrow="Catalog" title="High-impact primitives.">
-          Every preview below is the shipped component itself, imported from the registry rather
-          than recorded. Press one.
+        <SectionHead index="02" eyebrow="Catalog" title="Being rebuilt.">
+          The previous set was removed rather than patched. What lands here next is designed
+          first and built against the same gates that were already in place — the manifest
+          schema, the state-machine lint, and the contrast floor all survived the clear-out.
         </SectionHead>
 
-        {/* Four, not all of them. The full set belongs on a page with filters;
-            a landing page's job is to prove the previews are real and get out. */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {FEATURED.map((c, i) => (
-            <Reveal key={c.name} delay={(i % 2) * 0.07}>
-              <CatalogCard item={c} />
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal className="mt-8">
-          <Link
-            href="/components"
-            className="group inline-flex items-center gap-3 rounded-lg border border-white/10 px-5 py-3 font-mono text-xs font-semibold tracking-[0.05em] transition-[border-color,background-color] hover:border-accent hover:bg-accent/5"
-          >
-            Browse all {components.length} components
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="transition-transform group-hover:translate-x-0.5"
-              aria-hidden
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </Link>
+        {/* An empty grid is worse than an honest sentence. This block exists to
+            be deleted the moment the first new item is in the registry. */}
+        <Reveal>
+          <div className="rounded-xl border border-dashed border-white/10 px-6 py-14 text-center">
+            <p className="text-base text-ink">Nothing is published yet.</p>
+            <p className="lbl mx-auto mt-2 max-w-md">
+              the registry is empty on purpose · new designs in progress
+            </p>
+          </div>
         </Reveal>
       </section>
 
       {/* ── install ── */}
       <section id="install" className="mx-auto max-w-[80rem] scroll-mt-20 px-4 pb-28 md:px-16">
-        <SectionHead index="03" eyebrow="Install" title="Two paths, both real.">
-          The CLI copies source into your repository. There is no package to upgrade and no
-          wrapper API to learn, so the file is yours to edit the moment it lands.
+        <SectionHead index="03" eyebrow="Install" title="Two paths, one file.">
+          Either way the source lands in your repository and the CLI is done with it. There is no
+          package to upgrade and no wrapper API to learn.
         </SectionHead>
 
+        {/* Neither command resolves yet, and both cards say which thing is
+            missing rather than sharing one vague "unpublished". They are
+            blocked on different steps: the manifests exist and are correct,
+            they are just not on `main` yet, so the shadcn path needs only the
+            merge. The first-party CLI needs that and an npm publish. Claiming
+            "ready" here — as this section did, over a URL that 404s — is the
+            one failure the rest of the page is built to avoid. */}
         <div className="grid gap-6 md:grid-cols-2">
           <Reveal>
             <InstallPath
               label="shadcn"
-              ready
-              cmd="npx shadcn@latest add https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/registry/r/like-button.json"
-              note="Works today. The manifests are a strict superset of its registry-item schema."
+              status="needs the merge"
+              cmd={`npx shadcn@latest add ${manifestUrl(EXAMPLE)}`}
+              note="The manifests are a strict superset of its registry-item schema, so this works the moment the registry is on main."
             />
           </Reveal>
-          <Reveal delay={0.07}>
+          <Reveal>
             <InstallPath
               label="z-ui"
-              ready={false}
+              status="needs the merge, then npm"
               cmd={INIT}
-              note="First-party CLI. Not published yet, and says so rather than pretending."
+              note="First-party CLI. Adds install-time spring selection and digest verification that a general registry client cannot."
             />
           </Reveal>
         </div>
@@ -279,38 +252,44 @@ export default function Home() {
   )
 }
 
+/**
+ * `status` is a sentence, not a boolean.
+ *
+ * It was `ready: boolean`, which forced both cards to pick from one word each
+ * and made "ready" available to a command that 404s. Naming the missing step
+ * costs the same row and cannot be true of a path that does not resolve.
+ */
 function InstallPath({
   label,
   note,
   cmd,
-  ready,
+  status,
 }: {
   label: string
   note: string
   cmd: string
-  ready: boolean
+  status: string
 }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-panel transition-colors hover:border-white/20">
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-control bg-panel transition-colors hover:border-muted">
       <div className="flex items-center gap-3 border-b border-hair px-5 py-3">
-        <span className="lbl !text-accent">{label}</span>
-        <span
-          className={
-            'rounded-lg px-2 py-0.5 font-mono text-[0.6875rem] ' +
-            (ready ? 'bg-accent/15 text-accent' : 'bg-white/5 text-muted')
-          }
-        >
-          {ready ? 'ready' : 'unpublished'}
-        </span>
+        <span className="lbl">{label}</span>
+        <span className="rounded-lg bg-panel-2 px-2 py-0.5 txt-xs text-muted">{status}</span>
         <CopyButton
           value={cmd}
           copiedLabel="copied"
-          className="lbl ml-auto rounded-lg border border-white/10 px-2.5 py-1 transition-colors hover:!text-ink"
+          className="lbl ml-auto rounded-lg border border-control px-2.5 py-1 transition-colors hover:!text-ink"
         >
           copy
         </CopyButton>
       </div>
-      <pre className="flex-1 overflow-x-auto px-5 py-4 font-mono text-sm text-ink">{cmd}</pre>
+      {/* `break-all` rather than a scrollbar. The shadcn command is a 90-char
+          URL; letting it scroll hid two thirds of it behind a track the reader
+          has to notice and drag, on the one element they are meant to copy. It
+          wraps instead, and the card grows to fit. */}
+      <pre className="flex-1 whitespace-pre-wrap break-all px-5 py-4 font-mono text-sm text-ink">
+        {cmd}
+      </pre>
       <p className="border-t border-hair px-5 py-3 text-sm text-muted">{note}</p>
     </div>
   )
