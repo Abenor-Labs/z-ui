@@ -19,7 +19,7 @@ export function SectionHead({
   return (
     <Reveal className="mb-12">
       <div className="mb-5 flex items-center gap-4">
-        <span className="lbl !text-accent">{index}</span>
+        <span className="lbl">{index}</span>
         <span className="lbl">{eyebrow}</span>
         <span className="rule-fade min-w-0 flex-1" />
       </div>

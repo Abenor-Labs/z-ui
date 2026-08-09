@@ -9,8 +9,9 @@ void main(){ v_uv = a_position * 0.5 + 0.5; gl_Position = vec4(a_position, 0.0, 
 /**
  * Two soft lights over the page's own ground colour.
  *
- * The floor is #09090b exactly, so this can be composited at full opacity and
- * the hero still starts from the same black as the rest of the site. The lights
+ * The floor is #0f0c09 exactly — --color-chassis, the warm near-black the rest
+ * of the site sits on — so this can be composited at full opacity and the hero
+ * still starts from the page's own ground. The lights
  * are then free to have real range — dimming the whole canvas instead, as the
  * original spec did, costs the glow far more than it costs the floor and leaves
  * a gradient that measures a couple of RGB steps.
@@ -37,13 +38,25 @@ void main(){
   float d2 = distance(vec2(uv.x * aspect, uv.y), vec2(p2.x * aspect, p2.y));
   float dm = distance(vec2(uv.x * aspect, uv.y), vec2(mouse.x * aspect, mouse.y));
 
-  vec3 color = vec3(0.035, 0.035, 0.043);
+  // --color-chassis #0f0c09 as 0..1, byte for byte. The old floor was a hair
+  // blue (b > r) where the page ground is warm (r > g > b), which showed as a
+  // seam wherever the lights fell off to nothing and the canvas met the page.
+  vec3 color = vec3(0.059, 0.047, 0.035);
 
-  // Indigo key light, and a colder violet fill so the two do not read as one
-  // blob when they drift past each other.
-  color += pow(smoothstep(0.78, 0.0, d1), 2.2) * vec3(0.29, 0.31, 0.95) * 0.30;
-  color += pow(smoothstep(0.64, 0.0, d2), 2.4) * vec3(0.42, 0.28, 0.92) * 0.20;
-  color += pow(smoothstep(0.42, 0.0, dm), 2.2) * vec3(0.50, 0.47, 1.00) * 0.17;
+  // A warm key and a sand fill. These are light colours, not surface colours:
+  // the key sits on the tungsten side of --color-control #7e7161, the fill
+  // between --color-control and Silkscreen Sand, so the two still separate by
+  // temperature the way they used to separate by hue and never read as one
+  // blob. Warm light carries far more luminance per unit than the indigo did,
+  // so the multipliers come down with it — at peak the key lifts the ground
+  // about one Panel Grey step, to roughly #382f24, which is the milled amount.
+  color += pow(smoothstep(0.78, 0.0, d1), 2.2) * vec3(1.00, 0.86, 0.66) * 0.16;
+  color += pow(smoothstep(0.64, 0.0, d2), 2.4) * vec3(0.92, 0.86, 0.76) * 0.11;
+  // The pointer light is the hottest and the least chromatic of the three — a
+  // warm white, the lamp in the user's hand. Not mint: it is drawn at the
+  // canvas centre before the pointer has ever moved, so by the Moving Part Rule
+  // it is on screen at rest and cannot carry the accent.
+  color += pow(smoothstep(0.42, 0.0, dm), 2.2) * vec3(1.00, 0.93, 0.83) * 0.13;
 
   // The headline sits in the upper left. Pull the ceiling down across that
   // corner so the lights stay a background and never contest the type.
@@ -59,13 +72,16 @@ void main(){
 }`
 
 /**
- * The hero ground: two soft light sources, one orbiting and one on the pointer.
+ * The hero ground: two soft light sources, fixed, plus one that follows the
+ * pointer.
  *
- * Rendered at half resolution. It is a low-frequency gradient, so nothing about
- * it survives being sampled finer, and the fill cost drops to a quarter. The
- * loop stops whenever the canvas scrolls out of view, the tab is hidden, or the
- * reader has asked for reduced motion — in the last case a single frame is
- * painted so the hero still has a ground rather than a black hole.
+ * `u_time` used to drive p1/p2 around a slow orbit on every frame — motion
+ * nobody touched, which DESIGN.md forbids by name regardless of how gentle it
+ * is. It is now pinned to a single value, so p1/p2 sit at one fixed position
+ * and the only thing that still moves is the pointer light, redrawn on
+ * `pointermove` rather than on a running clock. Rendered at two-thirds
+ * resolution: it is a low-frequency gradient, so nothing about it survives
+ * being sampled finer, and the fill cost drops accordingly.
  */
 export function ShaderBackground({ className }: { className?: string }) {
   const ref = React.useRef<HTMLCanvasElement>(null)
@@ -124,62 +140,65 @@ export function ShaderBackground({ className }: { className?: string }) {
       }
     }
 
-    const mouse = { x: 0.5, y: 0.5 }
-    const onPointer = (e: PointerEvent) => {
-      const r = canvas.getBoundingClientRect()
-      if (!r.width || !r.height) return
-      mouse.x = (e.clientX - r.left) / r.width
-      mouse.y = 1 - (e.clientY - r.top) / r.height
-    }
+    // Pinned. p1/p2 in the shader are a function of u_time alone, so a fixed
+    // value is a fixed light position — the exact value doesn't matter, only
+    // that it never advances on its own.
+    const FROZEN_TIME = 4.2
 
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const mouse = { x: 0.5, y: 0.5 }
     let raf = 0
     let visible = false
 
-    const draw = (ms: number) => {
+    const draw = () => {
       sync()
       gl.viewport(0, 0, canvas.width, canvas.height)
-      gl.uniform1f(uTime, ms * 0.001)
+      gl.uniform1f(uTime, FROZEN_TIME)
       gl.uniform2f(uRes, canvas.width, canvas.height)
       gl.uniform2f(uMouse, mouse.x * canvas.width, mouse.y * canvas.height)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     }
 
-    const loop = (ms: number) => {
-      raf = 0
-      draw(ms)
-      if (visible && !document.hidden && !reduce.matches) raf = requestAnimationFrame(loop)
+    // One frame per real change (pointer moved, canvas resized, canvas came
+    // into view), not one frame forever. There is no clock left to drive an
+    // idle loop, and coalescing into a single rAF keeps rapid pointermove
+    // events from queuing up redundant paints.
+    const requestDraw = () => {
+      if (raf || !visible || document.hidden) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        draw()
+      })
     }
 
-    const start = () => {
-      if (raf || !visible || document.hidden) return
-      if (reduce.matches) draw(0)
-      else raf = requestAnimationFrame(loop)
+    const onPointer = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect()
+      if (!r.width || !r.height) return
+      mouse.x = (e.clientX - r.left) / r.width
+      mouse.y = 1 - (e.clientY - r.top) / r.height
+      requestDraw()
     }
 
     const io = new IntersectionObserver(([entry]) => {
       visible = entry?.isIntersecting ?? false
-      start()
+      if (visible) requestDraw()
     })
     io.observe(canvas)
 
     const ro = new ResizeObserver(() => {
       // Resizing reallocates the drawing buffer, which clears it.
-      if (!raf) draw(performance.now())
+      requestDraw()
     })
     ro.observe(canvas)
 
     window.addEventListener('pointermove', onPointer, { passive: true })
-    document.addEventListener('visibilitychange', start)
-    reduce.addEventListener('change', start)
+    document.addEventListener('visibilitychange', requestDraw)
 
     return () => {
       cancelAnimationFrame(raf)
       io.disconnect()
       ro.disconnect()
       window.removeEventListener('pointermove', onPointer)
-      document.removeEventListener('visibilitychange', start)
-      reduce.removeEventListener('change', start)
+      document.removeEventListener('visibilitychange', requestDraw)
       gl.deleteProgram(prog)
       gl.deleteShader(vs)
       gl.deleteShader(fs)
