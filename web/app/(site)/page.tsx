@@ -255,18 +255,19 @@ export default function Home() {
           package to upgrade and no wrapper API to learn.
         </SectionHead>
 
-        {/* Neither command resolves yet, and both cards say which thing is
-            missing rather than sharing one vague "unpublished". They are
-            blocked on different steps: the manifests exist and are correct,
-            they are just not on `main` yet, so the shadcn path needs only the
-            merge. The first-party CLI needs that and an npm publish. Claiming
-            "ready" here — as this section did, over a URL that 404s — is the
-            one failure the rest of the page is built to avoid. */}
+        {/* Both cards name their own state rather than sharing one vague
+            "unpublished", because they stopped being blocked on the same thing.
+            The 2026-08-10 merge put the manifests on `main`, so the shadcn path
+            resolves today. The first-party CLI is on npm and still does not:
+            0.1.0's default registry pointed at `main/registry`, the source tree,
+            where no manifest is ever written. 0.1.1 fixes the constant. Claiming
+            "ready" over a URL that 404s is the one failure the rest of the page
+            is built to avoid, so the card says which version it is waiting on. */}
         <div className="grid gap-6 md:grid-cols-2">
           <Reveal>
             <InstallPath
               label="shadcn"
-              status="needs the merge"
+              status="live"
               cmd={`npx shadcn@latest add ${manifestUrl(EXAMPLE)}`}
               note="The manifests are a strict superset of its registry-item schema, so this works the moment the registry is on main."
             />
@@ -274,7 +275,7 @@ export default function Home() {
           <Reveal>
             <InstallPath
               label="z-ui"
-              status="needs the merge, then npm"
+              status="needs 0.1.1"
               cmd={INIT}
               note="First-party CLI. Adds install-time spring selection and digest verification that a general registry client cannot."
             />

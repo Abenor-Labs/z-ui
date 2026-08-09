@@ -20,20 +20,16 @@ const HINTS = [
 ]
 
 /**
- * The file the CLI copies, at the path it will live at once the repository is
- * merged.
+ * The file the CLI copies, at the path it lives at on `main`.
  *
- * It 404s today, for the same reason the install commands do: `origin/main` is
- * a single scaffold commit, so nothing under `registry/` is reachable there
- * yet. The install cards name that blocker; this button did not, so it was the
- * one place on the page that sent a reader somewhere broken without warning.
- * The label carries the qualifier now rather than the URL being downgraded to
- * the repository root, which resolves but shows the same scaffold and answers
- * a different question.
+ * This 404'd for as long as `origin/main` was a single scaffold commit, and the
+ * label carried a qualifier saying so — this button was otherwise the one place
+ * on the page that sent a reader somewhere broken without warning. The
+ * 2026-08-10 merge made the path real, so the qualifier is off.
  */
 const SOURCE_URL =
   'https://github.com/Abenor-Labs/z-ui/blob/main/registry/components/scramble-reveal/scramble-reveal.tsx'
-const SOURCE_LIVE = false
+const SOURCE_LIVE = true
 
 /**
  * The header's facts are read out of the component's own manifest rather than
@@ -294,7 +290,7 @@ export function ComponentPage() {
                 textTransform: 'uppercase',
               }}
             >
-              unpublished
+              0.1.1 pending
             </span>
           </div>
 

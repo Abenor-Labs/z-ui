@@ -57,20 +57,22 @@ export default function DocsPage() {
 
       <Section title="Install a component">
         <p className="mb-5 max-w-2xl text-sm text-muted">
-          Neither command resolves yet. The manifests are a strict superset of shadcn&rsquo;s
-          registry-item schema and are correct as written, but they are not on{' '}
-          <code className="font-mono text-ink">main</code> yet, so both paths are waiting on
-          the same merge and the first-party CLI is waiting on an npm publish after it.
+          The shadcn path works now — the manifests landed on{' '}
+          <code className="font-mono text-ink">main</code> on 2026-08-10 and are a strict
+          superset of its registry-item schema. The first-party CLI is on npm, but{' '}
+          <code className="font-mono text-ink">0.1.0</code> shipped a default registry URL
+          pointing at the source tree rather than the generated manifests, so it needs{' '}
+          <code className="font-mono text-ink">0.1.1</code> before its own command resolves.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
           <Cmd
             label="shadcn"
-            status="needs the merge"
+            status="live"
             cmd={`npx shadcn@latest add ${manifestUrl(EXAMPLE)}`}
           />
           <Cmd
             label="z-ui"
-            status="needs the merge, then npm"
+            status="needs 0.1.1"
             cmd={`npx @abenor/z-ui add ${EXAMPLE}`}
           />
         </div>

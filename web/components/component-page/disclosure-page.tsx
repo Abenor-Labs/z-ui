@@ -31,10 +31,10 @@ const HINTS = [
   'or paste the file below',
 ]
 
-/** Same qualifier as the sibling page: nothing under `registry/` is on `main` yet. */
+/** On `main` since the 2026-08-10 merge, same as its sibling. */
 const SOURCE_URL =
   'https://github.com/Abenor-Labs/z-ui/blob/main/registry/components/disclosure/disclosure.tsx'
-const SOURCE_LIVE = false
+const SOURCE_LIVE = true
 
 const MANIFEST = byName[NAME]
 
@@ -515,7 +515,7 @@ export function DisclosurePage() {
                 textTransform: 'uppercase',
               }}
             >
-              unpublished
+              0.1.1 pending
             </span>
           </div>
 
