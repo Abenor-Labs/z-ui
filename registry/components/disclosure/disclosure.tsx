@@ -222,7 +222,7 @@ export function Disclosure({
           animate={state}
           variants={contentVariants}
           transition={transition}
-          className="pb-3 text-sm text-muted"
+          className="pb-3 text-sm text-[var(--z-fg-muted,#a1a1aa)]"
         >
           {children}
         </motion.div>

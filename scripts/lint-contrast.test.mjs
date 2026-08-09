@@ -126,19 +126,27 @@ const seen = new Set(base)
  * assertion would fire immediately.
  */
 const baseline = [
-  ['the linter fails on the real tree', () => base.length > 0],
+  // Was: assert failure. Both the site palette and the registry's icon
+  // colours are now clean — every declared pair, both themes, both registry
+  // grounds — so there is nothing left to find and the old claim could only
+  // ever break. The mutations below prove failures are still detected when
+  // they exist; this asserts the stronger, positive fact that none do today.
+  ['the linter passes on the real tree', () => base.length === 0],
   [
-    // Was: assert measurement by finding `web: muted on panel` in the failures.
-    // The redesigned palette passes every declared pair, so there is no failure
-    // left to find and the old claim could only ever break. That measurement
-    // still happens is proved by the mutations below, which do emit `web:`
-    // lines. What is worth asserting here is the stronger, positive fact.
     'every declared web pair currently meets its floor',
     () => !base.some((l) => /^web: /.test(l)),
   ],
   [
-    'registry colour is measured against a white consumer app',
-    () => base.some((l) => /^like-button\/.+ on #ffffff is .+ floor for non-text/.test(l)),
+    // Was: find a specific `like-button/... on #ffffff` failure line. That
+    // colour is fixed now, so the positive fact worth asserting is that the
+    // clean run still reports it measured something, read from the summary
+    // line rather than from a failure that no longer exists.
+    'the linter reports a non-zero pair and colour count',
+    () => {
+      const out = execSync(`node ${JSON.stringify(LINTER)}`, { cwd: ROOT, stdio: 'pipe' }).toString()
+      const m = out.match(/(\d+) checks across (\d+) declared pairs and (\d+) registry colours/)
+      return Boolean(m) && Number(m[2]) > 0 && Number(m[3]) > 0
+    },
   ],
   [
     'web tokens are never measured against a light surface',
@@ -196,12 +204,12 @@ const mutations = [
     /is \d+\.\d\d:1, below the/],
 
   ['registry colour fails on the dark chassis only', () =>
-    edit(SRC, "'#a3a3a3'", "'#1a1a1a'"),
+    edit(SRC, "'#6a6a71'", "'#1a1a1a'"),
     /^like-button\/like-button\.tsx: iconVariants #1a1a1a \(idle\) on #09090b is 1\.14:1/,
     /#1a1a1a \(idle\) on #ffffff/],
 
   ['registry colour fails on the light surface only', () =>
-    edit(SRC, "'#a3a3a3'", "'#fff'"),
+    edit(SRC, "'#6a6a71'", "'#fff'"),
     /^like-button\/like-button\.tsx: iconVariants #fff \(idle\) on #ffffff is 1\.00:1/,
     /#fff \(idle\) on #09090b/],
 

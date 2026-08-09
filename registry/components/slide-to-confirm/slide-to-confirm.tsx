@@ -123,7 +123,7 @@ export function SlideToConfirm({
         <motion.span
           aria-hidden
           style={{ opacity: label }}
-          className="pointer-events-none absolute inset-0 grid place-items-center text-sm font-medium text-muted"
+          className="pointer-events-none absolute inset-0 grid place-items-center text-sm font-medium text-[var(--z-fg-muted,#a1a1aa)]"
         >
           {confirmed ? confirmedLabel : children}
         </motion.span>

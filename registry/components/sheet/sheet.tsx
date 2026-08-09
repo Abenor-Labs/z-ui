@@ -153,7 +153,7 @@ export function Sheet({
       ref={ref}
       data-state={state}
       style={{ height }}
-      className={zcn('relative w-full overflow-hidden rounded-t-2xl border border-white/10 bg-panel', className)}
+      className={zcn('relative w-full overflow-hidden rounded-t-2xl border border-white/10 bg-[var(--z-panel,#18181b)]', className)}
       {...props}
     >
       <motion.div

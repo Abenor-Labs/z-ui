@@ -218,21 +218,21 @@ export function Scheduler({
       data-state={disabled ? 'browsing' : state}
       aria-disabled={disabled || undefined}
       className={zcn(
-        'w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-panel',
+        'w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[var(--z-panel,#18181b)]',
         'aria-disabled:pointer-events-none aria-disabled:opacity-50',
         className,
       )}
       {...props}
     >
       <div className="grid sm:grid-cols-[1fr_auto]">
-        <div className="min-w-0 border-b border-hair p-5 sm:border-b-0 sm:border-r">
+        <div className="min-w-0 border-b border-white/10 p-5 sm:border-b-0 sm:border-r">
           <div className="mb-4 flex items-center justify-between">
             <button
               type="button"
               aria-label="Previous month"
               disabled={disabled}
               onClick={() => setMonthIndex((i) => i - 1)}
-              className="grid size-8 place-items-center rounded-lg text-muted transition-colors hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+              className="grid size-8 place-items-center rounded-lg text-[var(--z-fg-muted,#a1a1aa)] transition-colors hover:text-[var(--z-fg,#e5e1e4)] disabled:pointer-events-none disabled:opacity-40"
             >
               <ChevronIcon dir="left" />
             </button>
@@ -244,7 +244,7 @@ export function Scheduler({
               aria-label="Next month"
               disabled={disabled}
               onClick={() => setMonthIndex((i) => i + 1)}
-              className="grid size-8 place-items-center rounded-lg text-muted transition-colors hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+              className="grid size-8 place-items-center rounded-lg text-[var(--z-fg-muted,#a1a1aa)] transition-colors hover:text-[var(--z-fg,#e5e1e4)] disabled:pointer-events-none disabled:opacity-40"
             >
               <ChevronIcon dir="right" />
             </button>
@@ -252,7 +252,10 @@ export function Scheduler({
 
           <div className="grid grid-cols-7 gap-y-1 pb-2 text-center">
             {WEEKDAYS.map((w) => (
-              <span key={w} className="lbl">
+              <span
+                key={w}
+                className="font-mono text-xs font-semibold tracking-wide text-[var(--z-fg-muted,#a1a1aa)]"
+              >
                 {w}
               </span>
             ))}
@@ -279,17 +282,20 @@ export function Scheduler({
                           onClick={() => pick(cell.date)}
                           className={zcn(
                             'grid size-9 place-items-center rounded-full text-sm tabular-nums transition-colors',
-                            !cell.inMonth && 'text-muted/30',
-                            cell.inMonth && !cellDisabled && !isSelected && 'text-ink hover:bg-white/10',
-                            cellDisabled && cell.inMonth && 'text-muted/40',
-                            isSelected && 'bg-ink text-chassis',
+                            !cell.inMonth && 'text-[var(--z-fg-muted,#a1a1aa)]/30',
+                            cell.inMonth &&
+                              !cellDisabled &&
+                              !isSelected &&
+                              'text-[var(--z-fg,#e5e1e4)] hover:bg-white/10',
+                            cellDisabled && cell.inMonth && 'text-[var(--z-fg-muted,#a1a1aa)]/40',
+                            isSelected && 'bg-[var(--z-fg,#e5e1e4)] text-[var(--z-bg,#09090b)]',
                             'disabled:pointer-events-none',
                           )}
                         >
                           {cell.date.getDate()}
                         </button>
                         {isToday && !isSelected ? (
-                          <span aria-hidden className="-mt-1.5 size-1 rounded-full bg-accent" />
+                          <span aria-hidden className="-mt-1.5 size-1 rounded-full bg-[var(--z-signal,#818cf8)]" />
                         ) : (
                           <span aria-hidden className="-mt-1.5 size-1" />
                         )}
@@ -307,7 +313,7 @@ export function Scheduler({
           style={{ maskImage: 'linear-gradient(to bottom, black calc(100% - 24px), transparent)' }}
         >
           {slots.length === 0 ? (
-            <p className="px-2 py-4 text-center text-sm text-muted">No times available</p>
+            <p className="px-2 py-4 text-center text-sm text-[var(--z-fg-muted,#a1a1aa)]">No times available</p>
           ) : (
             slots.map((s) => {
               const isSelected = s === slot
@@ -325,8 +331,8 @@ export function Scheduler({
                   className={zcn(
                     'shrink-0 rounded-lg border px-4 py-2.5 text-center text-sm tabular-nums transition-colors',
                     isSelected
-                      ? 'border-transparent bg-ink text-chassis'
-                      : 'border-white/10 text-ink hover:border-accent',
+                      ? 'border-transparent bg-[var(--z-fg,#e5e1e4)] text-[var(--z-bg,#09090b)]'
+                      : 'border-white/10 text-[var(--z-fg,#e5e1e4)] hover:border-[var(--z-signal,#818cf8)]',
                   )}
                 >
                   {s}
@@ -342,9 +348,9 @@ export function Scheduler({
         animate={disabled ? 'browsing' : state}
         variants={barVariants}
         transition={transition}
-        className="flex items-center gap-3 overflow-hidden border-t border-hair px-5"
+        className="flex items-center gap-3 overflow-hidden border-t border-white/10 px-5"
       >
-        <p className="min-w-0 flex-1 truncate text-sm text-ink">
+        <p className="min-w-0 flex-1 truncate text-sm text-[var(--z-fg,#e5e1e4)]">
           {state === 'committed' && slot ? (
             <>Your meeting is booked for {formatDate(activeDate)} at {slot}.</>
           ) : state === 'previewing' && previewSlot ? (
@@ -356,7 +362,7 @@ export function Scheduler({
           disabled={disabled || state !== 'committed' || !slot}
           onClick={() => slot && onConfirm?.(activeDate, slot)}
           className={zcn(
-            'shrink-0 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-chassis transition-opacity',
+            'shrink-0 rounded-lg bg-[var(--z-fg,#e5e1e4)] px-4 py-2 text-sm font-medium text-[var(--z-bg,#09090b)] transition-opacity',
             'disabled:pointer-events-none disabled:opacity-40',
           )}
         >

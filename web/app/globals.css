@@ -36,6 +36,52 @@
   --radius-2xl: 0.75rem;
 }
 
+/**
+ * Component theme pairs. Every registry component is meant to leave this
+ * repo and land in a project with no Z-UI CSS at all, so these are consumed
+ * inline as `var(--z-*, <fallback>)` inside each component's own className
+ * or style — the fallback is what actually ships. Declaring the same names
+ * here does two things: it lets a sophisticated consumer override them by
+ * setting --z-* globally, and it gives the contrast gate real values to
+ * check both themes against instead of checking nothing.
+ *
+ * Dark values are read from the same neutral/accent family the site already
+ * uses (chassis/panel/ink/muted/accent). Light is new: nothing in this repo
+ * has shipped a light surface before, so these are derived fresh at the
+ * warm, near-white end of the same neutral family, never pure #fff, per
+ * DESIGN.md's "tint every neutral toward the brand hue" rule. Both themes
+ * use an indigo signal/focus rather than Signal Mint (#00E5A0): mint
+ * measures under 3:1 on any surface light enough for the light theme's
+ * `bg`, and DESIGN.md's Contrast Floor Rule says exactly that case gets
+ * solved with a neutral, not with mint. Indigo also matches the site's own
+ * --color-accent, chosen for the same reason.
+ */
+:root {
+  --z-bg: #09090b;
+  --z-panel: #18181b;
+  --z-fill: #27272a;
+  --z-fill-hover: #2b2b2f;
+  --z-fg: #e5e1e4;
+  --z-fg-muted: #a1a1aa;
+  --z-border: #7a7a83;
+  --z-signal: #818cf8;
+  --z-on-signal: #09090b;
+  --z-focus: #818cf8;
+}
+
+.light {
+  --z-bg: #f6f4f1;
+  --z-panel: #ede9e4;
+  --z-fill: #e1dcd5;
+  --z-fill-hover: #d4cec5;
+  --z-fg: #181512;
+  --z-fg-muted: #5c584f;
+  --z-border: #726d62;
+  --z-signal: #4338ca;
+  --z-on-signal: #f6f4f1;
+  --z-focus: #4338ca;
+}
+
 @layer base {
   html {
     color-scheme: dark;

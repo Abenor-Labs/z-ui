@@ -49,12 +49,18 @@ const rootVariants = {
   'liked-pressing': { scale: 0.9 },
 } satisfies Record<LikeButtonState, object>
 
+// Greys ride a near-zero-chroma neutral, placed inside the only
+// relative-luminance window that satisfies both grounds this file can land
+// on: a white consumer app and the Z-UI chassis.
+// idle 5.37 to 1 white, 3.69 to 1 chassis. hover/pressing 3.21 to 1 white,
+// 6.16 to 1 chassis. liked/liked-pressing 3.67 to 1 white, 5.39 to 1 chassis.
+// liked-hover 3.11 to 1 white, 6.37 to 1 chassis.
 const iconVariants = {
-  'idle': { color: '#a3a3a3', fillOpacity: 0 },
-  'hover': { color: '#d4d4d4', fillOpacity: 0 },
-  'pressing': { color: '#d4d4d4', fillOpacity: 0 },
-  'liked': { color: '#f43f5e', fillOpacity: 1 },
-  'liked-hover': { color: '#fb7185', fillOpacity: 1 },
+  'idle':           { color: '#6a6a71', fillOpacity: 0 },
+  'hover':          { color: '#8f8f96', fillOpacity: 0 },
+  'pressing':       { color: '#8f8f96', fillOpacity: 0 },
+  'liked':          { color: '#f43f5e', fillOpacity: 1 },
+  'liked-hover':    { color: '#fd576d', fillOpacity: 1 },
   'liked-pressing': { color: '#f43f5e', fillOpacity: 1 },
 } satisfies Record<LikeButtonState, object>
 

@@ -274,8 +274,8 @@ function ReorderRow({
       data-dragging={dragging || undefined}
       style={{ y, height: rowHeight, touchAction: 'none' }}
       className={zcn(
-        'absolute inset-x-0 top-0 flex items-center gap-3 rounded-lg border border-white/10 bg-panel px-3',
-        dragging && 'z-10 border-accent shadow-lg',
+        'absolute inset-x-0 top-0 flex items-center gap-3 rounded-lg border border-white/10 bg-[var(--z-panel,#18181b)] px-3',
+        dragging && 'z-10 border-[var(--z-signal,#818cf8)] shadow-lg',
       )}
     >
       <button
@@ -284,7 +284,7 @@ function ReorderRow({
         aria-label={`Reorder row, position ${slot + 1} of ${total}`}
         aria-roledescription="sortable"
         className={zcn(
-          'grid h-8 w-6 shrink-0 place-items-center rounded text-muted',
+          'grid h-8 w-6 shrink-0 place-items-center rounded text-[var(--z-fg-muted,#a1a1aa)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current',
           disabled ? 'cursor-default opacity-40' : 'cursor-grab active:cursor-grabbing',
         )}

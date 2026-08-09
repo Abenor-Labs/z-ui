@@ -344,6 +344,11 @@ const themeRule = (selector) => {
   return out
 }
 
+// Kept outside the loop below so the registry section can check inline
+// `var(--z-*, #hex)` fallbacks against the same dark values, rather than
+// re-deriving them.
+const DARK_Z = themeRule(':root')
+
 for (const [selector, label] of [
   [':root', 'dark'],
   ['\\.light', 'light'],
@@ -436,6 +441,35 @@ for (const entry of index.items) {
     // pass simply because #f43f5e also appears inside iconVariants, which is
     // the one case where smuggling a colour past this lint would be easy.
     const attributed = []
+
+    /**
+     * `var(--z-x, #hex)` is the other legitimate place a literal colour can
+     * sit: a component shipped with no Z-UI CSS falls back to this hex, so it
+     * is the colour that actually ships to almost every consumer, not a
+     * theoretical one. Rule D still applies to it — the fallback must equal
+     * the audited :root value, or the two are free to drift apart with
+     * nothing catching it, which is the same failure rule D exists to
+     * prevent for variant colours.
+     */
+    for (const m of src.matchAll(/var\(--z-([\w-]+),\s*(#[0-9a-fA-F]{3,8})\)/g)) {
+      attributed.push([m.index, m.index + m[0].length])
+      const [, token, hex] = m
+      const dark = DARK_Z?.get(token)
+      if (
+        !check(
+          dark,
+          at,
+          `var(--z-${token}, ${hex}) falls back to a token with no dark value declared in :root; add --z-${token} or fix the name`,
+        )
+      ) {
+        continue
+      }
+      check(
+        dark.toLowerCase() === hex.toLowerCase(),
+        at,
+        `var(--z-${token}, ${hex}) fallback does not match the audited :root value (${dark}); a consumer with no Z-UI CSS sees an unreviewed colour`,
+      )
+    }
     for (const block of src.matchAll(/const (\w*[Vv]ariants) = \{([\s\S]*?)\n\} satisfies/g)) {
       attributed.push([block.index, block.index + block[0].length])
       // hex -> the states that use it, so the message names the state a
