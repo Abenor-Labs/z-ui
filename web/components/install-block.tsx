@@ -5,20 +5,27 @@ import { CopyButton } from '@/components/copy-button'
 import { manifestUrl } from '@/lib/registry'
 
 /**
- * Two install paths, neither live yet.
+ * Two install paths, both live since 2026-08-10.
  *
- * The shadcn one is one merge away — the manifests are already a strict
- * superset of its registry-item schema, they are just not on `main`. The
- * first-party CLI needs that and an npm publish. This block used to badge the
- * shadcn tab `ready` over a URL that 404s, which is the opposite of the thing
- * the rest of the site is careful about.
+ * The manifests are a strict superset of shadcn's registry-item schema, so
+ * `npx shadcn add <url>` installs them unmodified — ADR 0002's hedge, verified
+ * end to end rather than assumed. The first-party CLI needed the merge and an
+ * npm publish; it has both.
+ *
+ * This block is not currently mounted anywhere — the component pages carry
+ * their own install sections. It is kept honest anyway, because the two times
+ * this site shipped a false install claim (`5f33a80`, `e315c4d`) it was copy
+ * that had outlived the condition it described, and unmounted copy rots the
+ * same way mounted copy does.
  */
 export function InstallBlock({ name }: { name: string }) {
   const commands = [
-    { label: 'z-ui', cmd: `npx @abenor/z-ui add ${name}`, status: 'needs the merge, then npm' },
-    { label: 'shadcn', cmd: `npx shadcn@latest add ${manifestUrl(name)}`, status: 'needs the merge' },
+    { label: 'z-ui', cmd: `npx @abenor/z-ui add ${name}`, status: 'first-party CLI · @abenor/z-ui on npm' },
+    { label: 'shadcn', cmd: `npx shadcn@latest add ${manifestUrl(name)}`, status: 'works with any shadcn project' },
   ]
-  const [active, setActive] = React.useState(1)
+  // The first-party path opens first now. It defaulted to shadcn because that
+  // was the only one that worked.
+  const [active, setActive] = React.useState(0)
   const current = commands[active]!
 
   return (

@@ -271,10 +271,12 @@ export function ComponentPage() {
             <h2 className="cp-mono" style={SECTION_LABEL}>
               Install
             </h2>
-            {/* The command is real and the package is not on npm yet, so the page
-                says so in the same word /docs uses rather than printing a line
-                that fails at the registry. The last hint below is the path that
-                works today. */}
+            {/* `@abenor/z-ui@0.1.1` published on 2026-08-10 and the command
+                above was verified end to end against it, so the badge names the
+                version rather than warning about it. It read "0.1.1 pending"
+                for one day past the publish — the same way the install copy
+                outlived its own warning in `5f33a80` and again in `e315c4d`.
+                This badge is a claim about npm; when it changes, check npm. */}
             <span
               className="cp-mono"
               style={{
@@ -290,7 +292,7 @@ export function ComponentPage() {
                 textTransform: 'uppercase',
               }}
             >
-              0.1.1 pending
+              0.1.1 on npm
             </span>
           </div>
 

@@ -515,7 +515,7 @@ export function DisclosurePage() {
                 textTransform: 'uppercase',
               }}
             >
-              0.1.1 pending
+              0.1.1 on npm
             </span>
           </div>
 
