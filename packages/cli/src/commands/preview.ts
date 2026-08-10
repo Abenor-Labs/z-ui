@@ -27,17 +27,23 @@ export function describeSpring(s: MotionSpring): string {
 }
 
 /**
- * `meta.motion` is written by the generator, so it exists in `web/public/r/` and
- * not in the authoring tree. A contributor pointing `--registry` at
- * `./registry` is reading `component.json` directly, which no longer carries a
- * spring at all — that is the whole point of deriving it. Say so rather than
- * reporting the component as broken.
+ * `meta.motion` is written by the generator, so a manifest can lack it for two
+ * unrelated reasons and the fix is different for each.
+ *
+ * A contributor reading `./registry` is looking at `component.json`, which
+ * never carries derived data — they want the built output instead. Someone on
+ * the published registry is looking at a manifest generated before the scanner
+ * existed, and there is nothing they can do locally; the registry has to catch
+ * up. Telling the second group to run `pnpm registry` sends them chasing a
+ * checkout they may not have.
  */
-export function assertPreviewable(item: RegistryItem) {
+export function assertPreviewable(item: RegistryItem, sourceTree: boolean) {
   if (!item.meta?.motion) {
     throw new UserError(
       `${item.name} carries no motion data.`,
-      'Motion data is generated, so a source-tree registry has none. Run `pnpm registry` and point --registry at web/public, or drop --registry to read the published one.',
+      sourceTree
+        ? 'A source-tree registry holds no derived data. Run `pnpm registry` and point --registry at web/public.'
+        : 'This registry was generated before motion data existed. Nothing to fix locally — it needs republishing. `z-ui spring` draws the presets in the meantime.',
     )
   }
   return item.meta.motion
@@ -54,7 +60,7 @@ export async function preview(opts: {
 
   const registry = new Registry(opts.registry ?? (await registryBase(opts.cwd)))
   const item = await registry.item(opts.name)
-  const motion = assertPreviewable(item)
+  const motion = assertPreviewable(item, registry.isSourceTree)
 
   if (opts.json) {
     log.raw(JSON.stringify({ name: item.name, states: item.meta.states ?? [], ...motion }, null, 2))

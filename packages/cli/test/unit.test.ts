@@ -7,6 +7,7 @@ import { installCommand } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
 import type { RegistryItem } from '../src/registry/fetch.ts'
 import { isUrl } from '../src/registry/fetch.ts'
+import { UserError } from '../src/ui/log.ts'
 import { retargetSpring, assertPreset, springOutcome, springRefusal } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
 import { nearest, partitionTargets } from '../src/commands/add.ts'
@@ -487,7 +488,20 @@ describe('preview', () => {
   })
 
   test('a component with no motion data is reported, not rendered blank', () => {
-    assert.throws(() => assertPreviewable({ name: 'x', meta: {} } as never), /no motion data/i)
+    // The hint is a field on UserError, not part of the message, so it has to
+    // be read off the thrown value rather than matched by assert.throws.
+    const hintFor = (sourceTree: boolean) => {
+      try {
+        assertPreviewable({ name: 'x', meta: {} } as never, sourceTree)
+      } catch (e) {
+        return (e as UserError).hint ?? ''
+      }
+      return assert.fail('expected assertPreviewable to throw')
+    }
+    assert.match(hintFor(true), /pnpm registry/)
+    // A published registry cannot be fixed locally, so it must not be told to.
+    assert.match(hintFor(false), /republishing/)
+    assert.doesNotMatch(hintFor(false), /pnpm registry/)
   })
 })
 

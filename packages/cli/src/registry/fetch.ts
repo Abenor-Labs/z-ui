@@ -104,8 +104,13 @@ export class Registry {
    * could not be run against a local build at all — it needed a web server to
    * read files sitting on the same disk.
    */
-  private get isBuilt() {
+  get isBuilt() {
     return this.isLocal && existsSync(path.resolve(this.base, 'r', 'index.json'))
+  }
+
+  /** Reading `component.json` off disk, so no derived field is present. */
+  get isSourceTree() {
+    return this.isLocal && !this.isBuilt
   }
 
   describe() {
