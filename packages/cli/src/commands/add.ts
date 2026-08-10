@@ -1,4 +1,4 @@
-import { Registry } from '../registry/fetch.ts'
+import { Registry, isUrl } from '../registry/fetch.ts'
 import { resolve, npmDependencies } from '../registry/resolve.ts'
 import { assertVerified } from '../registry/verify.ts'
 import { readConfig } from '../project/config.ts'
@@ -64,11 +64,13 @@ export async function add(opts: AddOptions) {
     }
   }
 
+  const { names: byName, urls } = partitionTargets(opts.components)
+
   log.step(`Resolving from ${c.grey(registry.describe())}`)
 
   // Fail on an unknown name before doing any work, and suggest near misses.
   const known = new Set(index.items.map((i) => i.name))
-  const unknown = opts.components.filter((n) => !known.has(n))
+  const unknown = byName.filter((n) => !known.has(n))
   if (unknown.length) {
     const suggestions = unknown
       .map((n) => {
@@ -79,7 +81,20 @@ export async function add(opts: AddOptions) {
     throw new UserError(`Unknown component:\n  ${suggestions}`, 'Run `z-ui list` for the full set.')
   }
 
-  const items = await resolve(registry, opts.components)
+  const direct = await Promise.all(urls.map((u) => registry.itemFromUrl(u)))
+  // Dependencies of a URL-fetched item resolve by name against the configured
+  // registry, alongside anything the user named directly.
+  const depNames = direct.flatMap((i) => i.registryDependencies ?? [])
+  const resolved = await resolve(registry, [...byName, ...depNames])
+
+  // Direct items last: `resolve` already orders dependencies before dependents,
+  // and a URL-fetched item is by definition the dependent here.
+  const items = [...resolved, ...direct.filter((d) => !resolved.some((r) => r.name === d.name))]
+
+  // The names the user typed, plus anything they pointed at by URL. Never a
+  // transitively-resolved dependency: retargeting a shared primitive restyles
+  // components the user did not mention.
+  const requested = new Set([...byName, ...direct.map((d) => d.name)])
 
   // One of the three behaviours ADR 0002 requires of a first-party CLI.
   assertVerified(items)
@@ -88,10 +103,7 @@ export async function add(opts: AddOptions) {
   // typo'd preset — the component name is the thing they got wrong first.
   const spring = opts.spring ? assertPreset(opts.spring) : undefined
 
-  const files = await plan(items, config, opts.cwd, {
-    spring,
-    springScope: new Set(opts.components),
-  })
+  const files = await plan(items, config, opts.cwd, { spring, springScope: requested })
   const deps = npmDependencies(items)
   const missing = await missingDependencies(opts.cwd, deps)
   const pm = detectPackageManager(opts.cwd)
@@ -127,7 +139,7 @@ export async function add(opts: AddOptions) {
   }
 
   log.line()
-  log.ok(`Added ${opts.components.map((n) => c.cyan(n)).join(', ')}.`)
+  log.ok(`Added ${[...requested].map((n) => c.cyan(n)).join(', ')}.`)
   log.line(c.grey('  These files are yours now. Edit them.'))
   log.line()
 }
@@ -187,6 +199,14 @@ export function nearest(input: string, candidates: string[], limit = 3): string[
     .sort((a, b) => a.d - b.d)
     .slice(0, limit)
     .map((x) => x.name)
+}
+
+/** Split what the user typed into registry names and direct manifest URLs. */
+export function partitionTargets(targets: string[]): { names: string[]; urls: string[] } {
+  const names: string[] = []
+  const urls: string[] = []
+  for (const t of targets) (isUrl(t) ? urls : names).push(t)
+  return { names, urls }
 }
 
 function report(files: PlannedFile[], missing: string[], pm: string, spring?: string) {

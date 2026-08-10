@@ -6,9 +6,10 @@ import { digest, verify } from '../src/registry/verify.ts'
 import { installCommand } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
 import type { RegistryItem } from '../src/registry/fetch.ts'
+import { isUrl } from '../src/registry/fetch.ts'
 import { retargetSpring, assertPreset, springOutcome } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
-import { nearest } from '../src/commands/add.ts'
+import { nearest, partitionTargets } from '../src/commands/add.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { existsSync, readFileSync } from 'node:fs'
@@ -377,5 +378,25 @@ describe('spring retarget against the live registry', () => {
 
   test('springOutcome is silent when no spring was requested', () => {
     assert.equal(springOutcome([{ retargeted: false }], undefined), null)
+  })
+})
+
+describe('URL positionals', () => {
+  test('isUrl accepts http and https, rejects names and paths', () => {
+    assert.equal(isUrl('https://example.com/r/x.json'), true)
+    assert.equal(isUrl('http://example.com/r/x.json'), true)
+    assert.equal(isUrl('disclosure'), false)
+    assert.equal(isUrl('./registry'), false)
+    assert.equal(isUrl('C:/registry'), false)
+  })
+
+  test('partitionTargets splits names from URLs, preserving order within each', () => {
+    const { names, urls } = partitionTargets([
+      'disclosure',
+      'https://example.com/r/a.json',
+      'scramble-reveal',
+    ])
+    assert.deepEqual(names, ['disclosure', 'scramble-reveal'])
+    assert.deepEqual(urls, ['https://example.com/r/a.json'])
   })
 })

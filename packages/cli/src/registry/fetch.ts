@@ -43,7 +43,7 @@ export type RegistryIndex = {
   items: IndexEntry[]
 }
 
-const isUrl = (s: string) => /^https?:\/\//i.test(s)
+export const isUrl = (s: string) => /^https?:\/\//i.test(s)
 
 /**
  * One code path for both transports.
@@ -155,6 +155,33 @@ export class Registry {
     if (this.isLocal) return this.localItem(name)
     const raw = await this.read(`r/${name}.json`)
     return JSON.parse(raw) as RegistryItem
+  }
+
+  /**
+   * Fetch one manifest by its own URL, bypassing the index.
+   *
+   * The point is not convenience. ADR 0002 keeps these manifests a strict
+   * superset of shadcn's so `npx shadcn add <url>` works; this is the same
+   * capability in our own client, and it is the only way to install from a
+   * branch, a fork or a PR preview — none of which are in any index.
+   *
+   * `registryDependencies` inside the fetched item still resolve against the
+   * configured registry. A manifest that names a dependency is naming a
+   * registry item, not a second URL.
+   */
+  async itemFromUrl(url: string): Promise<RegistryItem> {
+    let res: Response
+    try {
+      res = await fetch(url)
+    } catch {
+      throw new UserError(`Could not reach ${url}`)
+    }
+    if (!res.ok) throw new UserError(`Registry returned HTTP ${res.status} for ${url}`)
+    try {
+      return JSON.parse(await res.text()) as RegistryItem
+    } catch {
+      throw new UserError(`${url} did not return a JSON manifest.`)
+    }
   }
 
   /**
