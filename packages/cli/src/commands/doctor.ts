@@ -21,6 +21,20 @@ export type DoctorReport = {
   missingDependencies: string[]
 }
 
+/**
+ * Mirrors `readReducedMotion` in scripts/motion-scan.mjs.
+ *
+ * Duplicated rather than imported: the scanner is a repo script and the
+ * published CLI ships only `dist/`. A test asserts the two agree on real
+ * component source, which is the same arrangement `digest` has with the
+ * generator's `sha`.
+ */
+export function hasReducedMotionBranch(src: string): boolean {
+  const bind = src.match(/(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*use[\w$]*ReducedMotion\s*\(/)
+  if (!bind) return false
+  return new RegExp(`if\\s*\\(\\s*!?${bind[1]}\\b`).test(src)
+}
+
 /** Pure, so the JSON contract is testable without touching a filesystem. */
 export function doctorReport(
   findings: Finding[],
@@ -87,16 +101,20 @@ export async function doctor(opts: {
       // What matters is whether the modification broke a contract.
       const notes: string[] = ['edited locally']
 
-      // A call, not the identifier. Replacing `useZTransition(spring)` with a
-      // literal transition while leaving the import in place is exactly how
-      // this breaks in practice, and a presence check would miss it.
-      const CALL = /useZTransition\s*\(/
-      if (CALL.test(file.content) && !CALL.test(local)) {
+      // Was a grep for `useZTransition(`. That symbol was deleted along with
+      // registry/lib/z-spring and appears in no component, so the check ran on
+      // every install and could not fire — it found nothing and reported
+      // success.
+      //
+      // The manifest now states whether the component shipped a reduced-motion
+      // branch, so this compares an edited file against a derived claim rather
+      // than against one hard-coded symbol name.
+      if (item.meta?.motion?.reducedMotion === 'branch' && !hasReducedMotionBranch(local)) {
         findings.push({
           level: 'warn',
           name: entry.name,
           message:
-            'no longer calls useZTransition — this component will animate through prefers-reduced-motion',
+            'reduced-motion branch is gone — this component will animate through prefers-reduced-motion',
         })
         continue
       }

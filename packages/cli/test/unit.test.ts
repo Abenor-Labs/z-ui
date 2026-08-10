@@ -10,12 +10,12 @@ import { isUrl } from '../src/registry/fetch.ts'
 import { retargetSpring, assertPreset, springOutcome, springRefusal } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
 import { nearest, partitionTargets } from '../src/commands/add.ts'
-import { doctorReport } from '../src/commands/doctor.ts'
+import { doctorReport, hasReducedMotionBranch } from '../src/commands/doctor.ts'
 import { completionScript } from '../src/commands/completion.ts'
 import { describeSpring, assertPreviewable } from '../src/commands/preview.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
 const config: Config = {
   registry: './registry',
@@ -262,40 +262,45 @@ describe('did-you-mean', () => {
 })
 
 /**
- * `registry/lib/z-spring/z-spring.ts` was deleted with the rest of the registry
- * on 2026-08-09. The CLI's own copy of the scale is still the thing it ships, so
- * the rest of this suite stays meaningful; only the cross-check against the
- * registry has nothing to compare against.
+ * The spring scale and the reduced-motion shape both exist twice: once here in
+ * the CLI, which ships alone, and once in `scripts/motion-scan.mjs`, which the
+ * generator and the linter share. A copy that can silently drift is worse than
+ * no copy; a copy with a tripwire is fine.
  *
- * Skipped by presence rather than deleted, so it re-arms by itself the moment a
- * spring scale exists again — and if the new scale differs from the CLI's copy,
- * this is the test that will say so instead of the drift reaching a consumer.
+ * This replaces a cross-check against `registry/lib/z-spring/z-spring.ts`,
+ * deleted in the 2026-08-09 registry clear-out. That test skipped rather than
+ * failed, so the scale went unverified for weeks and the skip was invisible in
+ * a passing run. The scanner is a live anchor and cannot be deleted without
+ * breaking the build, so this asserts unconditionally.
  */
-const Z_SPRING = new URL('../../../registry/lib/z-spring/z-spring.ts', import.meta.url)
-const hasRegistrySpring = existsSync(Z_SPRING)
+const SCANNER = new URL('../../../scripts/motion-scan.mjs', import.meta.url)
 
-describe('spring constants stay in step with the registry', () => {
-  test('every preset matches registry/lib/z-spring/z-spring.ts', { skip: !hasRegistrySpring }, () => {
-    // The CLI keeps its own copy because the registry file is a React module.
-    // This is the tripwire that stops the copy drifting silently.
-    const src = readFileSync(Z_SPRING, 'utf8')
-    // A literal regex, not one built from a template string: `\s` inside a
-    // template literal is not an escape sequence and silently collapses to `s`,
-    // which makes the pattern match nothing and the tripwire useless.
-    const RE = /(\w+):\s*\{[^}]*stiffness:\s*(\d+)[^}]*damping:\s*(\d+)[^}]*mass:\s*(\d+)/g
-    const found = new Map<string, { stiffness: number; damping: number; mass: number }>()
-    for (const m of src.matchAll(RE)) {
-      found.set(m[1]!, { stiffness: +m[2]!, damping: +m[3]!, mass: +m[4]! })
+describe('CLI copies stay in step with scripts/motion-scan.mjs', () => {
+  test('every preset matches the scanner’s scale', async () => {
+    const { PRESETS } = (await import(SCANNER.href)) as {
+      PRESETS: Record<string, { stiffness: number; damping: number; mass: number }>
     }
-
-    assert.ok(found.size >= 4, `parsed ${found.size} presets from the registry, expected 4`)
-    for (const [name, want] of Object.entries(springs)) {
-      const got = found.get(name)
-      assert.ok(got, `${name} not found in the registry source`)
-      assert.deepEqual(got, want, `${name} drifted from the registry`)
+    assert.deepEqual(Object.keys(PRESETS).sort(), Object.keys(springs).sort())
+    for (const [name, want] of Object.entries(PRESETS)) {
+      assert.deepEqual({ ...springs[name as keyof typeof springs] }, want, `${name} drifted`)
     }
   })
 
+  test('the reduced-motion matcher agrees with the scanner on real source', async () => {
+    const { readReducedMotion, stripComments } = (await import(SCANNER.href)) as {
+      readReducedMotion: (s: string) => string | null
+      stripComments: (s: string) => string
+    }
+    const src = readFileSync(
+      new URL('../../../registry/components/disclosure/disclosure.tsx', import.meta.url),
+      'utf8',
+    )
+    assert.equal(hasReducedMotionBranch(src), readReducedMotion(stripComments(src)) === 'branch')
+    assert.equal(hasReducedMotionBranch(src), true)
+  })
+})
+
+describe('spring constants', () => {
   test('bounce is the only preset that overshoots', () => {
     assert.ok(dampingRatio('bounce') < 1)
     for (const n of ['snap', 'settle', 'fling'] as const) {
@@ -508,5 +513,29 @@ describe('springRefusal', () => {
 
   test('says nothing about a component with no motion data', () => {
     assert.equal(springRefusal({ name: 'x', meta: {} } as never, 'bounce'), null)
+  })
+})
+
+describe('reduced-motion audit', () => {
+  const src = `const reduced = useReducedMotion() ?? false
+    if (reduced) { height.jump(target); return }`
+
+  test('accepts source that binds a hook and branches on it', () => {
+    assert.equal(hasReducedMotionBranch(src), true)
+  })
+
+  test('rejects source where the branch was edited out', () => {
+    assert.equal(hasReducedMotionBranch(src.replace('if (reduced)', 'if (false)')), false)
+  })
+
+  test('rejects source where the hook was replaced by a literal', () => {
+    assert.equal(hasReducedMotionBranch('const reduced = false\n if (reduced) {}'), false)
+  })
+
+  test('accepts a locally-defined hook, not just motion’s', () => {
+    assert.equal(
+      hasReducedMotionBranch('const reduced = usePrefersReducedMotion()\n if (reduced || x) {}'),
+      true,
+    )
   })
 })
