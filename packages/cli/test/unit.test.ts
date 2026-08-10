@@ -11,6 +11,7 @@ import { retargetSpring, assertPreset, springOutcome } from '../src/project/spri
 import { matches, window } from '../src/ui/select.ts'
 import { nearest, partitionTargets } from '../src/commands/add.ts'
 import { doctorReport } from '../src/commands/doctor.ts'
+import { completionScript } from '../src/commands/completion.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { existsSync, readFileSync } from 'node:fs'
@@ -446,5 +447,20 @@ describe('guessConfig', () => {
 
   test('a JavaScript project is recorded as such', () => {
     assert.equal(guessConfig({ srcDir: false, tsx: false }, undefined).tsx, false)
+  })
+})
+
+describe('completion', () => {
+  for (const shell of ['bash', 'zsh', 'fish'] as const) {
+    test(`${shell} script names every command`, () => {
+      const script = completionScript(shell)
+      for (const cmd of ['init', 'add', 'list', 'doctor', 'spring', 'completion']) {
+        assert.match(script, new RegExp(`\\b${cmd}\\b`))
+      }
+    })
+  }
+
+  test('an unknown shell is a UserError, not a crash', () => {
+    assert.throws(() => completionScript('powershell' as never), /powershell/)
   })
 })
