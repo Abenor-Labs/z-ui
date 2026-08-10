@@ -1,7 +1,8 @@
 import { Registry, isUrl } from '../registry/fetch.ts'
 import { resolve, npmDependencies } from '../registry/resolve.ts'
 import { assertVerified } from '../registry/verify.ts'
-import { readConfig } from '../project/config.ts'
+import { readConfig, configExists, writeConfig, guessConfig, type Config } from '../project/config.ts'
+import { detect } from './init.ts'
 import { plan, commit, type PlannedFile } from '../project/write.ts'
 import { detectPackageManager, install, missingDependencies, installCommand } from '../project/deps.ts'
 import { assertPreset, springOutcome } from '../project/spring.ts'
@@ -9,7 +10,7 @@ import { confirm } from '../ui/prompt.ts'
 import { multiselect } from '../ui/select.ts'
 import { spinner } from '../ui/spinner.ts'
 import { isInteractive } from '../ui/tty.ts'
-import { intro } from '../ui/art.ts'
+import { intro, detail } from '../ui/art.ts'
 import type { RegistryIndex } from '../registry/fetch.ts'
 import { log, c, UserError } from '../ui/log.ts'
 
@@ -38,7 +39,7 @@ export async function add(opts: AddOptions) {
   // `init` — so it is the one place a first impression is actually spent.
   intro(opts.version, 'micro-interactions as source you own')
 
-  const config = await readConfig(opts.cwd)
+  const config = await loadOrInitConfig(opts)
   const registry = new Registry(opts.registry ?? config.registry)
 
   const spin = spinner(`Reading ${registry.describe()}`)
@@ -142,6 +143,39 @@ export async function add(opts: AddOptions) {
   log.ok(`Added ${[...requested].map((n) => c.cyan(n)).join(', ')}.`)
   log.line(c.grey('  These files are yours now. Edit them.'))
   log.line()
+}
+
+/**
+ * Read `z-ui.json`, or write one.
+ *
+ * `add` is the first command anyone runs — it is what every install block on
+ * the site says — and refusing it with "run `z-ui init` first" makes the
+ * documented one-liner a two-liner for everybody's first install.
+ *
+ * The guess is shown before it is written, never after. Under `--yes` or with
+ * no TTY it is written unprompted, because the alternative in CI is a prompt
+ * that nothing will ever answer.
+ */
+async function loadOrInitConfig(opts: AddOptions): Promise<Config> {
+  if (configExists(opts.cwd)) return readConfig(opts.cwd)
+
+  const d = detect(opts.cwd)
+  const guess = guessConfig(d, opts.registry)
+
+  detail('No z-ui.json — detected', [
+    `${c.grey('framework')}  ${d.framework}`,
+    `${c.grey('language')}   ${d.tsx ? 'TypeScript' : 'JavaScript'}`,
+    `${c.grey('components')} ${guess.aliases.components.path}/`,
+    `${c.grey('packages')}   ${d.pm}`,
+  ])
+
+  if (!opts.yes && isInteractive() && !(await confirm('Write z-ui.json and continue?', true))) {
+    throw new UserError('Stopped without writing anything.', 'Run `z-ui init` to configure paths by hand.')
+  }
+
+  await writeConfig(opts.cwd, guess)
+  log.ok('Wrote z-ui.json')
+  return guess
 }
 
 /**

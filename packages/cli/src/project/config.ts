@@ -128,3 +128,26 @@ export async function readConfig(cwd: string): Promise<Config> {
 export async function writeConfig(cwd: string, config: Config) {
   await writeFile(configPath(cwd), JSON.stringify(config, null, 2) + '\n', 'utf8')
 }
+
+/**
+ * The config we would write for a project, given what was detected in it.
+ *
+ * Lives here rather than in `init` because `add` now writes one too when none
+ * exists, and two commands guessing separately is two guesses that can differ.
+ */
+export function guessConfig(
+  detected: { srcDir: boolean; tsx: boolean },
+  registry: string | undefined,
+): Config {
+  const prefix = detected.srcDir ? 'src/' : ''
+  return {
+    ...DEFAULT_CONFIG,
+    registry: registry ?? DEFAULT_CONFIG.registry,
+    tsx: detected.tsx,
+    aliases: {
+      components: { import: '@/components/z-ui', path: `${prefix}components/z-ui` },
+      hooks: { import: '@/hooks', path: `${prefix}hooks` },
+      lib: { import: '@/lib', path: `${prefix}lib` },
+    },
+  }
+}

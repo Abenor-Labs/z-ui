@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { rewriteImports, resolveTarget } from '../src/project/write.ts'
-import { validate } from '../src/project/config.ts'
+import { validate, guessConfig, DEFAULT_REGISTRY } from '../src/project/config.ts'
 import { digest, verify } from '../src/registry/verify.ts'
 import { installCommand } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
@@ -422,5 +422,29 @@ describe('doctor --json', () => {
     const json = JSON.stringify(doctorReport([], [], 0))
     const back = JSON.parse(json)
     assert.deepEqual(back, { installed: 0, warnings: 0, findings: [], missingDependencies: [] })
+  })
+})
+
+describe('guessConfig', () => {
+  test('a src/ layout prefixes every alias path but no import specifier', () => {
+    const g = guessConfig({ srcDir: true, tsx: true }, undefined)
+    assert.equal(g.aliases.components.path, 'src/components/z-ui')
+    assert.equal(g.aliases.components.import, '@/components/z-ui')
+    assert.equal(g.aliases.hooks.path, 'src/hooks')
+    assert.equal(g.aliases.lib.path, 'src/lib')
+  })
+
+  test('a root layout leaves paths unprefixed', () => {
+    const g = guessConfig({ srcDir: false, tsx: true }, undefined)
+    assert.equal(g.aliases.components.path, 'components/z-ui')
+  })
+
+  test('an explicit registry overrides the default', () => {
+    assert.equal(guessConfig({ srcDir: false, tsx: true }, './registry').registry, './registry')
+    assert.equal(guessConfig({ srcDir: false, tsx: true }, undefined).registry, DEFAULT_REGISTRY)
+  })
+
+  test('a JavaScript project is recorded as such', () => {
+    assert.equal(guessConfig({ srcDir: false, tsx: false }, undefined).tsx, false)
   })
 })
