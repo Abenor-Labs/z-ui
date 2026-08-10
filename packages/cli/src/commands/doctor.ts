@@ -84,10 +84,14 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
   }
 
   if (!installed) {
+    // The index is already in hand, so name something that actually resolves.
+    // This line used to hardcode a component that was later deleted, and it
+    // kept recommending it for as long as the literal survived.
+    const example = components[0]?.name ?? '<name>'
     log.line(c.grey('  No Z-UI components found in this project.'))
     log.line(c.grey(`  Looked in ${config.aliases.components.path}/`))
     log.line()
-    log.line(`  ${c.cyan('z-ui add like-button')} to install one.`)
+    log.line(`  ${c.cyan(`z-ui add ${example}`)} to install one.`)
     log.line()
     return
   }

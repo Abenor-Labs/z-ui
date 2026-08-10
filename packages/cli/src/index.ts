@@ -54,10 +54,12 @@ const HELP = `
 
   ${c.bold('Examples')}
     ${c.grey('z-ui init')}
-    ${c.grey('z-ui add like-button scrub')}
-    ${c.grey('z-ui add like-button --spring settle')}
-    ${c.grey('z-ui add undo-toast --dry-run')}
-    ${c.grey('z-ui add scrub --registry ./registry')}
+    ${c.grey('z-ui add <name>')}
+    ${c.grey('z-ui add <name> --spring settle')}
+    ${c.grey('z-ui add <name> --dry-run')}
+    ${c.grey('z-ui add https://example.com/r/<name>.json')}
+    ${c.grey('z-ui add <name> --registry ./registry')}
+    ${c.grey('z-ui list')}
     ${c.grey('z-ui doctor')}
     ${c.grey('z-ui spring bounce')}
 `
