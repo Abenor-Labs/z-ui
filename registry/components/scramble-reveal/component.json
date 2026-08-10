@@ -10,7 +10,6 @@
   "meta": {
     "category": "state-morphing",
     "gesture": "hover",
-    "states": ["idle", "scrambling", "settled"],
-    "spring": "snap"
+    "states": ["idle", "scrambling", "settled"]
   }
 }

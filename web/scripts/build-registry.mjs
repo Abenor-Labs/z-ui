@@ -18,6 +18,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHighlighter } from 'shiki'
+import { scanMotion } from '../../scripts/motion-scan.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WEB = resolve(HERE, '..')
@@ -49,6 +50,11 @@ function collect() {
         sha: sha(raw),
       }
     })
+    // Scanned from the file that is the component itself, not from a hook or a
+    // lib shipped beside it.
+    const primary = files.find((f) => f.type === 'registry:component') ?? files[0]
+    const motion = manifest.type === 'registry:component' ? scanMotion(primary.content) : null
+
     return {
       name: manifest.name,
       type: manifest.type,
@@ -57,7 +63,9 @@ function collect() {
       category: manifest.meta?.category ?? entry.category ?? null,
       gesture: manifest.meta?.gesture ?? null,
       states: manifest.meta?.states ?? null,
-      spring: manifest.meta?.spring ?? null,
+      // Derived. An authored value is rejected by lint-registry.
+      spring: motion?.springs.find((s) => s.preset)?.preset ?? null,
+      motion,
       dependencies: manifest.dependencies ?? [],
       registryDependencies: manifest.registryDependencies ?? [],
       dir: entry.path,
@@ -114,6 +122,7 @@ for (const item of items) {
           gesture: item.gesture,
           states: item.states,
           spring: item.spring,
+          motion: item.motion,
           digests: Object.fromEntries(item.files.map((f) => [f.path, f.sha])),
         },
       },
@@ -154,6 +163,7 @@ const meta = items.map((item) => ({
   gesture: item.gesture,
   states: item.states,
   spring: item.spring,
+  motion: item.motion,
   dependencies: item.dependencies,
   // Flattened so a page can list every file it will write without walking.
   installs: [...resolveDeps(item, byName), item].map((i) => ({
@@ -182,6 +192,29 @@ export type ZItemType = 'registry:component' | 'registry:hook' | 'registry:lib'
 /** The input that drives the component's signature motion. */
 export type ZGesture = 'press' | 'drag' | 'hold' | 'hover' | 'type'
 
+export type ZPreset = 'snap' | 'bounce' | 'settle' | 'fling'
+
+export type ZSpring = {
+  name: string
+  stiffness: number
+  damping: number
+  mass: number
+  restDelta: number | null
+  restSpeed: number | null
+  /** The published preset these numbers match exactly, or null when bespoke. */
+  preset: ZPreset | null
+}
+export type ZDuration = { name: string; ms: number }
+
+/** Scanned out of the component source by scripts/motion-scan.mjs at build
+ *  time. Never authored — lint-registry rejects a hand-written copy. */
+export type ZMotion = {
+  states: string[] | null
+  springs: ZSpring[]
+  durations: ZDuration[]
+  reducedMotion: 'branch' | null
+}
+
 export type ZItem = {
   name: string
   type: ZItemType
@@ -190,18 +223,24 @@ export type ZItem = {
   category: string | null
   gesture: ZGesture | null
   states: string[] | null
-  spring: string | null
+  spring: ZPreset | null
+  motion: ZMotion | null
   dependencies: string[]
   installs: ZInstall[]
 }
 
-/** Components always declare a category, a gesture, states, and a default spring. */
+/**
+ * Components always declare a category, a gesture and states, and always carry
+ * scanned motion data. The spring field stays nullable: it names the preset the
+ * component's own numbers match exactly, and a component that tuned its own
+ * physics matches none.
+ */
 export type ZComponent = ZItem & {
   type: 'registry:component'
   category: string
   gesture: ZGesture
   states: string[]
-  spring: string
+  motion: ZMotion
 }
 
 export declare const items: ZItem[]

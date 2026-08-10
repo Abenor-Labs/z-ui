@@ -22,7 +22,22 @@
       "scrambling",
       "settled"
     ],
-    "spring": "snap",
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "scrambling",
+        "settled"
+      ],
+      "springs": [],
+      "durations": [
+        {
+          "name": "duration",
+          "ms": 620
+        }
+      ],
+      "reducedMotion": "branch"
+    },
     "digests": {
       "scramble-reveal.tsx": "e9736478c4f2"
     }

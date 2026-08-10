@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url'
 // ajv's default export only knows draft-07; the schemas declare 2020-12.
 import Ajv from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import { scanMotion } from './motion-scan.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const REGISTRY = join(ROOT, 'registry')
@@ -69,6 +70,15 @@ for (const entry of index.items) {
 
   const manifest = json(manifestPath)
   check(validateItem(manifest), where, ajv.errorsText(validateItem.errors))
+
+  // Derived, never authored. Both manifests declared `"spring": "snap"` for as
+  // long as they existed; disclosure runs 520/46 and scramble-reveal runs no
+  // spring at all. Nothing enforced the field, so nothing caught either.
+  check(
+    manifest.meta?.spring === undefined,
+    where,
+    '`meta.spring` is derived by the generator from the component source; remove it from component.json',
+  )
   check(manifest.name === entry.name, where, `manifest name "${manifest.name}" != index name`)
   check(manifest.type === entry.type, where, `manifest type "${manifest.type}" != index type`)
 
@@ -176,9 +186,30 @@ for (const entry of index.items) {
     // The three-way check. STATES in source, meta.states in the manifest, and
     // the keys of every variants object must all agree. This is the invariant
     // that data-state actually reports what the manifest promises.
-    const statesMatch = src.match(/const STATES = \[([\s\S]*?)\] as const/)
-    if (check(statesMatch, at, 'component must declare `const STATES = [...] as const`')) {
-      const declared = [...statesMatch[1].matchAll(/'([^']+)'/g)].map((m) => m[1])
+    const scan = scanMotion(src)
+
+    // A component whose motion cannot be read cannot be previewed, and more to
+    // the point cannot be checked. Unreadable is a build failure, not a
+    // degraded manifest.
+    if (usesMotion) {
+      check(
+        scan.springs.length > 0 || scan.durations.length > 0,
+        at,
+        'imports motion but no spring constant or duration default is readable; scripts/motion-scan.mjs found neither',
+      )
+    }
+
+    // The accessibility contract from ADR 0002, generalised off the deleted
+    // useZTransition and onto the shape every component actually uses: a
+    // binding from a use*ReducedMotion hook, and a branch that reads it.
+    check(
+      scan.reducedMotion === 'branch',
+      at,
+      'no reduced-motion branch found; expected `const <id> = use…ReducedMotion()` and an `if (<id>)` that skips the animation',
+    )
+
+    if (check(scan.states, at, 'component must declare `const STATES = [...] as const`')) {
+      const declared = scan.states
       check(
         JSON.stringify(declared) === JSON.stringify(manifest.meta.states),
         at,

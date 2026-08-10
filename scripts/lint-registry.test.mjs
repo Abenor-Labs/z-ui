@@ -78,6 +78,16 @@ const mutations = [
     const m = JSON.parse(orig.man); m.registryDependencies = ['does-not-exist']
     writeFileSync(MAN, JSON.stringify(m, null, 2))
   }],
+  // meta.spring is derived by the generator now. An authored one is exactly the
+  // drift that let both manifests claim "snap" while neither component ran it.
+  ['authored meta.spring reintroduced', () => {
+    const m = JSON.parse(orig.man); m.meta.spring = 'snap'
+    writeFileSync(MAN, JSON.stringify(m, null, 2))
+  }],
+  // The accessibility gate. Reading the preference and animating anyway is the
+  // failure the old useZTransition grep was supposed to catch and never could.
+  ['reduced-motion branch removed', () =>
+    writeFileSync(SRC, orig.src.replace('    if (reduced) {', '    if (false) {'))],
 ]
 
 let caught = 0

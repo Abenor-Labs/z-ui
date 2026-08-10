@@ -62,7 +62,46 @@
           "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
           "description": "Every value data-state can take. Must equal the component's STATES tuple and the keys of every variants object."
         },
-        "spring": { "enum": ["snap", "bounce", "settle", "fling"] }
+        "motion": {
+          "type": "object",
+          "description": "Derived from the component source by scripts/motion-scan.mjs. Never authored by hand — the generator overwrites it, and lint-registry fails if it disagrees with a fresh scan.",
+          "additionalProperties": false,
+          "required": ["springs", "durations", "reducedMotion"],
+          "properties": {
+            "states": { "type": ["array", "null"], "items": { "type": "string" } },
+            "springs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "stiffness", "damping", "mass", "preset"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "stiffness": { "type": "number" },
+                  "damping": { "type": "number" },
+                  "mass": { "type": "number" },
+                  "restDelta": { "type": ["number", "null"] },
+                  "restSpeed": { "type": ["number", "null"] },
+                  "preset": { "enum": ["snap", "bounce", "settle", "fling", null] }
+                }
+              }
+            },
+            "durations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "ms"],
+                "properties": { "name": { "type": "string" }, "ms": { "type": "number" } }
+              }
+            },
+            "reducedMotion": { "enum": ["branch", null] }
+          }
+        },
+        "spring": {
+          "enum": ["snap", "bounce", "settle", "fling", null],
+          "description": "Derived, not authored. The generator writes the preset the scanned spring matches, or null when the component tunes its own. A component.json carrying this field is rejected by lint-registry."
+        }
       }
     }
   },
@@ -72,9 +111,9 @@
       "then": {
         "required": ["meta"],
         "properties": {
-          "meta": { "required": ["category", "gesture", "states", "spring"] }
+          "meta": { "required": ["category", "gesture", "states"] }
         },
-        "description": "Components must declare their state machine, driving gesture, and default spring; the showcase builds its state inspector and its catalogue filter from these."
+        "description": "Components must declare their category, driving gesture and state machine; the showcase builds its state inspector and its catalogue filter from these. Spring and motion data are derived from source by the generator, never authored."
       }
     }
   ]
