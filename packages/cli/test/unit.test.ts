@@ -7,7 +7,7 @@ import { installCommand } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
 import type { RegistryItem } from '../src/registry/fetch.ts'
 import { isUrl } from '../src/registry/fetch.ts'
-import { retargetSpring, assertPreset, springOutcome } from '../src/project/spring.ts'
+import { retargetSpring, assertPreset, springOutcome, springRefusal } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
 import { nearest, partitionTargets } from '../src/commands/add.ts'
 import { doctorReport } from '../src/commands/doctor.ts'
@@ -483,5 +483,30 @@ describe('preview', () => {
 
   test('a component with no motion data is reported, not rendered blank', () => {
     assert.throws(() => assertPreviewable({ name: 'x', meta: {} } as never), /no motion data/i)
+  })
+})
+
+describe('springRefusal', () => {
+  const bespoke = { name: 'SPRING', stiffness: 520, damping: 46, mass: 1, restDelta: 2, restSpeed: 20, preset: null }
+  const preset = { name: 'SPRING', stiffness: 500, damping: 40, mass: 1, restDelta: null, restSpeed: null, preset: 'snap' as const }
+  const item = (springs: unknown[]) =>
+    ({ name: 'disclosure', meta: { motion: { springs, durations: [], reducedMotion: 'branch' } } }) as never
+
+  test('refuses when every spring is bespoke, naming the numbers', () => {
+    const msg = springRefusal(item([bespoke]), 'bounce')
+    assert.match(msg ?? '', /520/)
+    assert.match(msg ?? '', /46/)
+  })
+
+  test('allows a preset spring through', () => {
+    assert.equal(springRefusal(item([preset]), 'bounce'), null)
+  })
+
+  test('refuses a component with no spring at all', () => {
+    assert.match(springRefusal(item([]), 'bounce') ?? '', /no spring/i)
+  })
+
+  test('says nothing about a component with no motion data', () => {
+    assert.equal(springRefusal({ name: 'x', meta: {} } as never, 'bounce'), null)
   })
 })

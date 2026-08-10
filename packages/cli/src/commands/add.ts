@@ -5,7 +5,7 @@ import { readConfig, configExists, writeConfig, guessConfig, type Config } from 
 import { detect } from './init.ts'
 import { plan, commit, type PlannedFile } from '../project/write.ts'
 import { detectPackageManager, install, missingDependencies, installCommand } from '../project/deps.ts'
-import { assertPreset, springOutcome } from '../project/spring.ts'
+import { assertPreset, springOutcome, springRefusal } from '../project/spring.ts'
 import { confirm } from '../ui/prompt.ts'
 import { multiselect } from '../ui/select.ts'
 import { spinner } from '../ui/spinner.ts'
@@ -103,6 +103,16 @@ export async function add(opts: AddOptions) {
   // Validated after resolution so an unknown component is reported before a
   // typo'd preset — the component name is the thing they got wrong first.
   const spring = opts.spring ? assertPreset(opts.spring) : undefined
+
+  // Refuse before planning. Nothing should be written on the way to telling
+  // someone their flag cannot apply.
+  if (spring) {
+    for (const item of items) {
+      if (item.type !== 'registry:component') continue
+      const refusal = springRefusal(item, spring)
+      if (refusal) throw new UserError(refusal, 'Drop --spring to install the component as tuned.')
+    }
+  }
 
   const files = await plan(items, config, opts.cwd, { spring, springScope: requested })
   const deps = npmDependencies(items)

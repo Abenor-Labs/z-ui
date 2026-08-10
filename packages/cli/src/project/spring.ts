@@ -1,4 +1,5 @@
 import { UserError } from '../ui/log.ts'
+import type { RegistryItem } from '../registry/fetch.ts'
 
 export const PRESETS = ['snap', 'bounce', 'settle', 'fling'] as const
 export type Preset = (typeof PRESETS)[number]
@@ -61,4 +62,32 @@ export function springOutcome(
   if (!requested) return null
   if (files.some((f) => f.retargeted)) return null
   return `--spring ${requested} matched no file. This component does not expose its spring as a preset name, so its shipped physics were installed unchanged.`
+}
+
+/**
+ * Whether `--spring` may touch this component at all.
+ *
+ * A component whose spring is bespoke is not one that forgot to use a preset.
+ * disclosure runs 520/46 against snap's 500/40 and its tuning comment spends a
+ * paragraph on why: the content is anchored to the top of the panel, so an
+ * overshoot on height is not a bounce, it is a gap opening under the last line
+ * and closing again. Rewriting it to `bounce` would produce exactly the
+ * rendering bug the author tuned it to avoid.
+ *
+ * So this refuses rather than rewrites, and says why. Returns null when there
+ * is no motion data to reason about — an older manifest is not grounds to
+ * block an install.
+ */
+export function springRefusal(item: RegistryItem, requested: string): string | null {
+  const motion = item.meta?.motion
+  if (!motion) return null
+
+  if (!motion.springs.length) {
+    return `${item.name} has no spring to retarget — its motion is not spring-driven, so --spring ${requested} has nothing to act on.`
+  }
+  if (motion.springs.every((s) => s.preset === null)) {
+    const s = motion.springs[0]!
+    return `${item.name} tunes its own spring (stiffness ${s.stiffness}, damping ${s.damping}, mass ${s.mass}) rather than using a preset. Installing ${requested} over it would change physics the component was deliberately tuned against. Install it and edit ${s.name} if you want different numbers.`
+  }
+  return null
 }
