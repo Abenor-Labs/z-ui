@@ -59,3 +59,5 @@ export type ZComponent = ZItem & {
 export declare const items: ZItem[]
 export declare const byName: Record<string, ZItem | undefined>
 export declare const components: ZComponent[]
+/** Read from packages/cli/package.json at build time, never typed into a page. */
+export declare const cliVersion: string

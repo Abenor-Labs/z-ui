@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { byName } from '@/__generated__/meta.js'
+import { byName, cliVersion } from '@/__generated__/meta.js'
 import { CodePanel } from './code-panel'
 import { CopyButton } from './copy-button'
 import { CustomizePanel } from './customize-panel'
@@ -271,12 +271,11 @@ export function ComponentPage() {
             <h2 className="cp-mono" style={SECTION_LABEL}>
               Install
             </h2>
-            {/* `@abenor/z-ui@0.1.1` published on 2026-08-10 and the command
-                above was verified end to end against it, so the badge names the
-                version rather than warning about it. It read "0.1.1 pending"
-                for one day past the publish — the same way the install copy
-                outlived its own warning in `5f33a80` and again in `e315c4d`.
-                This badge is a claim about npm; when it changes, check npm. */}
+            {/* Generated from packages/cli/package.json, not typed. This badge
+                said "0.1.1 pending" for a day after 0.1.1 published — the third
+                time install copy outlived its condition (`5f33a80`,
+                `e315c4d`). A version that is read cannot rot on its own; a
+                publish claim always can, so the badge no longer makes one. */}
             <span
               className="cp-mono"
               style={{
@@ -292,7 +291,7 @@ export function ComponentPage() {
                 textTransform: 'uppercase',
               }}
             >
-              0.1.1 on npm
+              cli {cliVersion}
             </span>
           </div>
 

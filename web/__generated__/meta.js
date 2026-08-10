@@ -96,3 +96,4 @@ export const items = [
 ]
 export const byName = Object.fromEntries(items.map((i) => [i.name, i]))
 export const components = items.filter((i) => i.type === 'registry:component')
+export const cliVersion = "0.1.1"
