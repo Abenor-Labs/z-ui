@@ -8,10 +8,31 @@ import { missingDependencies, detectPackageManager, installCommand } from '../pr
 import { intro } from '../ui/art.ts'
 import { log, c } from '../ui/log.ts'
 
-type Finding = {
+export type Finding = {
   level: 'ok' | 'note' | 'warn'
   name: string
   message: string
+}
+
+export type DoctorReport = {
+  installed: number
+  warnings: number
+  findings: Finding[]
+  missingDependencies: string[]
+}
+
+/** Pure, so the JSON contract is testable without touching a filesystem. */
+export function doctorReport(
+  findings: Finding[],
+  missingDependencies: string[],
+  installed: number,
+): DoctorReport {
+  return {
+    installed,
+    warnings: findings.filter((f) => f.level === 'warn').length,
+    findings,
+    missingDependencies,
+  }
 }
 
 /**
@@ -25,8 +46,15 @@ type Finding = {
  * accessibility contract while customising their own copy, and no
  * general-purpose registry client would know to look.
  */
-export async function doctor(opts: { version: string; cwd: string; registry?: string }) {
-  intro(opts.version, `checking ${opts.cwd}`)
+export async function doctor(opts: {
+  version: string
+  cwd: string
+  registry?: string
+  json?: boolean
+}) {
+  // Same rule `list` follows: nothing before the opening brace on stdout, or
+  // the output cannot be piped.
+  if (!opts.json) intro(opts.version, `checking ${opts.cwd}`)
 
   const config = await readConfig(opts.cwd)
   const registry = new Registry(opts.registry ?? config.registry)
@@ -83,6 +111,31 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
     }
   }
 
+  // Every installed item, not just components. `z-cn` is a registry:lib and it
+  // is what pulls in clsx and tailwind-merge — scanning only components misses
+  // the dependencies of the primitives every component sits on.
+  //
+  // Computed before the empty-project branch, not after, so `--json` always
+  // carries the field whether or not anything is installed.
+  const needed = new Set<string>()
+  for (const entry of index.items) {
+    const item = await registry.item(entry.name).catch(() => null)
+    if (!item) continue
+    const present = item.files.some((file) =>
+      existsSync(path.resolve(opts.cwd, resolveTarget(file.target ?? file.path, config))),
+    )
+    if (present) for (const d of item.dependencies ?? []) needed.add(d)
+  }
+  const missing = await missingDependencies(opts.cwd, [...needed])
+
+  const report = doctorReport(findings, missing, installed)
+
+  if (opts.json) {
+    log.raw(JSON.stringify(report, null, 2))
+    if (report.warnings) process.exitCode = 1
+    return
+  }
+
   if (!installed) {
     // The index is already in hand, so name something that actually resolves.
     // This line used to hardcode a component that was later deleted, and it
@@ -101,20 +154,6 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
     log.line(`  ${icon} ${c.cyan(f.name.padEnd(18))} ${c.grey(f.message)}`)
   }
 
-  // Every installed item, not just components. `z-cn` is a registry:lib and it
-  // is what pulls in clsx and tailwind-merge — scanning only components misses
-  // the dependencies of the primitives every component sits on.
-  const needed = new Set<string>()
-  for (const entry of index.items) {
-    const item = await registry.item(entry.name).catch(() => null)
-    if (!item) continue
-    const present = item.files.some((file) =>
-      existsSync(path.resolve(opts.cwd, resolveTarget(file.target ?? file.path, config))),
-    )
-    if (present) for (const d of item.dependencies ?? []) needed.add(d)
-  }
-  const missing = await missingDependencies(opts.cwd, [...needed])
-
   if (missing.length) {
     const pm = detectPackageManager(opts.cwd)
     const { command, args } = installCommand(pm, missing)
@@ -123,10 +162,9 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
     log.line(c.grey(`    ${command} ${args.join(' ')}`))
   }
 
-  const warns = findings.filter((f) => f.level === 'warn').length
   log.line()
-  if (warns) {
-    log.line(`  ${c.yellow(`${warns} warning${warns === 1 ? '' : 's'}`)}`)
+  if (report.warnings) {
+    log.line(`  ${c.yellow(`${report.warnings} warning${report.warnings === 1 ? '' : 's'}`)}`)
     process.exitCode = 1
   } else {
     log.ok('Nothing broken.')

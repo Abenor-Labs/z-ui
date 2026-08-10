@@ -10,6 +10,7 @@ import { isUrl } from '../src/registry/fetch.ts'
 import { retargetSpring, assertPreset, springOutcome } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
 import { nearest, partitionTargets } from '../src/commands/add.ts'
+import { doctorReport } from '../src/commands/doctor.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { existsSync, readFileSync } from 'node:fs'
@@ -398,5 +399,28 @@ describe('URL positionals', () => {
     ])
     assert.deepEqual(names, ['disclosure', 'scramble-reveal'])
     assert.deepEqual(urls, ['https://example.com/r/a.json'])
+  })
+})
+
+describe('doctor --json', () => {
+  test('report shape carries findings, missing deps and a count', () => {
+    const report = doctorReport(
+      [
+        { level: 'warn', name: 'disclosure', message: 'no reduced-motion branch' },
+        { level: 'ok', name: 'scramble-reveal', message: 'unmodified' },
+      ],
+      ['motion'],
+      2,
+    )
+    assert.equal(report.installed, 2)
+    assert.deepEqual(report.missingDependencies, ['motion'])
+    assert.equal(report.findings.length, 2)
+    assert.equal(report.warnings, 1)
+  })
+
+  test('serialises to parseable JSON with nothing decorative in it', () => {
+    const json = JSON.stringify(doctorReport([], [], 0))
+    const back = JSON.parse(json)
+    assert.deepEqual(back, { installed: 0, warnings: 0, findings: [], missingDependencies: [] })
   })
 })

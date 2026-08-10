@@ -47,7 +47,7 @@ const HELP = `
         --damping     ${c.grey('z-ui spring --stiffness 300 --damping 20 --mass 1')}
         --mass
         --dry-run     show the plan, write nothing
-        --json        machine-readable output (list)
+        --json        machine-readable output (list, doctor)
         --force       overwrite z-ui.json (init)
     -v, --version
     -h, --help
@@ -117,7 +117,7 @@ async function main() {
         spring: values.spring,
       })
     case 'doctor':
-      return doctor({ version: VERSION, cwd, registry: values.registry })
+      return doctor({ version: VERSION, cwd, registry: values.registry, json: values.json! })
     case 'spring':
       return spring({
         version: VERSION,
