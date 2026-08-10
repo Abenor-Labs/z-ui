@@ -6,7 +6,7 @@ import { digest, verify } from '../src/registry/verify.ts'
 import { installCommand } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
 import type { RegistryItem } from '../src/registry/fetch.ts'
-import { retargetSpring, assertPreset } from '../src/project/spring.ts'
+import { retargetSpring, assertPreset, springOutcome } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
 import { nearest } from '../src/commands/add.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
@@ -349,5 +349,33 @@ describe('spring curve simulation', () => {
     const { samples } = simulateSpring(springs.bounce.stiffness, springs.bounce.damping, springs.bounce.mass)
     const rows = renderCurve(samples, { width: 40, height: 8, windowMs: 300 })
     assert.ok(rows.some((row) => row.includes('#')))
+  })
+})
+
+describe('spring retarget against the live registry', () => {
+  // The regression test for the audit in docs/specs/2026-08-10-cli-motion-truth.md.
+  // `retargetSpring` was written for a prop-default convention no component
+  // adopted, and nothing noticed because a zero-change rewrite is silent.
+  test('disclosure has no prop-default spring, so a retarget changes nothing', () => {
+    const src = readFileSync(
+      new URL('../../../registry/components/disclosure/disclosure.tsx', import.meta.url),
+      'utf8',
+    )
+    const { changed } = retargetSpring(src, 'bounce')
+    assert.equal(changed, 0)
+  })
+
+  test('springOutcome reports a request that matched nothing', () => {
+    const msg = springOutcome([{ retargeted: false }, { retargeted: false }], 'bounce')
+    assert.match(msg ?? '', /bounce/)
+    assert.match(msg ?? '', /no file/i)
+  })
+
+  test('springOutcome is silent when something was retargeted', () => {
+    assert.equal(springOutcome([{ retargeted: false }, { retargeted: true }], 'bounce'), null)
+  })
+
+  test('springOutcome is silent when no spring was requested', () => {
+    assert.equal(springOutcome([{ retargeted: false }], undefined), null)
   })
 })

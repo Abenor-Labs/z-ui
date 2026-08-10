@@ -4,7 +4,7 @@ import { assertVerified } from '../registry/verify.ts'
 import { readConfig } from '../project/config.ts'
 import { plan, commit, type PlannedFile } from '../project/write.ts'
 import { detectPackageManager, install, missingDependencies, installCommand } from '../project/deps.ts'
-import { assertPreset } from '../project/spring.ts'
+import { assertPreset, springOutcome } from '../project/spring.ts'
 import { confirm } from '../ui/prompt.ts'
 import { multiselect } from '../ui/select.ts'
 import { spinner } from '../ui/spinner.ts'
@@ -97,6 +97,9 @@ export async function add(opts: AddOptions) {
   const pm = detectPackageManager(opts.cwd)
 
   report(files, missing, pm, spring)
+
+  const springNote = springOutcome(files, spring)
+  if (springNote) log.warn(springNote)
 
   if (opts.dryRun) {
     log.line()
