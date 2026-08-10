@@ -10,7 +10,7 @@
       "path": "components/disclosure",
       "title": "Disclosure",
       "description": "A panel whose height is an interruptible spring. Press again mid-open and it reverses from wherever it got to, carrying the speed it was already moving at.",
-      "spring": "snap",
+      "spring": null,
       "states": [
         "closed",
         "opening",
@@ -25,7 +25,7 @@
       "path": "components/scramble-reveal",
       "title": "Scramble Reveal",
       "description": "Text that decodes out of random glyphs on hover, on mount, or when it first enters view.",
-      "spring": "snap",
+      "spring": null,
       "states": [
         "idle",
         "scrambling",

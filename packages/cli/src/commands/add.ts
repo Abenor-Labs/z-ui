@@ -1,15 +1,16 @@
-import { Registry } from '../registry/fetch.ts'
+import { Registry, isUrl } from '../registry/fetch.ts'
 import { resolve, npmDependencies } from '../registry/resolve.ts'
 import { assertVerified } from '../registry/verify.ts'
-import { readConfig } from '../project/config.ts'
+import { readConfig, configExists, writeConfig, guessConfig, type Config } from '../project/config.ts'
+import { detect } from './init.ts'
 import { plan, commit, type PlannedFile } from '../project/write.ts'
 import { detectPackageManager, install, missingDependencies, installCommand } from '../project/deps.ts'
-import { assertPreset } from '../project/spring.ts'
+import { assertPreset, springOutcome, springRefusal } from '../project/spring.ts'
 import { confirm } from '../ui/prompt.ts'
 import { multiselect } from '../ui/select.ts'
 import { spinner } from '../ui/spinner.ts'
 import { isInteractive } from '../ui/tty.ts'
-import { intro } from '../ui/art.ts'
+import { intro, detail } from '../ui/art.ts'
 import type { RegistryIndex } from '../registry/fetch.ts'
 import { log, c, UserError } from '../ui/log.ts'
 
@@ -38,7 +39,7 @@ export async function add(opts: AddOptions) {
   // `init` — so it is the one place a first impression is actually spent.
   intro(opts.version, 'micro-interactions as source you own')
 
-  const config = await readConfig(opts.cwd)
+  const config = await loadOrInitConfig(opts)
   const registry = new Registry(opts.registry ?? config.registry)
 
   const spin = spinner(`Reading ${registry.describe()}`)
@@ -64,11 +65,13 @@ export async function add(opts: AddOptions) {
     }
   }
 
+  const { names: byName, urls } = partitionTargets(opts.components)
+
   log.step(`Resolving from ${c.grey(registry.describe())}`)
 
   // Fail on an unknown name before doing any work, and suggest near misses.
   const known = new Set(index.items.map((i) => i.name))
-  const unknown = opts.components.filter((n) => !known.has(n))
+  const unknown = byName.filter((n) => !known.has(n))
   if (unknown.length) {
     const suggestions = unknown
       .map((n) => {
@@ -79,7 +82,20 @@ export async function add(opts: AddOptions) {
     throw new UserError(`Unknown component:\n  ${suggestions}`, 'Run `z-ui list` for the full set.')
   }
 
-  const items = await resolve(registry, opts.components)
+  const direct = await Promise.all(urls.map((u) => registry.itemFromUrl(u)))
+  // Dependencies of a URL-fetched item resolve by name against the configured
+  // registry, alongside anything the user named directly.
+  const depNames = direct.flatMap((i) => i.registryDependencies ?? [])
+  const resolved = await resolve(registry, [...byName, ...depNames])
+
+  // Direct items last: `resolve` already orders dependencies before dependents,
+  // and a URL-fetched item is by definition the dependent here.
+  const items = [...resolved, ...direct.filter((d) => !resolved.some((r) => r.name === d.name))]
+
+  // The names the user typed, plus anything they pointed at by URL. Never a
+  // transitively-resolved dependency: retargeting a shared primitive restyles
+  // components the user did not mention.
+  const requested = new Set([...byName, ...direct.map((d) => d.name)])
 
   // One of the three behaviours ADR 0002 requires of a first-party CLI.
   assertVerified(items)
@@ -88,15 +104,25 @@ export async function add(opts: AddOptions) {
   // typo'd preset — the component name is the thing they got wrong first.
   const spring = opts.spring ? assertPreset(opts.spring) : undefined
 
-  const files = await plan(items, config, opts.cwd, {
-    spring,
-    springScope: new Set(opts.components),
-  })
+  // Refuse before planning. Nothing should be written on the way to telling
+  // someone their flag cannot apply.
+  if (spring) {
+    for (const item of items) {
+      if (item.type !== 'registry:component') continue
+      const refusal = springRefusal(item, spring)
+      if (refusal) throw new UserError(refusal, 'Drop --spring to install the component as tuned.')
+    }
+  }
+
+  const files = await plan(items, config, opts.cwd, { spring, springScope: requested })
   const deps = npmDependencies(items)
   const missing = await missingDependencies(opts.cwd, deps)
   const pm = detectPackageManager(opts.cwd)
 
   report(files, missing, pm, spring)
+
+  const springNote = springOutcome(files, spring)
+  if (springNote) log.warn(springNote)
 
   if (opts.dryRun) {
     log.line()
@@ -124,9 +150,42 @@ export async function add(opts: AddOptions) {
   }
 
   log.line()
-  log.ok(`Added ${opts.components.map((n) => c.cyan(n)).join(', ')}.`)
+  log.ok(`Added ${[...requested].map((n) => c.cyan(n)).join(', ')}.`)
   log.line(c.grey('  These files are yours now. Edit them.'))
   log.line()
+}
+
+/**
+ * Read `z-ui.json`, or write one.
+ *
+ * `add` is the first command anyone runs — it is what every install block on
+ * the site says — and refusing it with "run `z-ui init` first" makes the
+ * documented one-liner a two-liner for everybody's first install.
+ *
+ * The guess is shown before it is written, never after. Under `--yes` or with
+ * no TTY it is written unprompted, because the alternative in CI is a prompt
+ * that nothing will ever answer.
+ */
+async function loadOrInitConfig(opts: AddOptions): Promise<Config> {
+  if (configExists(opts.cwd)) return readConfig(opts.cwd)
+
+  const d = detect(opts.cwd)
+  const guess = guessConfig(d, opts.registry)
+
+  detail('No z-ui.json — detected', [
+    `${c.grey('framework')}  ${d.framework}`,
+    `${c.grey('language')}   ${d.tsx ? 'TypeScript' : 'JavaScript'}`,
+    `${c.grey('components')} ${guess.aliases.components.path}/`,
+    `${c.grey('packages')}   ${d.pm}`,
+  ])
+
+  if (!opts.yes && isInteractive() && !(await confirm('Write z-ui.json and continue?', true))) {
+    throw new UserError('Stopped without writing anything.', 'Run `z-ui init` to configure paths by hand.')
+  }
+
+  await writeConfig(opts.cwd, guess)
+  log.ok('Wrote z-ui.json')
+  return guess
 }
 
 /**
@@ -184,6 +243,14 @@ export function nearest(input: string, candidates: string[], limit = 3): string[
     .sort((a, b) => a.d - b.d)
     .slice(0, limit)
     .map((x) => x.name)
+}
+
+/** Split what the user typed into registry names and direct manifest URLs. */
+export function partitionTargets(targets: string[]): { names: string[]; urls: string[] } {
+  const names: string[] = []
+  const urls: string[] = []
+  for (const t of targets) (isUrl(t) ? urls : names).push(t)
+  return { names, urls }
 }
 
 function report(files: PlannedFile[], missing: string[], pm: string, spring?: string) {

@@ -10,7 +10,6 @@
   "meta": {
     "category": "state-morphing",
     "gesture": "press",
-    "states": ["closed", "opening", "open", "closing"],
-    "spring": "snap"
+    "states": ["closed", "opening", "open", "closing"]
   }
 }

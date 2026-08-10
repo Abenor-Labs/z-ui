@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { components } from '@/__generated__/meta.js'
+import { components, type ZComponent } from '@/__generated__/meta.js'
 import { ComponentGallery } from '@/components/gallery/component-gallery'
 
 export const metadata: Metadata = {
@@ -59,7 +59,7 @@ export default function ComponentsPage() {
         <section className="pt-20">
           <div className="flex items-baseline justify-between border-b border-rule pb-3">
             <h2 className="text-base font-semibold tracking-tight">The contracts</h2>
-            <span className="lbl">read from each component.json</span>
+            <span className="lbl">declared in component.json, spring read from the source</span>
           </div>
           <div className="grid gap-4 pt-6 md:grid-cols-2">
             {components.map((c) => (
@@ -74,7 +74,7 @@ export default function ComponentsPage() {
 
                 <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-hair pt-4">
                   <Fact label="gesture" value={c.gesture} />
-                  <Fact label="spring" value={c.spring} />
+                  <Fact label="spring" value={springLabel(c)} />
                   <Fact label="category" value={c.category} />
                 </dl>
 
@@ -101,6 +101,29 @@ export default function ComponentsPage() {
       ) : null}
     </main>
   )
+}
+
+/**
+ * What a component's spring actually is.
+ *
+ * Both cards used to read `snap`, because both manifests said so and nothing
+ * checked. Disclosure runs 520/46 — near snap's 500/40, and deliberately not
+ * equal — and scramble-reveal has no spring at all. The preset name is now
+ * derived from the source, so it is null for anything that tuned its own, and
+ * that is the honest majority case.
+ *
+ * A bespoke spring shows its numbers rather than nothing: the whole pitch of
+ * this library is the motion, so being vaguer here than `z-ui preview` is in a
+ * terminal would be the wrong trade. A component driven by a duration shows the
+ * duration. One with neither shows an em dash, not an empty cell.
+ */
+function springLabel(c: ZComponent): string {
+  if (c.spring) return c.spring
+  const s = c.motion.springs[0]
+  if (s) return `${s.stiffness}/${s.damping} bespoke`
+  const d = c.motion.durations[0]
+  if (d) return `${d.ms}ms`
+  return '—'
 }
 
 function Fact({ label, value }: { label: string; value: string }) {

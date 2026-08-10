@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
-import { DEFAULT_CONFIG, configExists, writeConfig, type Config } from '../project/config.ts'
+import { configExists, writeConfig, guessConfig, type Config } from '../project/config.ts'
 import { detectPackageManager } from '../project/deps.ts'
 import { ask } from '../ui/prompt.ts'
 import { toggle } from '../ui/select.ts'
@@ -19,7 +19,7 @@ type Detected = {
  * Look before asking. Every question this command does not have to ask is one
  * the reader does not have to have an opinion about.
  */
-function detect(cwd: string): Detected {
+export function detect(cwd: string): Detected {
   const has = (f: string) => existsSync(path.join(cwd, f))
   const srcDir = has('src')
   const tsx = has('tsconfig.json')
@@ -52,18 +52,7 @@ export async function init(opts: {
   }
 
   const d = detect(opts.cwd)
-  const prefix = d.srcDir ? 'src/' : ''
-
-  const guess: Config = {
-    ...DEFAULT_CONFIG,
-    registry: opts.registry ?? DEFAULT_CONFIG.registry,
-    tsx: d.tsx,
-    aliases: {
-      components: { import: '@/components/z-ui', path: `${prefix}components/z-ui` },
-      hooks: { import: '@/hooks', path: `${prefix}hooks` },
-      lib: { import: '@/lib', path: `${prefix}lib` },
-    },
-  }
+  const guess = guessConfig(d, opts.registry)
 
   intro(opts.version, 'micro-interactions as source you own')
 

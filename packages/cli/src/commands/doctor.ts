@@ -8,10 +8,45 @@ import { missingDependencies, detectPackageManager, installCommand } from '../pr
 import { intro } from '../ui/art.ts'
 import { log, c } from '../ui/log.ts'
 
-type Finding = {
+export type Finding = {
   level: 'ok' | 'note' | 'warn'
   name: string
   message: string
+}
+
+export type DoctorReport = {
+  installed: number
+  warnings: number
+  findings: Finding[]
+  missingDependencies: string[]
+}
+
+/**
+ * Mirrors `readReducedMotion` in scripts/motion-scan.mjs.
+ *
+ * Duplicated rather than imported: the scanner is a repo script and the
+ * published CLI ships only `dist/`. A test asserts the two agree on real
+ * component source, which is the same arrangement `digest` has with the
+ * generator's `sha`.
+ */
+export function hasReducedMotionBranch(src: string): boolean {
+  const bind = src.match(/(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*use[\w$]*ReducedMotion\s*\(/)
+  if (!bind) return false
+  return new RegExp(`if\\s*\\(\\s*!?${bind[1]}\\b`).test(src)
+}
+
+/** Pure, so the JSON contract is testable without touching a filesystem. */
+export function doctorReport(
+  findings: Finding[],
+  missingDependencies: string[],
+  installed: number,
+): DoctorReport {
+  return {
+    installed,
+    warnings: findings.filter((f) => f.level === 'warn').length,
+    findings,
+    missingDependencies,
+  }
 }
 
 /**
@@ -25,8 +60,15 @@ type Finding = {
  * accessibility contract while customising their own copy, and no
  * general-purpose registry client would know to look.
  */
-export async function doctor(opts: { version: string; cwd: string; registry?: string }) {
-  intro(opts.version, `checking ${opts.cwd}`)
+export async function doctor(opts: {
+  version: string
+  cwd: string
+  registry?: string
+  json?: boolean
+}) {
+  // Same rule `list` follows: nothing before the opening brace on stdout, or
+  // the output cannot be piped.
+  if (!opts.json) intro(opts.version, `checking ${opts.cwd}`)
 
   const config = await readConfig(opts.cwd)
   const registry = new Registry(opts.registry ?? config.registry)
@@ -59,16 +101,20 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
       // What matters is whether the modification broke a contract.
       const notes: string[] = ['edited locally']
 
-      // A call, not the identifier. Replacing `useZTransition(spring)` with a
-      // literal transition while leaving the import in place is exactly how
-      // this breaks in practice, and a presence check would miss it.
-      const CALL = /useZTransition\s*\(/
-      if (CALL.test(file.content) && !CALL.test(local)) {
+      // Was a grep for `useZTransition(`. That symbol was deleted along with
+      // registry/lib/z-spring and appears in no component, so the check ran on
+      // every install and could not fire — it found nothing and reported
+      // success.
+      //
+      // The manifest now states whether the component shipped a reduced-motion
+      // branch, so this compares an edited file against a derived claim rather
+      // than against one hard-coded symbol name.
+      if (item.meta?.motion?.reducedMotion === 'branch' && !hasReducedMotionBranch(local)) {
         findings.push({
           level: 'warn',
           name: entry.name,
           message:
-            'no longer calls useZTransition — this component will animate through prefers-reduced-motion',
+            'reduced-motion branch is gone — this component will animate through prefers-reduced-motion',
         })
         continue
       }
@@ -83,23 +129,12 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
     }
   }
 
-  if (!installed) {
-    log.line(c.grey('  No Z-UI components found in this project.'))
-    log.line(c.grey(`  Looked in ${config.aliases.components.path}/`))
-    log.line()
-    log.line(`  ${c.cyan('z-ui add like-button')} to install one.`)
-    log.line()
-    return
-  }
-
-  for (const f of findings.sort((a, b) => rank(b.level) - rank(a.level))) {
-    const icon = f.level === 'warn' ? c.yellow('!') : f.level === 'note' ? c.blue('~') : c.green('✓')
-    log.line(`  ${icon} ${c.cyan(f.name.padEnd(18))} ${c.grey(f.message)}`)
-  }
-
   // Every installed item, not just components. `z-cn` is a registry:lib and it
   // is what pulls in clsx and tailwind-merge — scanning only components misses
   // the dependencies of the primitives every component sits on.
+  //
+  // Computed before the empty-project branch, not after, so `--json` always
+  // carries the field whether or not anything is installed.
   const needed = new Set<string>()
   for (const entry of index.items) {
     const item = await registry.item(entry.name).catch(() => null)
@@ -111,6 +146,32 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
   }
   const missing = await missingDependencies(opts.cwd, [...needed])
 
+  const report = doctorReport(findings, missing, installed)
+
+  if (opts.json) {
+    log.raw(JSON.stringify(report, null, 2))
+    if (report.warnings) process.exitCode = 1
+    return
+  }
+
+  if (!installed) {
+    // The index is already in hand, so name something that actually resolves.
+    // This line used to hardcode a component that was later deleted, and it
+    // kept recommending it for as long as the literal survived.
+    const example = components[0]?.name ?? '<name>'
+    log.line(c.grey('  No Z-UI components found in this project.'))
+    log.line(c.grey(`  Looked in ${config.aliases.components.path}/`))
+    log.line()
+    log.line(`  ${c.cyan(`z-ui add ${example}`)} to install one.`)
+    log.line()
+    return
+  }
+
+  for (const f of findings.sort((a, b) => rank(b.level) - rank(a.level))) {
+    const icon = f.level === 'warn' ? c.yellow('!') : f.level === 'note' ? c.blue('~') : c.green('✓')
+    log.line(`  ${icon} ${c.cyan(f.name.padEnd(18))} ${c.grey(f.message)}`)
+  }
+
   if (missing.length) {
     const pm = detectPackageManager(opts.cwd)
     const { command, args } = installCommand(pm, missing)
@@ -119,10 +180,9 @@ export async function doctor(opts: { version: string; cwd: string; registry?: st
     log.line(c.grey(`    ${command} ${args.join(' ')}`))
   }
 
-  const warns = findings.filter((f) => f.level === 'warn').length
   log.line()
-  if (warns) {
-    log.line(`  ${c.yellow(`${warns} warning${warns === 1 ? '' : 's'}`)}`)
+  if (report.warnings) {
+    log.line(`  ${c.yellow(`${report.warnings} warning${report.warnings === 1 ? '' : 's'}`)}`)
     process.exitCode = 1
   } else {
     log.ok('Nothing broken.')

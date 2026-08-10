@@ -21,3 +21,4 @@ from building or running rather than from review:
 | --- | --- | --- |
 | `2026-08-04-z-ui-foundation-design.md` | Registry schema, component contract, CLI, validation | in review ([#1](https://github.com/Abenor-Labs/z-ui/pull/1)) |
 | [`2026-08-05-operating-model.md`](2026-08-05-operating-model.md) | How work starts and lands, the gate ladder, build order to v1, the launch gate | in review |
+| [`2026-08-10-cli-motion-truth.md`](2026-08-10-cli-motion-truth.md) | Install-path friction, and deriving motion metadata from source so the CLI's ADR 0002 behaviours can fail again | draft |

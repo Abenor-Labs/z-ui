@@ -13,7 +13,28 @@ export const items = [
       "open",
       "closing"
     ],
-    "spring": "snap",
+    "spring": null,
+    "motion": {
+      "states": [
+        "closed",
+        "opening",
+        "open",
+        "closing"
+      ],
+      "springs": [
+        {
+          "name": "SPRING",
+          "stiffness": 520,
+          "damping": 46,
+          "mass": 1,
+          "restDelta": 2,
+          "restSpeed": 20,
+          "preset": null
+        }
+      ],
+      "durations": [],
+      "reducedMotion": "branch"
+    },
     "dependencies": [
       "motion"
     ],
@@ -42,7 +63,22 @@ export const items = [
       "scrambling",
       "settled"
     ],
-    "spring": "snap",
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "scrambling",
+        "settled"
+      ],
+      "springs": [],
+      "durations": [
+        {
+          "name": "duration",
+          "ms": 620
+        }
+      ],
+      "reducedMotion": "branch"
+    },
     "dependencies": [],
     "installs": [
       {

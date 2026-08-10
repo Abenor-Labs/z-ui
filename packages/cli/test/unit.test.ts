@@ -1,17 +1,22 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { rewriteImports, resolveTarget } from '../src/project/write.ts'
-import { validate } from '../src/project/config.ts'
+import { validate, guessConfig, DEFAULT_REGISTRY } from '../src/project/config.ts'
 import { digest, verify } from '../src/registry/verify.ts'
 import { installCommand } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
 import type { RegistryItem } from '../src/registry/fetch.ts'
-import { retargetSpring, assertPreset } from '../src/project/spring.ts'
+import { isUrl } from '../src/registry/fetch.ts'
+import { UserError } from '../src/ui/log.ts'
+import { retargetSpring, assertPreset, springOutcome, springRefusal } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
-import { nearest } from '../src/commands/add.ts'
+import { nearest, partitionTargets } from '../src/commands/add.ts'
+import { doctorReport, hasReducedMotionBranch } from '../src/commands/doctor.ts'
+import { completionScript } from '../src/commands/completion.ts'
+import { describeSpring, assertPreviewable } from '../src/commands/preview.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
 const config: Config = {
   registry: './registry',
@@ -258,40 +263,45 @@ describe('did-you-mean', () => {
 })
 
 /**
- * `registry/lib/z-spring/z-spring.ts` was deleted with the rest of the registry
- * on 2026-08-09. The CLI's own copy of the scale is still the thing it ships, so
- * the rest of this suite stays meaningful; only the cross-check against the
- * registry has nothing to compare against.
+ * The spring scale and the reduced-motion shape both exist twice: once here in
+ * the CLI, which ships alone, and once in `scripts/motion-scan.mjs`, which the
+ * generator and the linter share. A copy that can silently drift is worse than
+ * no copy; a copy with a tripwire is fine.
  *
- * Skipped by presence rather than deleted, so it re-arms by itself the moment a
- * spring scale exists again — and if the new scale differs from the CLI's copy,
- * this is the test that will say so instead of the drift reaching a consumer.
+ * This replaces a cross-check against `registry/lib/z-spring/z-spring.ts`,
+ * deleted in the 2026-08-09 registry clear-out. That test skipped rather than
+ * failed, so the scale went unverified for weeks and the skip was invisible in
+ * a passing run. The scanner is a live anchor and cannot be deleted without
+ * breaking the build, so this asserts unconditionally.
  */
-const Z_SPRING = new URL('../../../registry/lib/z-spring/z-spring.ts', import.meta.url)
-const hasRegistrySpring = existsSync(Z_SPRING)
+const SCANNER = new URL('../../../scripts/motion-scan.mjs', import.meta.url)
 
-describe('spring constants stay in step with the registry', () => {
-  test('every preset matches registry/lib/z-spring/z-spring.ts', { skip: !hasRegistrySpring }, () => {
-    // The CLI keeps its own copy because the registry file is a React module.
-    // This is the tripwire that stops the copy drifting silently.
-    const src = readFileSync(Z_SPRING, 'utf8')
-    // A literal regex, not one built from a template string: `\s` inside a
-    // template literal is not an escape sequence and silently collapses to `s`,
-    // which makes the pattern match nothing and the tripwire useless.
-    const RE = /(\w+):\s*\{[^}]*stiffness:\s*(\d+)[^}]*damping:\s*(\d+)[^}]*mass:\s*(\d+)/g
-    const found = new Map<string, { stiffness: number; damping: number; mass: number }>()
-    for (const m of src.matchAll(RE)) {
-      found.set(m[1]!, { stiffness: +m[2]!, damping: +m[3]!, mass: +m[4]! })
+describe('CLI copies stay in step with scripts/motion-scan.mjs', () => {
+  test('every preset matches the scanner’s scale', async () => {
+    const { PRESETS } = (await import(SCANNER.href)) as {
+      PRESETS: Record<string, { stiffness: number; damping: number; mass: number }>
     }
-
-    assert.ok(found.size >= 4, `parsed ${found.size} presets from the registry, expected 4`)
-    for (const [name, want] of Object.entries(springs)) {
-      const got = found.get(name)
-      assert.ok(got, `${name} not found in the registry source`)
-      assert.deepEqual(got, want, `${name} drifted from the registry`)
+    assert.deepEqual(Object.keys(PRESETS).sort(), Object.keys(springs).sort())
+    for (const [name, want] of Object.entries(PRESETS)) {
+      assert.deepEqual({ ...springs[name as keyof typeof springs] }, want, `${name} drifted`)
     }
   })
 
+  test('the reduced-motion matcher agrees with the scanner on real source', async () => {
+    const { readReducedMotion, stripComments } = (await import(SCANNER.href)) as {
+      readReducedMotion: (s: string) => string | null
+      stripComments: (s: string) => string
+    }
+    const src = readFileSync(
+      new URL('../../../registry/components/disclosure/disclosure.tsx', import.meta.url),
+      'utf8',
+    )
+    assert.equal(hasReducedMotionBranch(src), readReducedMotion(stripComments(src)) === 'branch')
+    assert.equal(hasReducedMotionBranch(src), true)
+  })
+})
+
+describe('spring constants', () => {
   test('bounce is the only preset that overshoots', () => {
     assert.ok(dampingRatio('bounce') < 1)
     for (const n of ['snap', 'settle', 'fling'] as const) {
@@ -349,5 +359,197 @@ describe('spring curve simulation', () => {
     const { samples } = simulateSpring(springs.bounce.stiffness, springs.bounce.damping, springs.bounce.mass)
     const rows = renderCurve(samples, { width: 40, height: 8, windowMs: 300 })
     assert.ok(rows.some((row) => row.includes('#')))
+  })
+})
+
+describe('spring retarget against the live registry', () => {
+  // The regression test for the audit in docs/specs/2026-08-10-cli-motion-truth.md.
+  // `retargetSpring` was written for a prop-default convention no component
+  // adopted, and nothing noticed because a zero-change rewrite is silent.
+  test('disclosure has no prop-default spring, so a retarget changes nothing', () => {
+    const src = readFileSync(
+      new URL('../../../registry/components/disclosure/disclosure.tsx', import.meta.url),
+      'utf8',
+    )
+    const { changed } = retargetSpring(src, 'bounce')
+    assert.equal(changed, 0)
+  })
+
+  test('springOutcome reports a request that matched nothing', () => {
+    const msg = springOutcome([{ retargeted: false }, { retargeted: false }], 'bounce')
+    assert.match(msg ?? '', /bounce/)
+    assert.match(msg ?? '', /no file/i)
+  })
+
+  test('springOutcome is silent when something was retargeted', () => {
+    assert.equal(springOutcome([{ retargeted: false }, { retargeted: true }], 'bounce'), null)
+  })
+
+  test('springOutcome is silent when no spring was requested', () => {
+    assert.equal(springOutcome([{ retargeted: false }], undefined), null)
+  })
+})
+
+describe('URL positionals', () => {
+  test('isUrl accepts http and https, rejects names and paths', () => {
+    assert.equal(isUrl('https://example.com/r/x.json'), true)
+    assert.equal(isUrl('http://example.com/r/x.json'), true)
+    assert.equal(isUrl('disclosure'), false)
+    assert.equal(isUrl('./registry'), false)
+    assert.equal(isUrl('C:/registry'), false)
+  })
+
+  test('partitionTargets splits names from URLs, preserving order within each', () => {
+    const { names, urls } = partitionTargets([
+      'disclosure',
+      'https://example.com/r/a.json',
+      'scramble-reveal',
+    ])
+    assert.deepEqual(names, ['disclosure', 'scramble-reveal'])
+    assert.deepEqual(urls, ['https://example.com/r/a.json'])
+  })
+})
+
+describe('doctor --json', () => {
+  test('report shape carries findings, missing deps and a count', () => {
+    const report = doctorReport(
+      [
+        { level: 'warn', name: 'disclosure', message: 'no reduced-motion branch' },
+        { level: 'ok', name: 'scramble-reveal', message: 'unmodified' },
+      ],
+      ['motion'],
+      2,
+    )
+    assert.equal(report.installed, 2)
+    assert.deepEqual(report.missingDependencies, ['motion'])
+    assert.equal(report.findings.length, 2)
+    assert.equal(report.warnings, 1)
+  })
+
+  test('serialises to parseable JSON with nothing decorative in it', () => {
+    const json = JSON.stringify(doctorReport([], [], 0))
+    const back = JSON.parse(json)
+    assert.deepEqual(back, { installed: 0, warnings: 0, findings: [], missingDependencies: [] })
+  })
+})
+
+describe('guessConfig', () => {
+  test('a src/ layout prefixes every alias path but no import specifier', () => {
+    const g = guessConfig({ srcDir: true, tsx: true }, undefined)
+    assert.equal(g.aliases.components.path, 'src/components/z-ui')
+    assert.equal(g.aliases.components.import, '@/components/z-ui')
+    assert.equal(g.aliases.hooks.path, 'src/hooks')
+    assert.equal(g.aliases.lib.path, 'src/lib')
+  })
+
+  test('a root layout leaves paths unprefixed', () => {
+    const g = guessConfig({ srcDir: false, tsx: true }, undefined)
+    assert.equal(g.aliases.components.path, 'components/z-ui')
+  })
+
+  test('an explicit registry overrides the default', () => {
+    assert.equal(guessConfig({ srcDir: false, tsx: true }, './registry').registry, './registry')
+    assert.equal(guessConfig({ srcDir: false, tsx: true }, undefined).registry, DEFAULT_REGISTRY)
+  })
+
+  test('a JavaScript project is recorded as such', () => {
+    assert.equal(guessConfig({ srcDir: false, tsx: false }, undefined).tsx, false)
+  })
+})
+
+describe('completion', () => {
+  for (const shell of ['bash', 'zsh', 'fish'] as const) {
+    test(`${shell} script names every command`, () => {
+      const script = completionScript(shell)
+      for (const cmd of ['init', 'add', 'list', 'doctor', 'spring', 'completion']) {
+        assert.match(script, new RegExp(`\\b${cmd}\\b`))
+      }
+    })
+  }
+
+  test('an unknown shell is a UserError, not a crash', () => {
+    assert.throws(() => completionScript('powershell' as never), /powershell/)
+  })
+})
+
+describe('preview', () => {
+  const spring = {
+    name: 'SPRING', stiffness: 520, damping: 46, mass: 1,
+    restDelta: 2, restSpeed: 20, preset: null,
+  }
+
+  test('describes a bespoke spring by its numbers, not by a preset name', () => {
+    assert.match(describeSpring(spring), /520/)
+    assert.match(describeSpring(spring), /bespoke/i)
+  })
+
+  test('names the preset when the numbers match one exactly', () => {
+    assert.match(describeSpring({ ...spring, stiffness: 500, damping: 40, preset: 'snap' }), /snap/)
+  })
+
+  test('a component with no motion data is reported, not rendered blank', () => {
+    // The hint is a field on UserError, not part of the message, so it has to
+    // be read off the thrown value rather than matched by assert.throws.
+    const hintFor = (sourceTree: boolean) => {
+      try {
+        assertPreviewable({ name: 'x', meta: {} } as never, sourceTree)
+      } catch (e) {
+        return (e as UserError).hint ?? ''
+      }
+      return assert.fail('expected assertPreviewable to throw')
+    }
+    assert.match(hintFor(true), /pnpm registry/)
+    // A published registry cannot be fixed locally, so it must not be told to.
+    assert.match(hintFor(false), /republishing/)
+    assert.doesNotMatch(hintFor(false), /pnpm registry/)
+  })
+})
+
+describe('springRefusal', () => {
+  const bespoke = { name: 'SPRING', stiffness: 520, damping: 46, mass: 1, restDelta: 2, restSpeed: 20, preset: null }
+  const preset = { name: 'SPRING', stiffness: 500, damping: 40, mass: 1, restDelta: null, restSpeed: null, preset: 'snap' as const }
+  const item = (springs: unknown[]) =>
+    ({ name: 'disclosure', meta: { motion: { springs, durations: [], reducedMotion: 'branch' } } }) as never
+
+  test('refuses when every spring is bespoke, naming the numbers', () => {
+    const msg = springRefusal(item([bespoke]), 'bounce')
+    assert.match(msg ?? '', /520/)
+    assert.match(msg ?? '', /46/)
+  })
+
+  test('allows a preset spring through', () => {
+    assert.equal(springRefusal(item([preset]), 'bounce'), null)
+  })
+
+  test('refuses a component with no spring at all', () => {
+    assert.match(springRefusal(item([]), 'bounce') ?? '', /no spring/i)
+  })
+
+  test('says nothing about a component with no motion data', () => {
+    assert.equal(springRefusal({ name: 'x', meta: {} } as never, 'bounce'), null)
+  })
+})
+
+describe('reduced-motion audit', () => {
+  const src = `const reduced = useReducedMotion() ?? false
+    if (reduced) { height.jump(target); return }`
+
+  test('accepts source that binds a hook and branches on it', () => {
+    assert.equal(hasReducedMotionBranch(src), true)
+  })
+
+  test('rejects source where the branch was edited out', () => {
+    assert.equal(hasReducedMotionBranch(src.replace('if (reduced)', 'if (false)')), false)
+  })
+
+  test('rejects source where the hook was replaced by a literal', () => {
+    assert.equal(hasReducedMotionBranch('const reduced = false\n if (reduced) {}'), false)
+  })
+
+  test('accepts a locally-defined hook, not just motion’s', () => {
+    assert.equal(
+      hasReducedMotionBranch('const reduced = usePrefersReducedMotion()\n if (reduced || x) {}'),
+      true,
+    )
   })
 })
