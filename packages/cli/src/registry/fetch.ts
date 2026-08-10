@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { UserError } from '../ui/log.ts'
 
@@ -7,6 +8,26 @@ export type RegistryFile = {
   type: string
   target?: string
   content: string
+}
+
+export type MotionSpring = {
+  name: string
+  stiffness: number
+  damping: number
+  mass: number
+  restDelta: number | null
+  restSpeed: number | null
+  /** The published preset these numbers match exactly, or null when bespoke. */
+  preset: 'snap' | 'bounce' | 'settle' | 'fling' | null
+}
+
+/** Scanned out of the component source by scripts/motion-scan.mjs at build
+ *  time, so nothing here is parsed on a consumer's machine. */
+export type MotionScan = {
+  states?: string[] | null
+  springs: MotionSpring[]
+  durations: { name: string; ms: number }[]
+  reducedMotion: 'branch' | null
 }
 
 export type RegistryItem = {
@@ -19,8 +40,11 @@ export type RegistryItem = {
   files: RegistryFile[]
   meta: {
     category?: string
+    gesture?: string
     states?: string[]
-    spring?: string
+    /** Derived, so null for a component that tunes its own physics. */
+    spring?: string | null
+    motion?: MotionScan
     /** file path → sha256 prefix, written by the generator. */
     digests?: Record<string, string>
   }
@@ -65,6 +89,23 @@ export class Registry {
 
   get isLocal() {
     return !isUrl(this.base)
+  }
+
+  /**
+   * A local base can be either of two layouts, and they are not interchangeable.
+   *
+   * `./registry` is the authoring tree: `registry.json` plus a directory per
+   * component. `./web/public` is the generator's output: `r/index.json` plus a
+   * manifest per component with source inlined and motion data derived.
+   *
+   * Only the built layout carries `meta.motion`, because that field is scanned
+   * at build time by design. Without this distinction `--registry ./web/public`
+   * looked for a `registry.json` that is never written there, and `preview`
+   * could not be run against a local build at all — it needed a web server to
+   * read files sitting on the same disk.
+   */
+  private get isBuilt() {
+    return this.isLocal && existsSync(path.resolve(this.base, 'r', 'index.json'))
   }
 
   describe() {
@@ -115,14 +156,15 @@ export class Registry {
   }
 
   async index(): Promise<RegistryIndex> {
-    const raw = await this.read(this.isLocal ? 'registry.json' : 'r/index.json')
+    const authoring = this.isLocal && !this.isBuilt
+    const raw = await this.read(authoring ? 'registry.json' : 'r/index.json')
     const parsed = JSON.parse(raw) as RegistryIndex
     if (!Array.isArray(parsed.items)) throw new UserError('Registry index has no `items` array.')
     // The generator enriches the published index with title, spring and states.
-    // The authoring `registry.json` has none of that, so a local read fills it
-    // in from each component.json — otherwise `list` would print a worse table
-    // for contributors than for everyone else.
-    if (this.isLocal) await this.enrich(parsed)
+    // The authoring `registry.json` has none of that, so a source-tree read
+    // fills it in from each component.json — otherwise `list` would print a
+    // worse table for contributors than for everyone else.
+    if (authoring) await this.enrich(parsed)
     return parsed
   }
 
@@ -152,7 +194,7 @@ export class Registry {
   }
 
   async item(name: string): Promise<RegistryItem> {
-    if (this.isLocal) return this.localItem(name)
+    if (this.isLocal && !this.isBuilt) return this.localItem(name)
     const raw = await this.read(`r/${name}.json`)
     return JSON.parse(raw) as RegistryItem
   }

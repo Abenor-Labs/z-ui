@@ -12,6 +12,7 @@ import { matches, window } from '../src/ui/select.ts'
 import { nearest, partitionTargets } from '../src/commands/add.ts'
 import { doctorReport } from '../src/commands/doctor.ts'
 import { completionScript } from '../src/commands/completion.ts'
+import { describeSpring, assertPreviewable } from '../src/commands/preview.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { existsSync, readFileSync } from 'node:fs'
@@ -462,5 +463,25 @@ describe('completion', () => {
 
   test('an unknown shell is a UserError, not a crash', () => {
     assert.throws(() => completionScript('powershell' as never), /powershell/)
+  })
+})
+
+describe('preview', () => {
+  const spring = {
+    name: 'SPRING', stiffness: 520, damping: 46, mass: 1,
+    restDelta: 2, restSpeed: 20, preset: null,
+  }
+
+  test('describes a bespoke spring by its numbers, not by a preset name', () => {
+    assert.match(describeSpring(spring), /520/)
+    assert.match(describeSpring(spring), /bespoke/i)
+  })
+
+  test('names the preset when the numbers match one exactly', () => {
+    assert.match(describeSpring({ ...spring, stiffness: 500, damping: 40, preset: 'snap' }), /snap/)
+  })
+
+  test('a component with no motion data is reported, not rendered blank', () => {
+    assert.throws(() => assertPreviewable({ name: 'x', meta: {} } as never), /no motion data/i)
   })
 })

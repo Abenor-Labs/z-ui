@@ -8,6 +8,7 @@ import { list } from './commands/list.ts'
 import { doctor } from './commands/doctor.ts'
 import { spring } from './commands/spring.ts'
 import { completion } from './commands/completion.ts'
+import { preview } from './commands/preview.ts'
 
 /**
  * Read, not retyped. This was a literal `'0.1.0'`, and the 0.1.1 release caught
@@ -35,6 +36,7 @@ const HELP = `
     ${c.cyan('list')}              list what the registry offers
     ${c.cyan('doctor')}            check what is installed, change nothing
     ${c.cyan('spring')} [name]     draw the actual curve before you pick one
+    ${c.cyan('preview')} <name>    how a component moves, before you install it
     ${c.cyan('completion')} <sh>   completion script for bash, zsh or fish
 
   ${c.bold('Options')}
@@ -49,7 +51,7 @@ const HELP = `
         --damping     ${c.grey('z-ui spring --stiffness 300 --damping 20 --mass 1')}
         --mass
         --dry-run     show the plan, write nothing
-        --json        machine-readable output (list, doctor)
+        --json        machine-readable output (list, doctor, preview)
         --force       overwrite z-ui.json (init)
     -v, --version
     -h, --help
@@ -127,6 +129,14 @@ async function main() {
         stiffness: toNumber(values.stiffness, 'stiffness'),
         damping: toNumber(values.damping, 'damping'),
         mass: toNumber(values.mass, 'mass'),
+      })
+    case 'preview':
+      return preview({
+        version: VERSION,
+        name: rest[0],
+        cwd,
+        registry: values.registry,
+        json: values.json!,
       })
     case 'completion':
       return completion(rest[0])
