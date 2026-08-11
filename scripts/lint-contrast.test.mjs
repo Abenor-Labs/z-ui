@@ -35,27 +35,31 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const LINTER = join(ROOT, 'scripts', 'lint-contrast.mjs')
 
 const CSS = 'web/app/globals.css'
-const SRC = 'registry/components/like-button/like-button.tsx'
-const CARD = 'web/components/catalog-card.tsx'
+const SRC = 'registry/components/disclosure/disclosure.tsx'
+const CARD = 'web/components/section-head.tsx'
 const FILES = [CSS, SRC, CARD]
 // Repo-relative for the messages, absolute for every actual write.
 const abs = (f) => join(ROOT, f)
 
 /**
- * Same skip as lint-registry.test, for the same reason: the registry-colour and
- * `text-` utility mutations need a real registry component and a real site file
- * that paints a token, and the 2026-08-09 clear-out removed both. The CSS-only
- * mutations could still run, but a partial harness reporting "all caught" would
- * overstate what it checked, so the whole file stands down until there is
- * something to break.
+ * A missing anchor is a failure now, not a skip.
  *
- * Re-point SRC and CARD when the first new component and its preview land.
+ * This file stood down for weeks after the 2026-08-09 clear-out took
+ * `like-button` and `catalog-card.tsx`, printing SKIPPED and exiting 0 while
+ * 143 contrast checks went unguarded. A harness that reports success when it
+ * checked nothing is the exact failure mode the contrast lint exists to
+ * prevent, and it outlived two other instances of the same bug
+ * (`lint-registry.test`, and the CLI's preset cross-check) before being fixed.
+ *
+ * The registry mutations no longer depend on a component that happens to carry
+ * hexes — they inject one. That is what a mutation is for, and it is why this
+ * cannot go vacuous again just because the registry's contents change.
  */
 const missing = FILES.filter((f) => !existsSync(abs(f)))
 if (missing.length) {
-  console.error(`SKIPPED lint-contrast.test: ${missing.join(', ')} not on disk — the registry is empty.`)
-  console.error('         re-point SRC and CARD in this file once a component exists.')
-  process.exit(0)
+  console.error(`FAILED lint-contrast.test: ${missing.join(', ')} not on disk.`)
+  console.error('       Re-point CSS/SRC/CARD at live files. Do not let this skip.')
+  process.exit(1)
 }
 
 const orig = Object.fromEntries(FILES.map((f) => [f, readFileSync(abs(f), 'utf8')]))
@@ -154,15 +158,29 @@ const baseline = [
     () => !base.some((l) => /^web: /.test(l)),
   ],
   [
-    // Was: find a specific `like-button/... on #ffffff` failure line. That
-    // colour is fixed now, so the positive fact worth asserting is that the
-    // clean run still reports it measured something, read from the summary
-    // line rather than from a failure that no longer exists.
-    'the linter reports a non-zero pair and colour count',
+    /**
+     * Was: pairs > 0 *and* registry colours > 0. The second half stopped being
+     * true and should not be restored.
+     *
+     * Every live component mixes its palette out of `currentColor` — disclosure
+     * carries no hex at all — so the linter measures 0 registry colours, and
+     * requiring otherwise would be asserting that some component hardcodes a
+     * colour. That is the practice this lint discourages.
+     *
+     * So rules C and D genuinely have nothing to measure on the real tree
+     * today. The three registry mutations below are the only thing standing
+     * between them and silent vacuity, which is precisely why they inject a
+     * colour instead of depending on one being there.
+     */
+    'the linter reports a non-zero declared-pair count',
     () => {
       const out = execSync(`node ${JSON.stringify(LINTER)}`, { cwd: ROOT, stdio: 'pipe' }).toString()
       const m = out.match(/(\d+) checks across (\d+) declared pairs and (\d+) registry colours/)
-      return Boolean(m) && Number(m[2]) > 0 && Number(m[3]) > 0
+      if (!m) return false
+      // Printed, not asserted: 0 is correct today and a future component with a
+      // legitimate hex must not fail this file just for having one.
+      console.log(`           (${m[2]} declared pairs, ${m[3]} registry colours on the real tree)`)
+      return Number(m[2]) > 0
     },
   ],
   [
@@ -171,6 +189,17 @@ const baseline = [
   ],
   ['the linter does not crash on the real tree', () => !base.some((l) => l.startsWith('linter crashed'))],
 ]
+
+/**
+ * A minimal variants object carrying one hex.
+ *
+ * Shaped to the regex both linters share — `const <x>Variants = {` … `\n} satisfies`,
+ * with each state on its own two-space-indented quoted key — so if that shape
+ * ever changes, this stops matching and the registry cases fail loudly instead
+ * of quietly measuring nothing.
+ */
+const variants = (hex) =>
+  `const probeVariants = {\n  'closed': { color: '${hex}' },\n} satisfies Record<string, { color: string }>`
 
 /**
  * [name, mutate, expect, absent]
@@ -192,9 +221,11 @@ const mutations = [
     edit(CSS, '  --color-accent: #479c78;', '  --color-accent: #479c78;\n  --color-alarm: #ff2d2d;'),
     /--color-alarm \(#ff2d2d\) appears in no declared pair/],
 
+  // `rule` is declared decorative, never text, so painting body copy with it is
+  // the cheapest way to prove rule B reads utilities rather than tokens.
   ['text- utility with no declared text pair', () =>
-    edit(CARD, 'className="mt-1 truncate text-sm text-muted"', 'className="mt-1 truncate text-sm text-rule"'),
-    /^web\/components\/catalog-card\.tsx: "text-rule" is used here but "rule" is the foreground of no declared text pair/],
+    edit(CARD, 'text-base text-muted', 'text-base text-rule'),
+    /^web\/components\/section-head\.tsx: "text-rule" is used here but "rule" is the foreground of no declared text pair/],
 
   ['token renamed out from under a pair', () =>
     edit(CSS, '--color-accent:', '--color-glow:'),
@@ -220,22 +251,32 @@ const mutations = [
     /^web\/app\/globals\.css: no @theme block matched/,
     /is \d+\.\d\d:1, below the/],
 
+  /**
+   * The registry cases inject a variants object rather than retune one.
+   *
+   * `disclosure` carries no hex at all — it mixes every colour out of
+   * `currentColor` — so there is nothing here to retune, and the previous
+   * version of these cases was anchored on a component that had been deleted.
+   * Injecting the fault is both what a mutation is supposed to do and what
+   * keeps these cases alive across a registry whose contents change: they
+   * assert the linter's behaviour, not a particular component's palette.
+   */
   ['registry colour fails on the dark chassis only', () =>
-    edit(SRC, "'#6a6a71'", "'#1a1a1a'"),
-    /^like-button\/like-button\.tsx: iconVariants #1a1a1a \(idle\) on #0f0c09 is 1\.12:1/,
-    /#1a1a1a \(idle\) on #ffffff/],
+    edit(SRC, 'const STATES = [', `${variants('#1a1a1a')}\nconst STATES = [`),
+    /^disclosure\/disclosure\.tsx: probeVariants #1a1a1a \(closed\) on #0f0c09 is 1\.12:1/,
+    /#1a1a1a \(closed\) on #ffffff/],
 
   ['registry colour fails on the light surface only', () =>
-    edit(SRC, "'#6a6a71'", "'#fff'"),
-    /^like-button\/like-button\.tsx: iconVariants #fff \(idle\) on #ffffff is 1\.00:1/,
-    /#fff \(idle\) on #0f0c09/],
+    edit(SRC, 'const STATES = [', `${variants('#fff')}\nconst STATES = [`),
+    /^disclosure\/disclosure\.tsx: probeVariants #fff \(closed\) on #ffffff is 1\.00:1/,
+    /#fff \(closed\) on #0f0c09/],
 
-  // #f43f5e on purpose: it is already used inside iconVariants, so a rule D
-  // that collected hex strings rather than source positions would wave this
-  // through. It is the only easy way to smuggle a colour past this lint.
+  // A bare module constant, outside any variants object. Rule D has to key off
+  // source position rather than collect hex strings, or a colour parked at
+  // module scope — where no state can be attributed to it — sails through.
   ['hex smuggled outside a variants object', () =>
-    edit(SRC, 'const rootVariants = {', "const SHADOW = '#f43f5e'\nconst rootVariants = {"),
-    /^like-button\/like-button\.tsx: hex "#f43f5e" sits outside a variants object/],
+    edit(SRC, 'const STATES = [', "const SHADOW = '#f43f5e'\nconst STATES = ["),
+    /^disclosure\/disclosure\.tsx: hex "#f43f5e" sits outside a variants object/],
 
   // The control. Brightening a foreground must never manufacture a failure;
   // without this the whole suite is satisfiable by a linter that fails on
