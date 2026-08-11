@@ -2,9 +2,13 @@
 
 **Micro-animations you own.**
 
-A copy-paste registry of spring-driven React components — installed as source into your project, not pulled in as a runtime dependency you can never change.
+A copy-paste registry of React micro-interactions — installed as source into your project, not pulled in as a runtime dependency you can never change.
 
-> **Status: pre-alpha.** Nothing is published yet. The CLI does not exist, the registry is empty, and everything below describes what is being built. Watch the repo if you want to know when that changes.
+```bash
+npx @abenor/z-ui@latest add disclosure
+```
+
+> **Status: v0.1, early.** The CLI is published and installs working files. Four components are in the registry. The showcase site runs locally but is not deployed yet, so the registry is served from raw GitHub. Component names and props may still move before v1.
 
 ---
 
@@ -12,9 +16,9 @@ A copy-paste registry of spring-driven React components — installed as source 
 
 Z-UI is **not** a general component library. It is a focused registry of *micro-interactions*: the small, tactile moments where an interface acknowledges you.
 
-- **State-morphing controls** — play/pause, mute/unmute, lock/unlock
-- **Tactile feedback** — like bounce, copy-to-clipboard checkmark draw, bookmark stretch
-- **Input & utility magic** — password-visibility eye, expanding search pill, sun/moon theme switch
+- **State-morphing** — a control that reverses mid-flight and carries the speed it already had
+- **Tactile feedback** — a gesture whose cost is legible while you are still making it
+- **Input & utility** — a field that criticises late and forgives instantly
 
 If it isn't a micro-animation, it doesn't belong here. That constraint is the product.
 
@@ -24,24 +28,63 @@ A design system. A layout kit. A replacement for shadcn/ui. Z-UI sits *on top of
 
 ---
 
-## How it will work
+## Components
+
+| Component | Category | What it does | Needs |
+| --- | --- | --- | --- |
+| [`disclosure`](registry/components/disclosure) | state-morphing | A panel whose height is an interruptible spring. Press again mid-open and it reverses from wherever it got to, carrying the speed it was already moving at. | `motion` |
+| [`hold-drain`](registry/components/hold-drain) | tactile-feedback | A hold-to-confirm whose abort costs what the hold earned. Let go at seventy per cent and the fill is paid back at the rate it climbed. | `motion` |
+| [`late-critique`](registry/components/late-critique) | input-utility | A field whose criticism is late and whose forgiveness is instant. No verdict lands mid-word; the first keystroke that fixes the value clears the error on the same frame. | react only |
+| [`scramble-reveal`](registry/components/scramble-reveal) | state-morphing | Text that decodes out of random glyphs on hover, on mount, or when it first enters view. | react only |
+
+Each component is a single self-contained `.tsx` file. There is no shared `lib/` to install first and no internal import to resolve — a component that needed a primitive would ship the primitive.
+
+## Install
 
 ```bash
-npx @abenor/z-ui add like-button
+npx @abenor/z-ui@latest add disclosure
 ```
 
-The CLI resolves the component from the registry and writes the actual `.tsx` source into your project. From that moment it is your code — edit the spring, rewrite the markup, delete half of it. No upgrade path to fight, no wrapper API to reverse-engineer.
+`add` writes the actual source into `components/z-ui/` and installs any npm dependency the component declares. From that moment it is your code — edit the spring, rewrite the markup, delete half of it. No upgrade path to fight, no wrapper API to reverse-engineer.
+
+Nothing is written until everything is known to be writable: fetch, resolve, verify and plan all complete before the first byte lands.
+
+### CLI
+
+| Command | Does |
+| --- | --- |
+| `z-ui init` | write `z-ui.json` (`add` does this for you on first run) |
+| `z-ui add <name...>` | add components and their dependencies |
+| `z-ui list` | list what the registry offers |
+| `z-ui doctor` | check what is installed, change nothing |
+| `z-ui spring [name]` | draw the actual curve before you pick one |
+| `z-ui preview <name>` | how a component moves, before you install it |
+| `z-ui completion <sh>` | completion script for bash, zsh or fish |
+
+Useful flags: `--dry-run` (show the plan, write nothing), `--registry ./registry` (install from a clone), `--json` (machine-readable `list`, `doctor`, `preview`), `-o/--overwrite`, `-y/--yes`.
+
+`--spring <preset>` retargets a component's default preset at install time — `snap`, `bounce`, `settle` or `fling`. All four components currently ship bespoke physics rather than a preset, so the CLI refuses the rewrite and tells you which numbers to edit instead of quietly installing motion the author tuned against.
+
+### Without the CLI
+
+Registry items are shadcn-schema-shaped, so this works as a fallback:
+
+```bash
+npx shadcn@latest add https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/web/public/r/disclosure.json
+```
+
+You lose install-time spring selection, `preview`, and `doctor`. You still get the file.
 
 ## Architecture decisions
 
-These are locked. They shape everything else.
+These are locked. They shape everything else. Full reasoning in [`docs/adr/`](docs/adr/).
 
 | Decision | Choice | Why |
 | --- | --- | --- |
-| **Motion engine** | [`motion`](https://motion.dev) (Framer Motion) as a declared dependency | Real interruptible springs with velocity carry-over. CSS keyframes cannot reverse mid-flight, and mid-flight reversal *is* the product. |
-| **Delivery** | First-party CLI, `@abenor/z-ui` | Full control over install UX. Registry items stay shadcn-schema-shaped, so `npx shadcn add <url>` works as a free fallback. |
-| **Registry transport** | Raw GitHub URLs, base URL as a single constant | No hosting to stand up on day one. Swaps to a domain later without a code change. |
-| **Component API** | Uncontrolled by default, controlled optional | `<LikeButton />` works immediately; `pressed` / `onPressedChange` opt into control when a real app needs it. |
+| **Motion engine** | [`motion`](https://motion.dev) (Framer Motion), declared per component | Real interruptible springs with velocity carry-over. CSS keyframes cannot reverse mid-flight, and mid-flight reversal *is* the product. A component that does not need it does not declare it. |
+| **Delivery** | First-party CLI, [`@abenor/z-ui`](https://www.npmjs.com/package/@abenor/z-ui) | Full control over install UX. Registry items stay shadcn-schema-shaped, so `npx shadcn add <url>` works as a free fallback. |
+| **Registry transport** | Raw GitHub URLs, base URL as a single constant | No hosting to stand up on day one. Swaps to a domain later without a code change. Unauthenticated raw GitHub allows ~60 requests an hour per IP; `--registry ./registry` avoids it. |
+| **Component API** | Uncontrolled by default, controlled optional | `<Disclosure />` works immediately; `open` / `onOpenChange` opt into control when a real app needs it. |
 
 ## Repository layout
 
@@ -49,10 +92,15 @@ These are locked. They shape everything else.
 z-ui/
 ├── registry/          source of truth — the components themselves
 ├── packages/cli/      @abenor/z-ui
-└── web/               showcase
+├── web/               showcase, and the generated registry it serves
+├── components/        dev harness — the components, clickable, outside the site
+├── scripts/           the linters, and the tests that break them on purpose
+└── docs/              roadmap, ADRs, specs
 ```
 
 `registry/` is a real TypeScript workspace, not a folder of strings. Components typecheck in CI, so a broken one fails here instead of in someone else's project.
+
+`web/public/r/` is generated from `registry/` and committed. CI fails if the two disagree.
 
 ## Development
 
@@ -60,8 +108,23 @@ Requires Node >= 20 and pnpm.
 
 ```bash
 pnpm install
-pnpm typecheck
+pnpm dev                        # the dev harness — components, clickable, nothing else
+pnpm --filter @z-ui/web dev     # the showcase site
+pnpm verify                     # everything CI runs
 ```
+
+`verify` is typecheck, then the registry linter, then the contrast linter, then the generated-registry check, then the tests — plus the suites that deliberately break each linter to prove it still catches things. A linter that only ever passes is worthless.
+
+Where a change is user-visible, browser evidence is part of the verification. A green typecheck and a passing lint suite have both coexisted with a component that was visibly broken in a browser.
+
+## Documentation
+
+| Document | Answers |
+| --- | --- |
+| [`PRODUCT.md`](PRODUCT.md) | Who this is for, what it refuses to be |
+| [`DESIGN.md`](DESIGN.md) | Colour, type, motion energy, the named rules |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | What is next, and what is deliberately not planned |
+| [`docs/adr/`](docs/adr/) | Why a decision was made, and what it costs to reverse |
 
 ## License
 

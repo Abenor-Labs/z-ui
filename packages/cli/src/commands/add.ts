@@ -1,8 +1,10 @@
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 import { Registry, isUrl } from '../registry/fetch.ts'
 import { resolve, npmDependencies } from '../registry/resolve.ts'
 import { assertVerified } from '../registry/verify.ts'
 import { readConfig, configExists, writeConfig, guessConfig, type Config } from '../project/config.ts'
-import { detect } from './init.ts'
+import { detect, type Detected } from './init.ts'
 import { plan, commit, type PlannedFile } from '../project/write.ts'
 import { detectPackageManager, install, missingDependencies, installCommand } from '../project/deps.ts'
 import { assertPreset, springOutcome, springRefusal } from '../project/spring.ts'
@@ -39,7 +41,23 @@ export async function add(opts: AddOptions) {
   // `init` — so it is the one place a first impression is actually spent.
   intro(opts.version, 'micro-interactions as source you own')
 
-  const config = await loadOrInitConfig(opts)
+  /**
+   * The config is decided here and written much later, on purpose.
+   *
+   * `add` used to write `z-ui.json` before it had looked at the registry, so a
+   * mistyped or retired component name failed *after* leaving a config file in
+   * a project that got nothing installed. The first command a stranger runs
+   * should not litter on its way to an error — `--spring` already refuses
+   * before planning for exactly this reason, and this is the same rule applied
+   * one step earlier.
+   *
+   * With no config on disk there is nothing to read a registry base out of, so
+   * the guess supplies one. That is the same base `init` would have written.
+   */
+  const existing = configExists(opts.cwd) ? await readConfig(opts.cwd) : null
+  const detected = existing ? null : detect(opts.cwd)
+  const config = existing ?? guessConfig(detected!, opts.registry)
+
   const registry = new Registry(opts.registry ?? config.registry)
 
   const spin = spinner(`Reading ${registry.describe()}`)
@@ -79,7 +97,21 @@ export async function add(opts: AddOptions) {
         return near.length ? `“${n}” — did you mean ${near.join(', ')}?` : `“${n}” is not in the registry`
       })
       .join('\n  ')
-    throw new UserError(`Unknown component:\n  ${suggestions}`, 'Run `z-ui list` for the full set.')
+    /**
+     * The whole registry, inline, rather than a second command.
+     *
+     * "Run `z-ui list`" is a round trip demanded at the exact moment someone is
+     * deciding whether this tool is worth any more of their attention — and it
+     * is asking them to go and read a list of four things. The hint is only
+     * worth deferring once the set is too long to print, so it defers on
+     * length rather than on principle.
+     *
+     * This fires most often for a name copied out of documentation that has
+     * gone stale, where the reader has done nothing wrong and the fastest
+     * apology is simply showing them what does exist.
+     */
+    const components = index.items.filter((i) => i.type === 'registry:component').map((i) => i.name)
+    throw new UserError(`Unknown component:\n  ${suggestions}`, unknownHint(components))
   }
 
   const direct = await Promise.all(urls.map((u) => registry.itemFromUrl(u)))
@@ -130,6 +162,11 @@ export async function add(opts: AddOptions) {
     return
   }
 
+  // Every refusal is behind us, so the config can finally land. A dry run
+  // returns above this line and therefore writes nothing at all, which is what
+  // "nothing was written" has to mean to be worth printing.
+  if (!existing) await initConfig(opts, detected!, config)
+
   const toWrite = await decide(files, opts)
   if (!toWrite.length && !missing.length) {
     log.ok('Everything is already up to date.')
@@ -141,11 +178,35 @@ export async function add(opts: AddOptions) {
 
   if (missing.length) {
     const { command, args } = installCommand(pm, missing)
-    log.step(`${command} ${args.join(' ')}`)
-    try {
-      await install(pm, missing, opts.cwd)
-    } catch (e) {
-      log.warn(`Dependency install failed. Run it yourself: ${command} ${args.join(' ')}`)
+    /**
+     * Refuse to install when there is no package.json here.
+     *
+     * npm resolves upward when it cannot find one in the working directory, so
+     * running this in a folder that is not a project installs into whichever
+     * project happens to sit above it. On a machine where that search reaches
+     * the home directory, `add` writes a dependency into `~/package.json` —
+     * verified, not theorised: it put `motion` there during a first-contact
+     * walkthrough.
+     *
+     * Inside a monorepo package the upward walk is correct and wanted, and
+     * those directories have a package.json of their own or a root the user
+     * meant to hit. The dangerous case is precisely the one with nothing here
+     * to anchor to, so that is the only case refused. The command is printed
+     * rather than swallowed: the files are already written and installing the
+     * dependency by hand is one paste.
+     */
+    if (!canInstallHere(opts.cwd)) {
+      log.warn(
+        `No package.json in ${opts.cwd}, so ${missing.join(', ')} was not installed — npm would have written it into whichever project sits above this folder.`,
+      )
+      log.line(c.grey(`    cd into your project and run: ${command} ${args.join(' ')}`))
+    } else {
+      log.step(`${command} ${args.join(' ')}`)
+      try {
+        await install(pm, missing, opts.cwd)
+      } catch {
+        log.warn(`Dependency install failed. Run it yourself: ${command} ${args.join(' ')}`)
+      }
     }
   }
 
@@ -166,16 +227,11 @@ export async function add(opts: AddOptions) {
  * no TTY it is written unprompted, because the alternative in CI is a prompt
  * that nothing will ever answer.
  */
-async function loadOrInitConfig(opts: AddOptions): Promise<Config> {
-  if (configExists(opts.cwd)) return readConfig(opts.cwd)
-
-  const d = detect(opts.cwd)
-  const guess = guessConfig(d, opts.registry)
-
+async function initConfig(opts: AddOptions, d: Detected, config: Config): Promise<void> {
   detail('No z-ui.json — detected', [
     `${c.grey('framework')}  ${d.framework}`,
     `${c.grey('language')}   ${d.tsx ? 'TypeScript' : 'JavaScript'}`,
-    `${c.grey('components')} ${guess.aliases.components.path}/`,
+    `${c.grey('components')} ${config.aliases.components.path}/`,
     `${c.grey('packages')}   ${d.pm}`,
   ])
 
@@ -183,9 +239,8 @@ async function loadOrInitConfig(opts: AddOptions): Promise<Config> {
     throw new UserError('Stopped without writing anything.', 'Run `z-ui init` to configure paths by hand.')
   }
 
-  await writeConfig(opts.cwd, guess)
+  await writeConfig(opts.cwd, config)
   log.ok('Wrote z-ui.json')
-  return guess
 }
 
 /**
@@ -243,6 +298,28 @@ export function nearest(input: string, candidates: string[], limit = 3): string[
     .sort((a, b) => a.d - b.d)
     .slice(0, limit)
     .map((x) => x.name)
+}
+
+/** How many names are worth printing inline before a second command is kinder. */
+const INLINE_LIMIT = 12
+
+/** What to say after an unknown name. See the call site for why it is inline. */
+export function unknownHint(components: string[]): string {
+  return components.length > 0 && components.length <= INLINE_LIMIT
+    ? `In the registry: ${components.join(', ')}.`
+    : `Run \`z-ui list\` for the full set${components.length ? ` of ${components.length}` : ''}.`
+}
+
+/**
+ * Whether a dependency install may run here.
+ *
+ * npm resolves upward when the working directory has no package.json, so
+ * installing from a folder that is not a project writes into whichever project
+ * sits above it — up to and including `~/package.json`. Separated out as a
+ * predicate so the rule is testable without spawning a package manager.
+ */
+export function canInstallHere(cwd: string): boolean {
+  return existsSync(path.join(cwd, 'package.json'))
 }
 
 /** Split what the user typed into registry names and direct manifest URLs. */

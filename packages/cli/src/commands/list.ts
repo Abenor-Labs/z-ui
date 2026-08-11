@@ -24,7 +24,12 @@ export async function list(opts: { version: string; registry: string; json: bool
 
   intro(opts.version, 'browse the registry')
 
-  log.line(`${c.bold(index.name)} ${c.grey(index.version)}  ${c.grey(registry.describe())}`)
+  // "registry", spelled out. This line printed `z-ui 0.1.0` directly beneath a
+  // banner reading `z-ui 0.1.1` — two different things wearing the same name,
+  // two versions apart, in the first four seconds of using the tool. They are
+  // not the same number and never will be: one is the published CLI, the other
+  // is the content of the index it just read.
+  log.line(`${c.bold(index.name)} ${c.grey(`registry ${index.version}`)}  ${c.grey(registry.describe())}`)
   log.line()
 
   const width = Math.max(...components.map((i) => i.name.length), 10)

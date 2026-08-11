@@ -10,13 +10,14 @@ import { isUrl } from '../src/registry/fetch.ts'
 import { UserError } from '../src/ui/log.ts'
 import { retargetSpring, assertPreset, springOutcome, springRefusal } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
-import { nearest, partitionTargets } from '../src/commands/add.ts'
+import { nearest, partitionTargets, unknownHint, canInstallHere } from '../src/commands/add.ts'
 import { doctorReport, hasReducedMotionBranch } from '../src/commands/doctor.ts'
 import { completionScript } from '../src/commands/completion.ts'
 import { describeSpring, assertPreviewable } from '../src/commands/preview.ts'
 import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 const config: Config = {
   registry: './registry',
@@ -551,5 +552,41 @@ describe('reduced-motion audit', () => {
       hasReducedMotionBranch('const reduced = usePrefersReducedMotion()\n if (reduced || x) {}'),
       true,
     )
+  })
+})
+
+describe('first contact', () => {
+  test('a short registry is named inline rather than deferred to another command', () => {
+    const hint = unknownHint(['disclosure', 'hold-drain', 'late-critique', 'scramble-reveal'])
+    assert.match(hint, /disclosure/)
+    assert.match(hint, /scramble-reveal/)
+    assert.doesNotMatch(hint, /z-ui list/)
+  })
+
+  test('a long registry defers, and says how long', () => {
+    const many = Array.from({ length: 20 }, (_, i) => `c${i}`)
+    const hint = unknownHint(many)
+    assert.match(hint, /z-ui list/)
+    assert.match(hint, /20/)
+  })
+
+  test('an empty registry does not print an empty list', () => {
+    assert.match(unknownHint([]), /z-ui list/)
+  })
+
+  /**
+   * The regression test for the worst thing a first-contact walkthrough turned
+   * up. Run in a folder with no package.json, npm resolved upward and wrote
+   * "motion" into the home directory of the machine under test — a dependency
+   * added to an unrelated project the user never pointed the tool at.
+   *
+   * `fileURLToPath`, not `URL.pathname`: on Windows the latter yields
+   * "/D:/..." and the leading slash has to be hand-stripped, which is the kind
+   * of platform guesswork that makes a test pass for the wrong reason.
+   */
+  test('installing is refused where there is no package.json to anchor to', () => {
+    const cliPackageDir = fileURLToPath(new URL('..', import.meta.url))
+    assert.equal(canInstallHere(cliPackageDir), true)
+    assert.equal(canInstallHere(fileURLToPath(new URL('../src/ui', import.meta.url))), false)
   })
 })

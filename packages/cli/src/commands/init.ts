@@ -8,7 +8,7 @@ import { isInteractive } from '../ui/tty.ts'
 import { intro, detail, outro } from '../ui/art.ts'
 import { log, c, UserError } from '../ui/log.ts'
 
-type Detected = {
+export type Detected = {
   framework: string
   srcDir: boolean
   tsx: boolean
