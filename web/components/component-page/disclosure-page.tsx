@@ -1,14 +1,12 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
-import { byName, cliVersion } from '@/__generated__/meta.js'
+import { byName } from '@/__generated__/meta.js'
 import { Disclosure, type DisclosureState } from '@/components/z-ui/disclosure'
 import { CodePanel } from './code-panel'
-import { CopyButton } from './copy-button'
-import { PropsTable, type Prop } from './props-table'
+import { type Prop } from './props-table'
 import type { Snippet } from './snippets'
-import { RelatedCards } from './related'
+import { ComponentPageShell, SECTION_LABEL } from './shell'
 
 /**
  * The disclosure page.
@@ -23,28 +21,8 @@ import { RelatedCards } from './related'
  */
 
 const NAME = 'disclosure'
-const INSTALL = 'npx @abenor/z-ui add disclosure'
-
-const HINTS = [
-  'pnpm dlx @abenor/z-ui add disclosure',
-  'bunx @abenor/z-ui add disclosure',
-  'or paste the file below',
-]
-
-/** On `main` since the 2026-08-10 merge, same as its sibling. */
-const SOURCE_URL =
-  'https://github.com/Abenor-Labs/z-ui/blob/main/registry/components/disclosure/disclosure.tsx'
-const SOURCE_LIVE = true
 
 const MANIFEST = byName[NAME]
-
-const FACTS = [
-  MANIFEST?.states ? `${MANIFEST.states.length} states` : null,
-  // Disclosure does need motion, and saying so is more useful than the "no
-  // deps" its sibling can claim. The number is read from the manifest so it
-  // cannot outlive a change to what the CLI installs.
-  MANIFEST && MANIFEST.dependencies.length > 0 ? MANIFEST.dependencies.join(' · ') : 'no deps',
-].filter((f): f is string => f !== null)
 
 /**
  * `STATES` is read from the manifest rather than retyped, so the rail below
@@ -52,39 +30,6 @@ const FACTS = [
  * contract the registry lint enforces, held one layer further out.
  */
 const STATES = MANIFEST?.states ?? []
-
-const CONTAINER: React.CSSProperties = {
-  width: '100%',
-  maxWidth: 1240,
-  margin: '0 auto',
-  padding: '0 40px',
-}
-
-const META: React.CSSProperties = {
-  fontSize: 11,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--fg3)',
-}
-
-const SECTION_LABEL: React.CSSProperties = {
-  fontSize: 11,
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'var(--fg3)',
-}
-
-const H2: React.CSSProperties = { fontSize: 28, letterSpacing: '-0.02em', fontWeight: 600 }
-
-const SECTION_HEAD: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  justifyContent: 'space-between',
-  gap: 16,
-  borderBottom: '1px solid var(--line)',
-}
-
-const CRUMB_LINK = 'transition-colors hover:text-[var(--fg)]'
 
 /* ------------------------------------------------------------- snippets -- */
 
@@ -346,115 +291,15 @@ function DemoStage() {
 
 export function DisclosurePage() {
   return (
-    <div className="component-page">
-      <main style={{ ...CONTAINER, paddingBottom: 88 }}>
-        <nav aria-label="Breadcrumb" className="cp-mono" style={{ paddingTop: 36 }}>
-          <ol style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--fg3)' }}>
-            <li>
-              <Link href="/" className={CRUMB_LINK}>
-                Z-UI
-              </Link>
-            </li>
-            <li aria-hidden>/</li>
-            <li>
-              <Link href="/components" className={CRUMB_LINK}>
-                components
-              </Link>
-            </li>
-            <li aria-hidden>/</li>
-            <li aria-current="page" style={{ color: 'var(--fg2)' }}>
-              disclosure
-            </li>
-          </ol>
-        </nav>
-
-        <div
-          style={{
-            marginTop: 26,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            gap: 32,
-            flexWrap: 'wrap',
-          }}
-        >
-          <div>
-            <h1
-              style={{ fontSize: 44, lineHeight: 1.04, letterSpacing: '-0.028em', fontWeight: 600 }}
-            >
-              Disclosure
-            </h1>
-            <div
-              className="cp-mono"
-              style={{
-                marginTop: 14,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                flexWrap: 'wrap',
-                ...META,
-              }}
-            >
-              {MANIFEST?.category ? (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    height: 24,
-                    padding: '0 10px',
-                    border: '1px solid var(--line)',
-                    borderRadius: 999,
-                  }}
-                >
-                  {MANIFEST.category}
-                </span>
-              ) : null}
-              {FACTS.map((fact) => (
-                <span key={fact}>{fact}</span>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <a
-              href={SOURCE_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="cp-ghost cp-mono"
-              title={SOURCE_LIVE ? undefined : 'Resolves once the registry is merged to main'}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                height: 36,
-                padding: '0 14px',
-                fontSize: 12,
-              }}
-            >
-              source ↗
-              {SOURCE_LIVE ? null : <span style={{ color: 'var(--fg3)' }}>needs the merge</span>}
-            </a>
-            <a
-              href="#install"
-              className="cp-primary"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                height: 36,
-                padding: '0 16px',
-                fontSize: 14,
-              }}
-            >
-              Get component
-            </a>
-          </div>
-        </div>
-
-        <div style={{ paddingTop: 36 }}>
-          <DemoStage />
-        </div>
-
-        <div style={{ paddingTop: 28 }}>
+    <ComponentPageShell
+      name={NAME}
+      heading="Disclosure"
+      crumb="disclosure"
+      propsLabel="<Disclosure />"
+      propsRows={PROPS}
+      demo={<DemoStage />}
+      lede={
+        <>
           <p
             style={{
               fontSize: 22,
@@ -490,117 +335,17 @@ export function DisclosurePage() {
             </code>{' '}
             skips the intermediate states entirely while still firing the completion callback.
           </p>
-        </div>
-
-        <section
-          id="install"
-          style={{ paddingTop: 52, scrollMarginTop: 'calc(var(--cp-chrome) + 16px)' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <h2 className="cp-mono" style={SECTION_LABEL}>
-              Install
-            </h2>
-            <span
-              className="cp-mono"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                height: 18,
-                padding: '0 7px',
-                borderRadius: 4,
-                background: 'var(--s2)',
-                color: 'var(--fg2)',
-                fontSize: 10,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-              }}
-            >
-              cli {cliVersion}
-            </span>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              height: 56,
-              padding: '0 8px 0 18px',
-              border: '1px solid var(--line)',
-              borderRadius: 8,
-              background: 'var(--s1)',
-            }}
-          >
-            <span className="cp-mono" aria-hidden style={{ color: 'var(--fg3)', flex: 'none' }}>
-              $
-            </span>
-            <code
-              className="cp-mono"
-              style={{
-                flex: 1,
-                minWidth: 0,
-                fontSize: 13.5,
-                color: 'var(--fg)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {INSTALL}
-            </code>
-            <CopyButton value={INSTALL} label="copy the install command" />
-          </div>
-
-          <div
-            className="cp-mono"
-            style={{
-              marginTop: 12,
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 20,
-              fontSize: 11,
-              color: 'var(--fg3)',
-            }}
-          >
-            {HINTS.map((h) => (
-              <span key={h}>{h}</span>
-            ))}
-          </div>
-        </section>
-
-        {/* Full width, not the sibling page's two-column split. There is no
-            customize panel to sit beside it, and stretching the code to fill
-            the gap beats leaving a hole shaped like a control that does not
-            exist. */}
+        </>
+      }
+      code={
+        /* Full width, not the sibling page's two-column split. There is no
+           customize panel to sit beside it, and stretching the code to fill
+           the gap beats leaving a hole shaped like a control that does not
+           exist. */
         <section style={{ marginTop: 52 }}>
           <CodePanel snippets={SNIPPETS} />
         </section>
-
-        <section style={{ paddingTop: 80 }}>
-          <div style={{ ...SECTION_HEAD, paddingBottom: 14 }}>
-            <h2 style={H2}>Props</h2>
-            <span className="cp-mono" style={{ fontSize: 11, color: 'var(--fg3)' }}>
-              &lt;Disclosure /&gt;
-            </span>
-          </div>
-          <PropsTable rows={PROPS} />
-        </section>
-
-        <section style={{ paddingTop: 80 }}>
-          <div style={{ ...SECTION_HEAD, paddingBottom: 24 }}>
-            <h2 style={H2}>Related</h2>
-            <span className="cp-mono" style={{ fontSize: 11, color: 'var(--fg3)' }}>
-              everything else in the registry
-            </span>
-          </div>
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-            style={{ marginTop: 24, gap: 20 }}
-          >
-            <RelatedCards current={NAME} />
-          </div>
-        </section>
-      </main>
-    </div>
+      }
+    />
   )
 }
