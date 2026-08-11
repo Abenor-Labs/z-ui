@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { rewriteImports, resolveTarget } from '../src/project/write.ts'
 import { validate, guessConfig, DEFAULT_REGISTRY } from '../src/project/config.ts'
 import { digest, verify } from '../src/registry/verify.ts'
-import { installCommand } from '../src/project/deps.ts'
+import { installCommand, launcher } from '../src/project/deps.ts'
 import type { Config } from '../src/project/config.ts'
 import type { RegistryItem } from '../src/registry/fetch.ts'
 import { isUrl } from '../src/registry/fetch.ts'
@@ -588,5 +588,38 @@ describe('first contact', () => {
     const cliPackageDir = fileURLToPath(new URL('..', import.meta.url))
     assert.equal(canInstallHere(cliPackageDir), true)
     assert.equal(canInstallHere(fileURLToPath(new URL('../src/ui', import.meta.url))), false)
+  })
+})
+
+describe('package manager launcher', () => {
+  test('posix spawns the binary directly, with no shell', () => {
+    const l = launcher('npm', ['install', 'motion'], 'linux')
+    assert.equal(l.file, 'npm')
+    assert.deepEqual(l.argv, ['install', 'motion'])
+    assert.equal(l.verbatim, false)
+  })
+
+  /**
+   * Node 22 deprecates a shell spawn carrying an args array (DEP0190), and it
+   * printed "can lead to security vulnerabilities" on every Windows install —
+   * inside this tool's own output, while it asked to write to a project.
+   * Invoking cmd explicitly keeps .cmd shims working without the warning.
+   */
+  test('windows goes through cmd rather than asking Node for a shell', () => {
+    const l = launcher('npm', ['install', 'motion'], 'win32')
+    assert.match(l.file, /cmd\.exe$/i)
+    assert.deepEqual(l.argv.slice(0, 3), ['/d', '/s', '/c'])
+    assert.equal(l.argv[3], '"npm install motion"')
+    assert.equal(l.verbatim, true)
+  })
+
+  test('a scoped package with no spaces is not needlessly quoted', () => {
+    const l = launcher('pnpm', ['add', '@abenor/z-ui'], 'win32')
+    assert.equal(l.argv[3], '"pnpm add @abenor/z-ui"')
+  })
+
+  test('anything shell-significant is quoted before cmd sees it', () => {
+    const l = launcher('npm', ['install', 'a b&c'], 'win32')
+    assert.match(String(l.argv[3]), /"a b&c"/)
   })
 })

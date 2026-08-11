@@ -201,10 +201,17 @@ export async function add(opts: AddOptions) {
       )
       log.line(c.grey(`    cd into your project and run: ${command} ${args.join(' ')}`))
     } else {
-      log.step(`${command} ${args.join(' ')}`)
+      const spin = spinner(`${command} ${args.join(' ')}`)
       try {
         await install(pm, missing, opts.cwd)
-      } catch {
+        spin.succeed(`${command} ${args.join(' ')}`)
+      } catch (e) {
+        spin.fail(`${command} ${args.join(' ')}`)
+        // Replayed only here. It is the package manager's reason for failing,
+        // and withholding it to keep the output tidy would be tidiness at the
+        // user's expense — the one moment the noise is worth its space.
+        const captured = (e as { log?: string }).log
+        if (captured) log.line(c.grey(captured.split('\n').map((l) => `    ${l}`).join('\n')))
         log.warn(`Dependency install failed. Run it yourself: ${command} ${args.join(' ')}`)
       }
     }
