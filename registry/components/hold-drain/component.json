@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "hold-drain",
+  "type": "registry:component",
+  "title": "Hold Drain",
+  "description": "A hold-to-confirm whose abort costs what the hold earned. Let go at seventy per cent and the fill is paid back at the rate it climbed, taking exactly as long to undo as it took to earn.",
+  "dependencies": ["motion"],
+  "registryDependencies": [],
+  "files": [{ "path": "hold-drain.tsx", "type": "registry:component" }],
+  "meta": {
+    "category": "tactile-feedback",
+    "gesture": "hold",
+    "states": ["idle", "filling", "armed", "committed", "draining"]
+  }
+}

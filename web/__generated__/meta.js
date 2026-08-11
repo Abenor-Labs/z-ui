@@ -52,6 +52,54 @@ export const items = [
     ]
   },
   {
+    "name": "hold-drain",
+    "type": "registry:component",
+    "title": "Hold Drain",
+    "description": "A hold-to-confirm whose abort costs what the hold earned. Let go at seventy per cent and the fill is paid back at the rate it climbed, taking exactly as long to undo as it took to earn.",
+    "category": "tactile-feedback",
+    "gesture": "hold",
+    "states": [
+      "idle",
+      "filling",
+      "armed",
+      "committed",
+      "draining"
+    ],
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "filling",
+        "armed",
+        "committed",
+        "draining"
+      ],
+      "springs": [],
+      "durations": [
+        {
+          "name": "duration",
+          "ms": 1200
+        }
+      ],
+      "reducedMotion": "branch"
+    },
+    "dependencies": [
+      "motion"
+    ],
+    "installs": [
+      {
+        "name": "hold-drain",
+        "files": [
+          {
+            "key": "hold-drain/hold-drain.tsx",
+            "target": "components/z-ui/hold-drain.tsx",
+            "sha": "1e5783274a16"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "name": "scramble-reveal",
     "type": "registry:component",
     "title": "Scramble Reveal",

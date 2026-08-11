@@ -7,6 +7,7 @@ import {
   Disclosure,
   type DisclosureState,
 } from '../../registry/components/disclosure/disclosure'
+import { HoldDrain, type HoldDrainState } from '../../registry/components/hold-drain/hold-drain'
 
 /**
  * Plain harness. No design work here on purpose — its only jobs are to mount
@@ -37,6 +38,21 @@ export function DevPage(): React.ReactElement {
 
   // Controlled example.
   const [open, setOpen] = React.useState(false)
+
+  // hold-drain, observed the same way.
+  const [heldSeen, setHeldSeen] = React.useState<HoldDrainState>('idle')
+  const [confirms, setConfirms] = React.useState(0)
+  const [aborts, setAborts] = React.useState(0)
+  const holdProbe = React.useRef<HTMLButtonElement>(null)
+  React.useEffect(() => {
+    const el = holdProbe.current
+    if (!el) return
+    const read = () => setHeldSeen((el.dataset.state ?? 'idle') as HoldDrainState)
+    read()
+    const observer = new MutationObserver(read)
+    observer.observe(el, { attributes: true, attributeFilter: ['data-state'] })
+    return () => observer.disconnect()
+  }, [])
 
   // Observed from the outside, to prove the attribute tracks the animation.
   const [seen, setSeen] = React.useState<DisclosureState>('closed')
@@ -155,6 +171,28 @@ export function DevPage(): React.ReactElement {
             a link inside the panel
           </a>
         </Disclosure>
+      </Row>
+
+      <Row
+        title="hold-drain"
+        hint="Hold to fill. Let go early and the fill is paid back at the rate it climbed — press again mid-drain and it resumes from wherever it got to."
+      >
+        <div className="flex items-center gap-6">
+          <HoldDrain
+            ref={holdProbe}
+            data-testid="hold-drain"
+            label="Hold to delete"
+            armedLabel="Release to delete"
+            onConfirm={() => setConfirms((n) => n + 1)}
+            onCancel={() => setAborts((n) => n + 1)}
+          />
+          <div className="font-mono text-xs opacity-60">
+            <div data-testid="hd-state">state {heldSeen}</div>
+            <div>
+              confirmed {confirms}× · abandoned {aborts}×
+            </div>
+          </div>
+        </div>
       </Row>
     </main>
   )

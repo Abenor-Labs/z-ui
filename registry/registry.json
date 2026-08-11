@@ -11,6 +11,12 @@
       "path": "components/disclosure"
     },
     {
+      "name": "hold-drain",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/hold-drain"
+    },
+    {
       "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",
