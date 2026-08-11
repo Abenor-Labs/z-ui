@@ -100,6 +100,58 @@ export const items = [
     ]
   },
   {
+    "name": "late-critique",
+    "type": "registry:component",
+    "title": "Late Critique",
+    "description": "A field whose criticism is late and whose forgiveness is instant. No verdict lands mid-word — it waits for a pause — and once it is complaining, the first keystroke that fixes the value clears it on the same frame.",
+    "category": "input-utility",
+    "gesture": "type",
+    "states": [
+      "idle",
+      "typing",
+      "settling",
+      "invalid",
+      "recovering",
+      "valid"
+    ],
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "typing",
+        "settling",
+        "invalid",
+        "recovering",
+        "valid"
+      ],
+      "springs": [],
+      "durations": [
+        {
+          "name": "DEFAULT_QUIET_MS",
+          "ms": 700
+        },
+        {
+          "name": "LEAVE_MS",
+          "ms": 120
+        }
+      ],
+      "reducedMotion": "branch"
+    },
+    "dependencies": [],
+    "installs": [
+      {
+        "name": "late-critique",
+        "files": [
+          {
+            "key": "late-critique/late-critique.tsx",
+            "target": "components/z-ui/late-critique.tsx",
+            "sha": "7b371ddc7520"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "name": "scramble-reveal",
     "type": "registry:component",
     "title": "Scramble Reveal",

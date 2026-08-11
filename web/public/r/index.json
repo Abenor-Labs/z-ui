@@ -35,6 +35,23 @@
       ]
     },
     {
+      "name": "late-critique",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/late-critique",
+      "title": "Late Critique",
+      "description": "A field whose criticism is late and whose forgiveness is instant. No verdict lands mid-word — it waits for a pause — and once it is complaining, the first keystroke that fixes the value clears it on the same frame.",
+      "spring": null,
+      "states": [
+        "idle",
+        "typing",
+        "settling",
+        "invalid",
+        "recovering",
+        "valid"
+      ]
+    },
+    {
       "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",

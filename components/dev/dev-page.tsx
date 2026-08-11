@@ -8,6 +8,10 @@ import {
   type DisclosureState,
 } from '../../registry/components/disclosure/disclosure'
 import { HoldDrain, type HoldDrainState } from '../../registry/components/hold-drain/hold-drain'
+import {
+  LateCritique,
+  type LateCritiqueState,
+} from '../../registry/components/late-critique/late-critique'
 
 /**
  * Plain harness. No design work here on purpose — its only jobs are to mount
@@ -40,6 +44,8 @@ export function DevPage(): React.ReactElement {
   const [open, setOpen] = React.useState(false)
 
   // hold-drain, observed the same way.
+  const [critiqueSeen, setCritiqueSeen] = React.useState<LateCritiqueState>('idle')
+
   const [heldSeen, setHeldSeen] = React.useState<HoldDrainState>('idle')
   const [confirms, setConfirms] = React.useState(0)
   const [aborts, setAborts] = React.useState(0)
@@ -193,6 +199,29 @@ export function DevPage(): React.ReactElement {
             </div>
           </div>
         </div>
+      </Row>
+
+      <Row
+        title="late-critique"
+        hint="Type one character at a time — nothing turns red mid-word. Then break it and fix it: the complaint leaves on the keystroke that fixes it, not on the next pause."
+      >
+        <div data-testid="late-critique">
+          <LateCritique
+            label="Email"
+            placeholder="you@example.com"
+            validate={(v) =>
+              v === ''
+                ? 'An address is required.'
+                : /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v)
+                  ? null
+                  : 'That is not an address yet.'
+            }
+            onVerdict={setCritiqueSeen}
+          />
+        </div>
+        <p className="mt-2 font-mono text-xs opacity-60">
+          data-state: <span data-testid="lc-state">{critiqueSeen}</span>
+        </p>
       </Row>
     </main>
   )
