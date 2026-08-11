@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { byName } from '@/__generated__/meta.js'
+import { byName, cliVersion } from '@/__generated__/meta.js'
 import { Disclosure, type DisclosureState } from '@/components/z-ui/disclosure'
 import { CodePanel } from './code-panel'
 import { CopyButton } from './copy-button'
@@ -515,7 +515,7 @@ export function DisclosurePage() {
                 textTransform: 'uppercase',
               }}
             >
-              0.1.1 pending
+              cli {cliVersion}
             </span>
           </div>
 

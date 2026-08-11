@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { byName } from '@/__generated__/meta.js'
+import { byName, cliVersion } from '@/__generated__/meta.js'
 import { CodePanel } from './code-panel'
 import { CopyButton } from './copy-button'
 import { CustomizePanel } from './customize-panel'
@@ -271,10 +271,11 @@ export function ComponentPage() {
             <h2 className="cp-mono" style={SECTION_LABEL}>
               Install
             </h2>
-            {/* The command is real and the package is not on npm yet, so the page
-                says so in the same word /docs uses rather than printing a line
-                that fails at the registry. The last hint below is the path that
-                works today. */}
+            {/* Generated from packages/cli/package.json, not typed. This badge
+                said "0.1.1 pending" for a day after 0.1.1 published — the third
+                time install copy outlived its condition (`5f33a80`,
+                `e315c4d`). A version that is read cannot rot on its own; a
+                publish claim always can, so the badge no longer makes one. */}
             <span
               className="cp-mono"
               style={{
@@ -290,7 +291,7 @@ export function ComponentPage() {
                 textTransform: 'uppercase',
               }}
             >
-              0.1.1 pending
+              cli {cliVersion}
             </span>
           </div>
 
