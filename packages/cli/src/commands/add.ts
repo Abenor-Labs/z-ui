@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { homedir } from 'node:os'
 import path from 'node:path'
 import { Registry, isUrl } from '../registry/fetch.ts'
 import { resolve, npmDependencies } from '../registry/resolve.ts'
@@ -195,12 +196,19 @@ export async function add(opts: AddOptions) {
      * rather than swallowed: the files are already written and installing the
      * dependency by hand is one paste.
      */
-    if (!canInstallHere(opts.cwd)) {
+    const root = installRoot(opts.cwd)
+    if (!root) {
       log.warn(
-        `No package.json in ${opts.cwd}, so ${missing.join(', ')} was not installed — npm would have written it into whichever project sits above this folder.`,
+        `No project above ${opts.cwd}, so ${missing.join(', ')} was not installed — npm would have written it into your home directory.`,
       )
       log.line(c.grey(`    cd into your project and run: ${command} ${args.join(' ')}`))
     } else {
+      // Named only when it is somewhere other than here. Announcing the obvious
+      // on every install would be noise; staying silent while writing to a
+      // package.json two directories up would be the thing worth warning about.
+      if (path.resolve(root) !== path.resolve(opts.cwd)) {
+        log.line(c.grey(`    installing into ${root}`))
+      }
       const spin = spinner(`${command} ${args.join(' ')}`)
       try {
         await install(pm, missing, opts.cwd)
@@ -318,15 +326,33 @@ export function unknownHint(components: string[]): string {
 }
 
 /**
- * Whether a dependency install may run here.
+ * The project a dependency install would actually land in, or null.
  *
- * npm resolves upward when the working directory has no package.json, so
- * installing from a folder that is not a project writes into whichever project
- * sits above it — up to and including `~/package.json`. Separated out as a
- * predicate so the rule is testable without spawning a package manager.
+ * npm resolves upward, which is the behaviour everyone wants: running `add`
+ * from `src/components` should install into the project above it, and the same
+ * goes for anywhere inside a monorepo. Refusing whenever the working directory
+ * lacks a package.json would have broken every one of those, which is a lot of
+ * friction to buy one guard.
+ *
+ * The hazard is narrower than that. It is the walk continuing *past* any
+ * project and reaching the home directory, where npm writes a dependency into
+ * whatever package.json happens to live there — verified, not theorised: it
+ * put `motion` into `~/package.json` during a first-contact walkthrough.
+ *
+ * So the walk stops at home rather than at the first missing file, which is
+ * the same boundary `detectPackageManager` already draws for the same reason.
+ * A project found before then is a real answer; reaching home is not.
  */
-export function canInstallHere(cwd: string): boolean {
-  return existsSync(path.join(cwd, 'package.json'))
+export function installRoot(cwd: string): string | null {
+  const home = path.resolve(homedir())
+  let dir = path.resolve(cwd)
+  for (;;) {
+    if (dir === home) return null
+    if (existsSync(path.join(dir, 'package.json'))) return dir
+    const up = path.dirname(dir)
+    if (up === dir) return null
+    dir = up
+  }
 }
 
 /** Split what the user typed into registry names and direct manifest URLs. */

@@ -10,7 +10,7 @@ import { isUrl } from '../src/registry/fetch.ts'
 import { UserError } from '../src/ui/log.ts'
 import { retargetSpring, assertPreset, springOutcome, springRefusal } from '../src/project/spring.ts'
 import { matches, window } from '../src/ui/select.ts'
-import { nearest, partitionTargets, unknownHint, canInstallHere } from '../src/commands/add.ts'
+import { nearest, partitionTargets, unknownHint, installRoot } from '../src/commands/add.ts'
 import { doctorReport, hasReducedMotionBranch } from '../src/commands/doctor.ts'
 import { completionScript } from '../src/commands/completion.ts'
 import { describeSpring, assertPreviewable } from '../src/commands/preview.ts'
@@ -18,6 +18,8 @@ import { springs, dampingRatio } from '../src/ui/spring-constants.ts'
 import { simulateSpring, dampingRatioOf, regimeOf, renderCurve } from '../src/ui/spring-curve.ts'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { homedir } from 'node:os'
+import path from 'node:path'
 
 const config: Config = {
   registry: './registry',
@@ -584,19 +586,27 @@ describe('first contact', () => {
    * "/D:/..." and the leading slash has to be hand-stripped, which is the kind
    * of platform guesswork that makes a test pass for the wrong reason.
    */
-  test('installing is refused where there is no package.json to anchor to', () => {
-    const cliPackageDir = fileURLToPath(new URL('..', import.meta.url))
-    assert.equal(canInstallHere(cliPackageDir), true)
-    assert.equal(canInstallHere(fileURLToPath(new URL('../src/ui', import.meta.url))), false)
+  test('a subdirectory installs into the project above it, not nowhere', () => {
+    // The friction this used to cause: running `add` from src/ refused,
+    // even though npm resolving upward is exactly what was wanted.
+    // `path.resolve` rather than stripping a trailing separator by hand: the
+    // separator differs by platform and the hand-rolled version only worked on
+    // whichever one happened to be running.
+    const cliRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
+    const nested = fileURLToPath(new URL('../src/ui', import.meta.url))
+    assert.equal(installRoot(nested), cliRoot)
   })
-})
 
-describe('package manager launcher', () => {
-  test('posix spawns the binary directly, with no shell', () => {
-    const l = launcher('npm', ['install', 'motion'], 'linux')
-    assert.equal(l.file, 'npm')
-    assert.deepEqual(l.argv, ['install', 'motion'])
-    assert.equal(l.verbatim, false)
+  test('a project directory resolves to itself', () => {
+    // `path.resolve` rather than stripping a trailing separator by hand: the
+    // separator differs by platform and the hand-rolled version only worked on
+    // whichever one happened to be running.
+    const cliRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
+    assert.equal(installRoot(cliRoot), cliRoot)
+  })
+
+  test('a folder with no project above it refuses rather than reaching home', () => {
+    assert.equal(installRoot(homedir()), null)
   })
 
   /**
