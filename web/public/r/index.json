@@ -19,6 +19,22 @@
       ]
     },
     {
+      "name": "hold-drain",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/hold-drain",
+      "title": "Hold Drain",
+      "description": "A hold-to-confirm whose abort costs what the hold earned. Let go at seventy per cent and the fill is paid back at the rate it climbed, taking exactly as long to undo as it took to earn.",
+      "spring": null,
+      "states": [
+        "idle",
+        "filling",
+        "armed",
+        "committed",
+        "draining"
+      ]
+    },
+    {
       "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",

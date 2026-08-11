@@ -52,6 +52,6 @@ export const componentHref = (name: string) => `/${name}`
  * line in one place, which is the reason this is a set and not a guess repeated
  * at each call site.
  */
-const PAGES = new Set(['scramble-reveal', 'disclosure'])
+const PAGES = new Set(['scramble-reveal', 'disclosure', 'hold-drain'])
 
 export const hasComponentPage = (name: string) => PAGES.has(name)
