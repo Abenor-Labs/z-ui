@@ -17,6 +17,12 @@
       "path": "components/hold-drain"
     },
     {
+      "name": "late-critique",
+      "type": "registry:component",
+      "category": "input-utility",
+      "path": "components/late-critique"
+    },
+    {
       "name": "scramble-reveal",
       "type": "registry:component",
       "category": "state-morphing",

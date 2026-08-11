@@ -15,6 +15,7 @@
       // lint-registry fails the build when either one is missing.
       "@/components/z-ui/disclosure": ["../registry/components/disclosure/disclosure.tsx"],
       "@/components/z-ui/hold-drain": ["../registry/components/hold-drain/hold-drain.tsx"],
+      "@/components/z-ui/late-critique": ["../registry/components/late-critique/late-critique.tsx"],
       "@/components/z-ui/scramble-reveal": [
         "../registry/components/scramble-reveal/scramble-reveal.tsx"
       ],

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "late-critique",
+  "type": "registry:component",
+  "title": "Late Critique",
+  "description": "A field whose criticism is late and whose forgiveness is instant. No verdict lands mid-word — it waits for a pause — and once it is complaining, the first keystroke that fixes the value clears it on the same frame.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [{ "path": "late-critique.tsx", "type": "registry:component" }],
+  "meta": {
+    "category": "input-utility",
+    "gesture": "type",
+    "states": ["idle", "typing", "settling", "invalid", "recovering", "valid"]
+  }
+}
