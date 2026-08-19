@@ -27,6 +27,24 @@
       "type": "registry:component",
       "category": "state-morphing",
       "path": "components/scramble-reveal"
+    },
+    {
+      "name": "heft",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/heft"
+    },
+    {
+      "name": "dial",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/dial"
+    },
+    {
+      "name": "chase",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/chase"
     }
   ]
 }

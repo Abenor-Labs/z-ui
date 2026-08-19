@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "heft",
+  "type": "registry:component",
+  "title": "Heft",
+  "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Gravity, contacts and friction, in one file.",
+  "dependencies": [
+    "motion"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "heft.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "meta": {
+    "category": "tactile-feedback",
+    "gesture": "drag",
+    "states": [
+      "idle",
+      "dragging",
+      "settling"
+    ]
+  }
+}

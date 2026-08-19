@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dial",
+  "type": "registry:component",
+  "title": "Dial",
+  "description": "A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again.",
+  "dependencies": [
+    "motion"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "dial.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "meta": {
+    "category": "tactile-feedback",
+    "gesture": "drag",
+    "states": [
+      "idle",
+      "turning",
+      "coasting"
+    ]
+  }
+}

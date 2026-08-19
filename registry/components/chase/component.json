@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "chase",
+  "type": "registry:component",
+  "title": "Chase",
+  "description": "A segmented control whose indicator gives chase: the edge facing the target leaves on a stiff spring, the edge behind follows on a soft one, and the stretch between them is the speed. Nothing scripts the squash.",
+  "dependencies": [
+    "motion"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "chase.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "meta": {
+    "category": "state-morphing",
+    "gesture": "press",
+    "states": [
+      "idle",
+      "moving"
+    ]
+  }
+}

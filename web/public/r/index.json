@@ -64,6 +64,47 @@
         "scrambling",
         "settled"
       ]
+    },
+    {
+      "name": "heft",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/heft",
+      "title": "Heft",
+      "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Gravity, contacts and friction, in one file.",
+      "spring": null,
+      "states": [
+        "idle",
+        "dragging",
+        "settling"
+      ]
+    },
+    {
+      "name": "dial",
+      "type": "registry:component",
+      "category": "tactile-feedback",
+      "path": "components/dial",
+      "title": "Dial",
+      "description": "A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again.",
+      "spring": null,
+      "states": [
+        "idle",
+        "turning",
+        "coasting"
+      ]
+    },
+    {
+      "name": "chase",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/chase",
+      "title": "Chase",
+      "description": "A segmented control whose indicator gives chase: the edge facing the target leaves on a stiff spring, the edge behind follows on a soft one, and the stretch between them is the speed. Nothing scripts the squash.",
+      "spring": null,
+      "states": [
+        "idle",
+        "moving"
+      ]
     }
   ]
 }
