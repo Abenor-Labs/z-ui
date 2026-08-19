@@ -1,7 +1,7 @@
 {
   "name": "@z-ui/site",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "The Z-UI website. Vite + React Router; replaced the Next app archived at archive/web-next.",
   "license": "MIT",
