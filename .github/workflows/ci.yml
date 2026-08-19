@@ -38,14 +38,12 @@ jobs:
       - name: Lint the linter
         run: pnpm lint:registry:test
 
-      # Colour is shipped, not rendered. A contrast mistake in a registry
-      # component arrives in every project that ran `add`, as a file we can
-      # no longer touch.
-      - name: Lint contrast
-        run: pnpm lint:contrast
-
-      - name: Lint the contrast linter
-        run: pnpm lint:contrast:test
+      # The contrast gate ran here until 2026-08-19. It parsed Tailwind v4
+      # @theme blocks and text-*/bg-* utilities in the Next app, and that app is
+      # now archived; the Vite site uses plain custom properties, so pointing the
+      # linter at it would parse nothing and pass without checking anything.
+      # Script archived alongside its subject at archive/web-next/scripts/.
+      # A replacement written against custom properties is owed — see TASKS.md.
 
       # The generated tree is committed, so it must match what the generator
       # produces from the current registry.

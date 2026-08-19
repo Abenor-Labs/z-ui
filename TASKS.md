@@ -272,6 +272,22 @@ pipeline. Phase 14 merged them without losing either.
 - [x] Verified: `site` builds; `build-registry.mjs --check` clean at 12 files; anchored ignore
       rules confirmed against the real directories; 67 renames recorded at 100% similarity so
       archived history survives
+- [x] Ran the repo's own gates rather than assuming the move was clean — three had broken:
+  - `lint:registry` read `web/tsconfig.json` to check alias resolution in both workspaces. The
+    Vite site does not import registry components at all, so the check now covers only
+    `registry/tsconfig.json`. Passes at 165 checks across 7 items
+  - `test:spring-math` broke because `web/lib/spring-math.ts` had been archived with the Next
+    app. That was my error — it is shared math, not site UI. Restored to `web/lib/`, 3 tests pass
+  - `lint:contrast` and its test parse Tailwind v4 `@theme` blocks and `text-*`/`bg-*` utilities.
+    Their subject is the archived Next app; the Vite site uses plain custom properties, so
+    repointing them would parse nothing and pass without checking anything. Archived alongside
+    the app at `archive/web-next/scripts/` and removed from CI and `verify` rather than left to
+    fail or, worse, pass falsely
+- [x] Fixed doc drift the move caused: the CLI's `DEFAULT_REGISTRY` comment named
+      `web/lib/registry.ts` as the site's copy of the URL. It now names
+      `site/src/lib/registrySource.ts` and `site/src/data/registry.ts`
+- [x] Final sweep, all green: lint:registry, lint:registry:test, lint:motion:test,
+      registry:check, test:spring-math, CLI test, CLI typecheck, CLI build
 
 ### Not done, deliberately
 
@@ -288,3 +304,10 @@ pipeline. Phase 14 merged them without losing either.
       unattended
 - [ ] ADR cross-links to `PRODUCT.md` / `DESIGN.md` now resolve into `archive/docs-v1/`.
       Accurate, but the ADRs were not edited
+- [ ] **The site has no contrast gate.** The old one was Tailwind-specific and is archived. A
+      replacement written against `site/src/styles/tokens.css` custom properties is owed, and
+      until it exists a colour mistake in the site ships unchecked. Registry components are
+      unaffected — nothing about their colour handling changed
+- [ ] `site/src/zui/` and `registry/components/` remain two implementations of the same seven
+      names. Deliberate. Each registry component is replaced only when a specific one earns it
+      on evidence, the way `heft` did on 2026-08-19

@@ -102,14 +102,18 @@ for (const entry of index.items) {
     check(names.has(dep), where, `registryDependencies references unknown item "${dep}"`)
   }
 
-  // tsconfig path entries, both workspaces
+  // tsconfig path entries
   const importSpecifier =
     manifest.type === 'registry:component'
       ? `@/components/z-ui/${manifest.name}`
       : manifest.type === 'registry:hook'
         ? `@/hooks/${manifest.name}`
         : `@/lib/${manifest.name}`
-  for (const tsconfig of ['registry/tsconfig.json', 'web/tsconfig.json']) {
+  // This used to check both workspaces. The Next app resolved these aliases
+  // too, but it is archived under archive/web-next and the Vite site does not
+  // import registry components at all, so the registry workspace is the only
+  // one that still has to resolve them.
+  for (const tsconfig of ['registry/tsconfig.json']) {
     const raw = read(join(ROOT, tsconfig))
     check(
       raw.includes(`"${importSpecifier}"`),

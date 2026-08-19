@@ -20,8 +20,12 @@ export const CONFIG_FILE = 'z-ui.json'
  * exactly one URL still wrong, which is the same drift `5f33a80` fixed across
  * three site call sites and did not reach into here.
  *
- * `web/lib/registry.ts` holds the site's copy of this constant. They are two
- * packages that cannot import from each other; if one moves, move both.
+ * The site holds its own copy of this constant, and they are separate packages
+ * that cannot import from each other — if one moves, move both. Since the site
+ * swap on 2026-08-19 the site's copies live in `site/src/lib/registrySource.ts`
+ * (the base it reads) and `site/src/data/registry.ts` (the shadcn fallback URL
+ * it prints). The old `web/lib/registry.ts` is archived under
+ * `archive/web-next/lib/` and is no longer one of them.
  */
 export const DEFAULT_REGISTRY =
   'https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/web/public'
