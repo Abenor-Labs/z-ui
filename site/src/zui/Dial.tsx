@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useId, useImperativeHandle, type Ref } from 'react';
+import { useEffect, useRef, useCallback, useImperativeHandle, type Ref } from 'react';
 import { motion, useMotionValue, useTransform, animate, type AnimationPlaybackControls } from 'motion/react';
 import { STIFFNESS, DAMPING } from '../lib/springs';
 import { useReducedMotion } from '../lib/useReducedMotion';
@@ -9,12 +9,16 @@ import {
   HOLE_R_PX,
   GOVERNOR_SPEED,
   SEAT_HANDOFF_DEG,
-  COMMIT_THRESHOLD_DEG,
+  ENGAGE_FRACTION,
+  LETTERS,
   holeRestAngle,
   pullDistance,
+  pulsesFor,
+  pulsesTripped,
   from3OClock,
   nearestDigit,
   polar,
+  circlePathD,
 } from '../lib/rotary';
 
 /**
@@ -57,6 +61,9 @@ export interface DialProps {
   onFrame?: (t: number, angle: number, velocity: number) => void;
   /** flywheel: fires on every detent crossing. rotary: fires once, when a dialed digit seats */
   onDetent?: (index: number) => void;
+  /** rotary only: fires on every pulse tripped during the return — a real pulse-dial
+   *  encodes the digit as a count of these, one per 30° of return travel */
+  onPulse?: (count: number, total: number) => void;
   className?: string;
 }
 
@@ -67,16 +74,17 @@ export function Dial({
   detents = 12,
   onFrame,
   onDetent,
+  onPulse,
   className,
 }: DialProps) {
   const reduced = useReducedMotion();
   const rotary = mode === 'rotary';
   const step = 360 / detents;
-  const maskId = useId();
 
   const rotation = useMotionValue(0);
   const root = useRef<HTMLDivElement>(null);
   const tickRefs = useRef<(SVGLineElement | null)[]>([]);
+  const pulseRingRef = useRef<SVGCircleElement | null>(null);
 
   const state = useRef<'rest' | 'drag' | 'freewheel' | 'return' | 'catch'>('rest');
   const anim = useRef<AnimationPlaybackControls | null>(null);
@@ -85,13 +93,18 @@ export function Dial({
   const lastPointerAngle = useRef(0);
   const lastDetent = useRef(0);
   const flashTimer = useRef(0);
+  const pulseFlashTimer = useRef(0);
 
   // rotary-only bookkeeping: which hole this gesture is pulling, and the
   // limit it pulls to. pendingDigit is null when a release should NOT fire
-  // onDetent (aborted, pulled short of the commit threshold).
+  // onDetent (aborted, pulled short of the digit's own engage threshold).
   const activeDigit = useRef(0);
   const pullLimit = useRef(0);
   const pendingDigit = useRef<number | null>(null);
+  const lastPulseCount = useRef(0);
+
+  const onPulseRef = useRef(onPulse);
+  onPulseRef.current = onPulse;
 
   const onFrameRef = useRef(onFrame);
   onFrameRef.current = onFrame;
@@ -189,12 +202,34 @@ export function Dial({
 
   const governorReturn = useCallback(() => {
     state.current = 'return';
+    lastPulseCount.current = 0;
     let last = performance.now();
     const loop = (now: number) => {
       const dt = Math.max(0, Math.min(0.032, (now - last) / 1000));
       last = now;
       const next = Math.max(SEAT_HANDOFF_DEG, rotation.get() - GOVERNOR_SPEED * dt);
       rotation.set(next);
+
+      // an aborted pull (pendingDigit null) is a real dial's finger sliding
+      // out of the hole before the stop — nothing was ever committed, so no
+      // pulses trip on the way back, same as the real mechanism.
+      if (pendingDigit.current !== null) {
+        const digit = activeDigit.current;
+        const count = pulsesTripped(digit, next);
+        if (count !== lastPulseCount.current) {
+          lastPulseCount.current = count;
+          onPulseRef.current?.(count, pulsesFor(digit));
+          const ring = pulseRingRef.current;
+          if (ring) {
+            ring.style.strokeWidth = '4';
+            window.clearTimeout(pulseFlashTimer.current);
+            pulseFlashTimer.current = window.setTimeout(() => {
+              if (ring) ring.style.strokeWidth = '2';
+            }, 90);
+          }
+        }
+      }
+
       if (next <= SEAT_HANDOFF_DEG) {
         seat();
         return;
@@ -304,7 +339,12 @@ export function Dial({
     if (state.current !== 'drag') return;
     root.current?.classList.remove('grabbing', 'dial-pressed');
     if (rotary) {
-      pendingDigit.current = rotation.get() >= COMMIT_THRESHOLD_DEG ? activeDigit.current : null;
+      // engaged if pulled at least ENGAGE_FRACTION of THIS digit's own travel —
+      // proportional, not a flat degree count, so a short digit (1, 30° total)
+      // and a long one (0, 300° total) demand the same commitment, not the
+      // same distance
+      const engaged = rotation.get() >= pullLimit.current * ENGAGE_FRACTION;
+      pendingDigit.current = engaged ? activeDigit.current : null;
       governorReturn();
       return;
     }
@@ -411,25 +451,40 @@ export function Dial({
       {rotary ? (
         <svg viewBox="-60 -60 120 120" className="dial-rotary" aria-hidden="true">
           {/* static faceplate: base disc, the fixed finger stop, and every digit
-              printed at hole radius — visible through the hole cut in the rotor
-              above whenever that hole sits at rest */}
+              (with its letters, where the pattern has them) printed at hole
+              radius — visible through the hole cut in the rotor above
+              whenever that hole sits at rest */}
           <circle r={R} fill="var(--paper)" stroke="var(--ink)" strokeWidth="2" />
           <circle r={R - 10} fill="none" stroke="var(--rule)" strokeWidth="1" />
           {showLabels &&
             digits.map((d) => {
               const { x, y } = polar(holeRestAngle(d), HOLE_RADIUS_PX);
+              const letters = LETTERS[d];
               return (
-                <text
-                  key={d}
-                  x={x}
-                  y={y}
-                  className="mono dial-digit"
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill="var(--ink)"
-                >
-                  {d}
-                </text>
+                <g key={d}>
+                  {letters && (
+                    <text
+                      x={x}
+                      y={y - HOLE_R_PX * 0.55}
+                      className="mono dial-letters"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="var(--rule)"
+                    >
+                      {letters}
+                    </text>
+                  )}
+                  <text
+                    x={x}
+                    y={y + (letters ? HOLE_R_PX * 0.3 : 0)}
+                    className="mono dial-digit"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="var(--ink)"
+                  >
+                    {d}
+                  </text>
+                </g>
               );
             })}
           {/* the finger stop — a fixed mechanical fact, not a live value, so it
@@ -438,23 +493,42 @@ export function Dial({
             <line x1={0} y1={-R - 2} x2={0} y2={-R - 10} stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" />
           </g>
 
-          {/* the rotor: a solid disc with the ten holes cut out, so the
-              faceplate's digits show through exactly where a hole sits */}
-          <mask id={maskId}>
-            <rect x="-60" y="-60" width="120" height="120" fill="white" />
-            {digits.map((d) => {
-              const { x, y } = polar(holeRestAngle(d), HOLE_RADIUS_PX);
-              return <circle key={d} cx={x} cy={y} r={HOLE_R_PX} fill="black" />;
-            })}
-          </mask>
+          {/* the rotor: one path, its ten holes cut by an evenodd fill rule
+              rather than a separate mask element — the faceplate's digits
+              show through exactly where a hole sits */}
           <motion.g style={{ rotate: rotation }}>
-            <circle r={R - 3} fill="var(--recess)" stroke="var(--rule)" strokeWidth="1" mask={`url(#${maskId})`} />
+            <path
+              d={
+                circlePathD(0, 0, R - 3) +
+                ' ' +
+                digits
+                  .map((d) => {
+                    const { x, y } = polar(holeRestAngle(d), HOLE_RADIUS_PX);
+                    return circlePathD(x, y, HOLE_R_PX);
+                  })
+                  .join(' ')
+              }
+              fillRule="evenodd"
+              fill="var(--recess)"
+              stroke="var(--rule)"
+              strokeWidth="1"
+            />
             <circle r="4" fill="var(--ink)" />
           </motion.g>
 
-          {/* the hole currently being pulled or returned — measured, so it's Signal */}
+          {/* the hole currently being pulled or returned — measured, so it's
+              Signal, and it thickens briefly on every pulse tripped during
+              the return, the visual equivalent of the cam's click */}
           {state.current !== 'rest' && (
-            <motion.circle cx={activeHoleX} cy={activeHoleY} r={HOLE_R_PX + 1.5} fill="none" stroke="var(--signal)" strokeWidth="2" />
+            <motion.circle
+              ref={pulseRingRef}
+              cx={activeHoleX}
+              cy={activeHoleY}
+              r={HOLE_R_PX + 1.5}
+              fill="none"
+              stroke="var(--signal)"
+              strokeWidth="2"
+            />
           )}
         </svg>
       ) : (

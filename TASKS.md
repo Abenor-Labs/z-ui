@@ -358,3 +358,40 @@ Recapped and built once the user asked where it had gone.
       playwright/puppeteer MCP this session
 - [ ] `dial`'s registry promotion (shipping `mode` as real installable API, unifying site and
       registry the way heft was unified) — deliberately deferred, not forgotten; see DESIGN.md A17
+
+### Phase 15 revision — pulse mechanism, same day
+
+The user handed over an independently-written reference `RotaryDial` implementation with direct
+feedback that the first pass was worse. It was.
+
+- [x] Found the real gap: the reference counts actual pulses (one per 30° of return travel, digit N
+      = N pulses, 0 = ten) and prints letters under the digits (2 ABC .. 9 WXY); the first pass fired
+      a single "digit chosen" event with no pulse model and no letters at all — the part that most
+      makes something read as a phone rather than a spinning circle was missing entirely
+- [x] Found a real geometry bug in the process: the first pass's pull distances (60°..330°) carried
+      an extra, uncounted 30° of slack per digit versus the reference's (30°..300°). Two
+      implementations independently deriving `pulses × 30°` was the tell that the corrected formula
+      is the one a real dial uses, not the original — re-verified headlessly (pull distance, hole
+      self-identification, nearest-hole agreement at the stop, and a simulated 1°-step return
+      producing a monotonic pulse count landing exactly on each digit's true count, for all ten
+      digits) before touching component code
+- [x] Adopted: real `pulsesTripped()`-driven `onPulse` firing with a visual click (Signal ring
+      thickens per trip), letters, proportional 85%-of-own-travel engagement replacing the flat 30°
+      threshold, and the reference's evenodd single-path hole construction in place of the `<mask>`
+      approach — simpler, and removes an entire bug class rather than guarding against it
+- [x] Declined, and said so rather than silently dropping it: the reference's `onPointerDown` refuses
+      to grab the wheel while it is returning. This project's one most-repeated rule is that a
+      transition that cannot reverse mid-flight does not ship (CLAUDE.md). Kept the dial
+      interruptible mid-return; every other component on this site works this way and this one does
+      not get an exception
+- [x] Declined: gradients, a soft drop-shadow filter, a serif font, and roughly a dozen hardcoded hex
+      colors — all conflict with tokens.css being the only place colors exist. Declined: synthesized
+      click sounds, since no other component has audio and adding it to exactly one is a real
+      inconsistency, not a small addition
+- [x] Full gate sweep re-run after the rewrite: registry lint/test, motion scan, registry:check,
+      spring-math, CLI test, site typecheck/lint/build all pass. SSR-verified structurally, not just
+      "does it crash": confirmed exactly 8 letter labels (digits 2-9), 1 evenodd path with exactly 11
+      subpaths (1 rotor circle + 10 holes), and holes still cut correctly even when digit labels are
+      hidden at 96px
+- [ ] Still no browser verification — the pulse click's visual timing (90ms thicken) and the letters'
+      legibility at small sizes are both things that want an actual look, not just a render check

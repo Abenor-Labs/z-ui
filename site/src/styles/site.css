@@ -273,6 +273,12 @@
   pointer-events: none;
 }
 
+.dial-letters {
+  font-size: 3.5px;
+  letter-spacing: 0.4px;
+  pointer-events: none;
+}
+
 /* ——— chase ——— */
 
 .chase-wrap {

@@ -260,22 +260,56 @@ implementation choices, NOT product facts.
   resting bodies reaching 14400 px/s. Warm starting is what lets a stack converge in a bounded
   iteration count; without it a seven-box stack still crept at 13 px/s after 16 iterations and
   never slept.
-- **A17 — Dial's rotary face** (built 2026-08-19, user-directed). `<Dial mode="rotary">` renders a
-  ten-digit rotary phone face on the same component; `mode="flywheel"` (default) is unchanged and
-  is what PRD.md documents and the CLI installs — see PRD.md's dial entry for the explicit carve-out.
-  Geometry: the finger stop is fixed on the bezel at 120° (4 o'clock, clockwise from 12); the ten
-  holes sit 30° apart on the rotor, so pull distance runs from 60° (digit 1) to 330° (digit 0) —
-  verified against the design table headlessly before any component code was written. Motion:
-  dragging a hole clamps rotation to `[0, pullDistance(digit)]`, a hard wall both directions, matching
-  a real dial's rigid mechanism; releasing past a 30° commit threshold starts a constant 300°/s
-  governed return (not a decay — a literal fixed-speed crawl), and the last 15° hand off to the same
-  1300/46 spring the flywheel's detents catch with. Interruptible both ways: grabbing mid-return
+- **A17 — Dial's rotary face** (built 2026-08-19, revised same day, user-directed). `<Dial
+  mode="rotary">` renders a ten-digit pulse-dial telephone face on the same component;
+  `mode="flywheel"` (default) is unchanged and is what PRD.md documents and the CLI installs — see
+  PRD.md's dial entry for the explicit carve-out.
+
+  **Geometry, pulse-derived.** The finger stop is fixed on the bezel at 120° (4 o'clock, clockwise
+  from 12). A real pulse dial encodes a digit as that many pulses of the return cam — one trip per
+  30° of travel — so a digit's pull is exactly `pulses × 30°`, no slack: 30° for digit 1, up to 300°
+  for digit 0 (ten pulses, since a zero-pulse train is indistinguishable from nothing). This
+  superseded a first pass whose hole-rest formula had an unexplained extra 30° of travel per digit
+  that didn't correspond to any counted pulse — caught when an independently-written reference
+  implementation, handed to the project mid-build, converged on the exact `pulses × 30°` relationship
+  from a different derivation. Two implementations reaching the same numbers from different starting
+  points was the check that the corrected formula, not the original, is the one a real dial actually
+  uses. Re-verified headlessly against the corrected table before any component code changed:
+  pull distance still lands exactly on `pulses × 30` for all ten digits, holes still self-identify at
+  their own rest angle, pull-distance and nearest-hole math still agree at the stop, and a simulated
+  1°-step return produces a monotonic pulse count landing exactly on the digit's pulse count for all
+  ten digits.
+
+  **Motion.** Dragging a hole clamps rotation to `[0, pullDistance(digit)]`, a hard wall both
+  directions, matching a real dial's rigid mechanism. Releasing engages only past `ENGAGE_FRACTION`
+  (0.85) of *that digit's own* travel — proportional, not the flat absolute-degree threshold the
+  first pass used, because a flat threshold demanded wildly different commitment for a short digit
+  (1, 30° total) versus a long one (0, 300° total). Engaging starts a constant 300°/s governed return
+  — a literal fixed-speed crawl, not a decay curve — and the last 15° hand off to the same 1300/46
+  spring the flywheel's detents catch with. Interruptible both ways: grabbing mid-return
   re-identifies the nearest hole to the pointer and redirects to it, same as the flywheel's
-  freewheel-to-catch interrupt. `onDetent` fires once, on seat, not on every partial pull. Reduced
-  motion replaces the whole gesture with click-a-hole → instant home → immediate fire, per the site's
-  stricter-than-`duration:0` rule. Numbers are printed on a static faceplate layer and revealed
-  through an SVG mask cut into the rotor, so they hold still while the rotor turns — the detail most
-  reproductions get wrong — and the mask id is generated per-instance via `useId()` so multiple dials
-  on one page cannot collide. `dial`'s CANDIDATES-style promotion into the registry (mirroring heft's
-  CSS-shipping unification) was deliberately left for a later, separately-decided pass — this build is
-  site-scoped only, per the original design.
+  freewheel-to-catch interrupt — kept deliberately even though the reference implementation that
+  prompted this revision does not allow it (its `onPointerDown` refuses to grab while returning);
+  every other component on this site reverses mid-flight and this one does not get an exception.
+  `onDetent` fires once, on seat. A new `onPulse(count, total)` fires on every pulse actually tripped
+  during the return — computed from `pulsesTripped()`, not merely counted from a timer — and the
+  currently-active hole's Signal ring thickens briefly on each trip, the visual read of the cam's
+  click. Reduced motion replaces the whole gesture with click-a-hole → instant home → immediate fire,
+  per the site's stricter-than-`duration:0` rule.
+
+  **Rendering.** Numbers, and letters where the historical pattern has them (2 ABC through 9 WXY, no
+  letters on 1 or 0, matching the Bell System layout), are printed on a static faceplate layer and
+  revealed through the rotor. The rotor's ten holes are cut with a single SVG path under
+  `fill-rule="evenodd"` — one outer circle plus ten hole subpaths — rather than the first pass's
+  separate `<mask>` element; simpler, and removes the id-collision class of bug entirely rather than
+  merely guarding against it with `useId()`.
+
+  `dial`'s CANDIDATES-style promotion into the registry (mirroring heft's CSS-shipping unification)
+  was deliberately left for a later, separately-decided pass — this build is site-scoped only, per
+  the original design. Not adopted from the reference implementation: gradients, a soft drop-shadow
+  filter, a serif font, and roughly a dozen hardcoded hex colors, all of which conflict with this
+  file's committed palette (tokens.css custom properties only, no new colors, no gradients except the
+  one named exception, no box-shadow except the single hard 1px contact shadow). Also not adopted:
+  synthesized Web Audio clicks — no other component on the site has sound, and adding it to exactly
+  one would be a real inconsistency rather than a small addition, so it stayed out pending an explicit
+  decision to add sound as a site-wide thing.

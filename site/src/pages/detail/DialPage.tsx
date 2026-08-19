@@ -19,6 +19,7 @@ export function DialPage() {
   const [size, setSize] = useState('220');
   const vel = useMotionValue(fixed(0, 2, 7));
   const detent = useMotionValue('00');
+  const pulse = useMotionValue('0 / 0');
   const { push, samples } = useLiveSamples(3.2);
   const count = Number(detents);
   const rotary = mode === 'rotary';
@@ -70,8 +71,8 @@ export function DialPage() {
               <>
                 <Readout label="ω" value={vel} unit="rad/s" />
                 <Readout label="spring" value="1300/46" unit="k/c" />
+                <Readout label="pulse" value={pulse} />
                 <Readout label="dialed" value={detent} />
-                <Readout label="governor" value="300" unit="deg/s" />
               </>
             ) : (
               <>
@@ -111,6 +112,7 @@ export function DialPage() {
               push(t, rad);
             }}
             onDetent={(i) => detent.set(rotary ? String(i) : String(i).padStart(2, '0'))}
+            onPulse={(count, total) => pulse.set(`${count} / ${total}`)}
           />
         </Playground>
       }
