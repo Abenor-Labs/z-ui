@@ -257,13 +257,20 @@
   overflow: visible;
 }
 
-.dial-rotor svg {
+.dial-rotor svg,
+.dial-rotary {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
 .dial-pressed {
   filter: drop-shadow(1px 1px 0 var(--ink));
+}
+
+.dial-digit {
+  font-size: 7px;
+  pointer-events: none;
 }
 
 /* ——— chase ——— */

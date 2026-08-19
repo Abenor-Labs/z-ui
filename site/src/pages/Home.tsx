@@ -20,7 +20,7 @@ const BLURB = new Map(REGISTRY.map((c) => [c.name, c]));
 
 /** one-line card subtitles — the mechanism, in the product's voice */
 const SUB: Record<string, string> = {
-  dial: 'Flywheel spins down through friction onto detents',
+  dial: 'Pull a hole to the stop — the return crawls home at a fixed speed',
   chase: 'Two springs disagree — the stretch is the speed',
   heft: 'Gravity, contacts and friction, no choreography',
   disclosure: 'Height is a spring that reverses mid-flight',
@@ -106,12 +106,12 @@ export function Home() {
           name="dial"
           title="Dial"
           subtitle={SUB.dial}
-          action="flick"
-          onAction={() => dial.current?.flick(1100)}
+          action="dial 5"
+          onAction={() => dial.current?.dialDigit(5)}
           copyText={installCommand('dial')}
           href="/components/dial"
         >
-          <Dial ref={dial} size={140} />
+          <Dial ref={dial} mode="rotary" size={140} />
         </DemoCard>
 
         <DemoCard

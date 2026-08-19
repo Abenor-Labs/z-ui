@@ -30,7 +30,7 @@ function MiniChase() {
 export function Preview({ name }: { name: string }) {
   switch (name) {
     case 'dial':
-      return <Dial size={96} />;
+      return <Dial mode="rotary" size={96} />;
     case 'chase':
       return <MiniChase />;
     case 'heft':

@@ -12,7 +12,7 @@ What it refuses to be: a design system, a layout kit, a shadcn/ui replacement, a
 
 THE SEVEN REAL COMPONENTS (showcase exactly these — no more, no fewer, no invented ones):
 
-1. dial — category: tactile-feedback. A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again (interrupt + velocity carry-over). Needs: motion.
+1. dial — category: tactile-feedback. A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again (interrupt + velocity carry-over). Needs: motion. The site additionally renders this component in a `mode="rotary"` display — a ten-digit rotary phone face, governed constant-speed return instead of friction decay, same catch spring — as a site-only presentation flag; the shipped default and the CLI install remain the flywheel described above.
 
 2. chase — category: state-morphing. A segmented control whose indicator gives chase: the edge facing the target leaves on a stiff spring, the edge behind follows on a soft spring, and the visible stretch between the two edges IS the speed — nothing scripts the squash, it emerges from the two independent springs. Needs: motion.
 

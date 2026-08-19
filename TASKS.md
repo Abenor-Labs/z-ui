@@ -233,10 +233,7 @@ one's items are done.
 - [ ] Browser DOM verification of the new playground — still no playwright/puppeteer MCP this
       session, so this pass was compile-and-render only, same limitation as Phase 12
 - [ ] Speed multiplier + pause transport from the reference playground (deferred by decision, A15)
-- [ ] Rotary-dial face for `dial` — designed in conversation (10-digit faceplate, finger stop at
-      +120°, governed 300°/s return seated by 1300/46, grabbable mid-return, mode flag with
-      flywheel as the PRD-true default). Parked before approval; needs a PRD.md line 15 decision
-      before any code
+- [x] Rotary-dial face for `dial` — built 2026-08-19, see Phase 15
 
 ## Phase 14 — the two repos became one (2026-08-19, unattended)
 
@@ -316,3 +313,48 @@ pipeline. Phase 14 merged them without losing either.
 - [ ] `site/src/zui/` and `registry/components/` remain two implementations of the same seven
       names. Deliberate. Each registry component is replaced only when a specific one earns it
       on evidence, the way `heft` did on 2026-08-19
+
+## Phase 15 — dial gets a rotary face (2026-08-19)
+
+Designed in conversation, then parked when the session pivoted to the playground/heft work.
+Recapped and built once the user asked where it had gone.
+
+- [x] `site/src/lib/rotary.ts` — pure geometry, no React/motion: `holeRestAngle`, `pullDistance`,
+      `nearestDigit`, `angleDelta`, `from3OClock`, `polar`. Verified headlessly against the
+      original design table before any component code was written: all ten pull distances (60°
+      digit 1 through 330° digit 0) match exactly, every hole self-identifies at its own rest
+      angle, and pull-distance math agrees with nearest-hole math at the stop for all ten digits
+- [x] `Dial.tsx` gains `mode?: 'flywheel' | 'rotary'` (default `flywheel`, unchanged) and a
+      `dialDigit(n)` handle method alongside the existing `flick()`. Rotary adds: hard-walled drag
+      clamped to `[0, pullDistance(digit)]`; a 30° commit threshold below which release aborts with
+      no digit fired; a constant-300°/s governed return (a real rAF loop, not a decay) handing the
+      last 15° to the shared 1300/46 spring; interruptible in both directions — grabbing mid-return
+      re-identifies the nearest hole and redirects; `onDetent` fires once, on seat; number keys 0-9
+      dial directly; reduced motion collapses the whole gesture to click-a-hole → instant home →
+      immediate fire
+      - self-review caught two real defects before they shipped: a duplicated
+        `dialDigitViaKey`/imperative-handle pair (extracted to one shared `startDial`), and the
+        rotary `<svg>` missing its sizing class entirely — it would have rendered at the browser's
+        default 300×150 inside every `.dial` box
+      - digits are printed on a static faceplate layer and revealed through an SVG mask cut into
+        the rotor, so they hold still while the rotor turns rather than spinning with it; mask id
+        generated via `useId()` per instance so multiple simultaneous dials can't collide — checked
+        by SSR-rendering three pages that each mount a dial and confirming one mask ref apiece
+- [x] Wired: Home hero card (`mode="rotary"`, action button now "dial 5" → `dialDigit(5)`, subtitle
+      rewritten to describe what's actually on screen instead of the flywheel), `ComponentPreviews`
+      mini grid (`mode="rotary"`, digit labels auto-hide below 120px), `DialPage` (Mode chip
+      alongside the existing Detents/Size controls — Detents hides itself in rotary mode since it's
+      meaningless there; readouts, caption and the telemetry-graph caption all branch per mode; the
+      code block explicitly notes `mode="rotary"` is a site display flag, not installable API)
+- [x] PRD.md's dial entry gets one appended sentence carving out the rotary display mode; the
+      flywheel description above it, which the CLI actually installs, is untouched
+- [x] DESIGN.md A17 records the geometry, the motion rules, and the deliberate scope boundary:
+      this is a site-only build, not a registry promotion — unlike heft, dial has real registry
+      history to consider more carefully, and unifying it was left for a separate decision
+- [x] Verified: typecheck, eslint, and build all clean; SSR-rendered DialPage, Home, and the 96px
+      preview and confirmed all three render without a runtime crash, with digit labels present at
+      >=120px and correctly absent at 96px
+- [ ] No browser verification — same standing gap as every UI change this week, still no
+      playwright/puppeteer MCP this session
+- [ ] `dial`'s registry promotion (shipping `mode` as real installable API, unifying site and
+      registry the way heft was unified) — deliberately deferred, not forgotten; see DESIGN.md A17
