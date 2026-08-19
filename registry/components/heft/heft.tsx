@@ -47,7 +47,8 @@ class VelocityTracker {
   push(value: number, t = performance.now()) {
     this.samples.push({ t, v: value });
     const cutoff = t - 120;
-    while (this.samples.length > 2 && this.samples[0].t < cutoff) this.samples.shift();
+    // length checked in the condition itself; index 0 exists whenever it runs
+    while (this.samples.length > 2 && this.samples[0]!.t < cutoff) this.samples.shift();
   }
 
   /** units of value per second */
@@ -55,8 +56,9 @@ class VelocityTracker {
     const s = this.samples.filter((x) => x.t >= now - 80);
     const use = s.length >= 2 ? s : this.samples;
     if (use.length < 2) return 0;
-    const a = use[0];
-    const b = use[use.length - 1];
+    // length checked above; noUncheckedIndexedAccess can't see that guard
+    const a = use[0]!;
+    const b = use[use.length - 1]!;
     const dt = (b.t - a.t) / 1000;
     if (dt <= 0) return 0;
     return (b.v - a.v) / dt;
@@ -212,8 +214,9 @@ export function Heft({
     }
     for (let i = 0; i < bs.length; i++) {
       for (let j = i + 1; j < bs.length; j++) {
-        const a = bs[i];
-        const b = bs[j];
+        // i/j are bounded by bs.length above; noUncheckedIndexedAccess can't see that
+        const a = bs[i]!;
+        const b = bs[j]!;
         const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
         const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
         if (ox <= 0 || oy <= 0) continue;
