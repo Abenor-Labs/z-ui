@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Detail } from '../../components/DetailLayout';
 import { Playground } from '../../components/Playground';
 import { Readout } from '../../components/Readout';
-import { Heft, type HeftBodySpec } from '../../zui/Heft';
+import { Heft, type HeftBodySpec } from '@z-ui/registry/heft/heft';
 import { fixed } from '../../lib/format';
 
 const label = (i: number) => `OBJ-${String(i + 1).padStart(2, '0')}`;

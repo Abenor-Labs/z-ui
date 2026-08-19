@@ -329,39 +329,7 @@
   white-space: nowrap;
 }
 
-/* ——— heft ——— */
-
-.heft {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid var(--rule);
-  background-color: var(--paper);
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.heft-box {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: var(--paper);
-  border: 1px solid var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  will-change: transform;
-}
-
-.heft-label {
-  font-size: 10px;
-  pointer-events: none;
-}
-
-.heft-box.contact {
-  box-shadow: var(--contact-shadow);
-}
+/* heft styling now ships with the component: registry/components/heft/heft.css */
 
 /* ——— disclosure ——— */
 

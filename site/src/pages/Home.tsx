@@ -6,7 +6,7 @@ import { DemoCard } from '../components/DemoCard';
 import { REGISTRY, installCommand, REPO_URL } from '../data/registry';
 import { Dial, type DialHandle } from '../zui/Dial';
 import { Chase } from '../zui/Chase';
-import { Heft } from '../zui/Heft';
+import { Heft } from '@z-ui/registry/heft/heft';
 import { Disclosure } from '../zui/Disclosure';
 import { HoldDrain, type HoldDrainHandle } from '../zui/HoldDrain';
 import { LateCritique, type LateCritiqueHandle } from '../zui/LateCritique';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Chase } from '../zui/Chase';
 import { Dial } from '../zui/Dial';
-import { Heft } from '../zui/Heft';
+import { Heft } from '@z-ui/registry/heft/heft';
 import { Disclosure } from '../zui/Disclosure';
 import { HoldDrain } from '../zui/HoldDrain';
 import { LateCritique } from '../zui/LateCritique';

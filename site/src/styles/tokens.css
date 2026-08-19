@@ -46,3 +46,16 @@
   --r-stage: 10px;
   --r-pill: 999px;
 }
+
+/* Bridge to shipped registry components.
+ *
+ * Promoted components carry their own stylesheet with literal fallbacks, so
+ * they render anywhere. Here we hand them the site palette, which is why the
+ * demo looks like the site rather than like a default. A consumer who installs
+ * one and defines nothing gets the fallbacks instead. */
+:root {
+  --z-paper: var(--paper);
+  --z-ink: var(--ink);
+  --z-rule: var(--rule);
+  --z-mono: var(--font-mono);
+}

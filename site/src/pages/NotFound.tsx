@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Page } from '../components/Page';
-import { Heft } from '../zui/Heft';
+import { Heft } from '@z-ui/registry/heft/heft';
 
 export function NotFound() {
   return (
