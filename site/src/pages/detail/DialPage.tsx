@@ -6,6 +6,7 @@ import { Section } from '../../components/Section';
 import { Readout } from '../../components/Readout';
 import { SpringGraph } from '../../components/SpringGraph';
 import { Dial } from '../../zui/Dial';
+import { RotaryDial } from '../../zui/RotaryDial';
 import { useLiveSamples } from '../../lib/useLiveSamples';
 import { fixed } from '../../lib/format';
 
@@ -24,9 +25,7 @@ export function DialPage() {
   const count = Number(detents);
   const rotary = mode === 'rotary';
 
-  const code = rotary
-    ? `<Dial mode="rotary" size={${size}} />`
-    : `<Dial size={${size}} detents={${count}} />`;
+  const code = rotary ? `<RotaryDial size={${size}} />` : `<Dial size={${size}} detents={${count}} />`;
 
   const controls = [
     {
@@ -63,16 +62,16 @@ export function DialPage() {
           code={code}
           codeCaption={
             rotary
-              ? 'what this instance is running — mode="rotary" is a site display flag, not part of the installed component. z-ui add dial ships the flywheel below'
+              ? 'RotaryDial is a separate reference component, not a mode of the installable dial — it is not in the registry and z-ui add dial does not ship it. See the flywheel below for what actually installs'
               : 'the selection above, as you would write it — this is also what installs'
           }
           readouts={
             rotary ? (
               <>
-                <Readout label="ω" value={vel} unit="rad/s" />
-                <Readout label="spring" value="1300/46" unit="k/c" />
                 <Readout label="pulse" value={pulse} />
                 <Readout label="dialed" value={detent} />
+                <Readout label="return" value="300" unit="deg/s" />
+                <Readout label="engage" value="85" unit="%" />
               </>
             ) : (
               <>
@@ -86,10 +85,13 @@ export function DialPage() {
           caption={
             rotary ? (
               <>
-                Pull any hole to the fixed stop and let go. The rotor doesn't spring home — it
-                crawls back at a constant 300°/s, and only the last 15° hand off to the 1300/46
-                catch. Grab it mid-crawl and the pull is yours again, redirected to whichever hole
-                you just caught. Press a number key to dial without a pointer.
+                Pull any hole to the stop and let go — past 85% of that digit's own travel and the
+                pull counts. The wheel doesn't spring home; it crawls back at a constant 300°/s, and
+                the digit is the number of pulses the cam trips on the way — one per 30°, so 0 takes
+                ten times as long as 1. Unlike every other physics on this site, this return does not
+                take a spring catch and cannot be re-grabbed mid-crawl — a deliberate exception,
+                recorded rather than silently made to match. Press a number key to dial without a
+                pointer.
               </>
             ) : (
               <>
@@ -101,30 +103,37 @@ export function DialPage() {
             )
           }
         >
-          <Dial
-            key={`${mode}-${detents}`}
-            mode={mode}
-            size={Number(size)}
-            detents={count}
-            onFrame={(t, _a, v) => {
-              const rad = (v * Math.PI) / 180;
-              vel.set(fixed(rad, 2, 7));
-              push(t, rad);
-            }}
-            onDetent={(i) => detent.set(rotary ? String(i) : String(i).padStart(2, '0'))}
-            onPulse={(count, total) => pulse.set(`${count} / ${total}`)}
-          />
+          {rotary ? (
+            <RotaryDial
+              size={Number(size)}
+              onDigit={(d) => detent.set(String(d))}
+              onPulse={(i, n) => pulse.set(`${i} / ${n}`)}
+            />
+          ) : (
+            <Dial
+              size={Number(size)}
+              detents={count}
+              onFrame={(t, _a, v) => {
+                const rad = (v * Math.PI) / 180;
+                vel.set(fixed(rad, 2, 7));
+                push(t, rad);
+              }}
+              onDetent={(i) => detent.set(String(i).padStart(2, '0'))}
+            />
+          )}
         </Playground>
       }
     >
-      <Section index="01" label="TELEMETRY">
-        <SpringGraph samples={samples} windowSec={3} yLabel="ω (rad/s)" symmetric />
-        <p className="playground-caption">
-          {rotary
-            ? "The trace is your own interaction from the last three seconds. A pull shows as a spike while you drag; letting go drops the curve onto a flat plateau near -5.2 rad/s — the governor holding a literal constant speed, not decaying like the flywheel's friction — until the last 15° hand off and you see the spring's small overshoot at the very end."
-            : 'The trace is your own interaction from the last three seconds — nothing here is recorded or replayed. Watch the decay curve of the freewheel, the sharp reversal when you grab it, and the small overshoot when a detent catches.'}
-        </p>
-      </Section>
+      {rotary ? null : (
+        <Section index="01" label="TELEMETRY">
+          <SpringGraph samples={samples} windowSec={3} yLabel="ω (rad/s)" symmetric />
+          <p className="playground-caption">
+            The trace is your own interaction from the last three seconds — nothing here is
+            recorded or replayed. Watch the decay curve of the freewheel, the sharp reversal when
+            you grab it, and the small overshoot when a detent catches.
+          </p>
+        </Section>
+      )}
     </Detail>
   );
 }

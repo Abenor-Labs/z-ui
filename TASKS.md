@@ -395,3 +395,36 @@ feedback that the first pass was worse. It was.
       hidden at 96px
 - [ ] Still no browser verification — the pulse click's visual timing (90ms thicken) and the letters'
       legibility at small sizes are both things that want an actual look, not just a render check
+
+### Phase 15 correction — the merge was the wrong answer, same day
+
+Told directly: "i asked you to put that code in homepage, and component page no?" The user meant the
+literal reference file on those two pages, not a synthesis of it. The prior revision's merge, however
+defensible on its own terms, answered a different request than the one given.
+
+- [x] `site/src/zui/RotaryDial.tsx` — the reference component ported as given. TypeScript types added
+      throughout (arrived as untyped JS), unused `React` import dropped, one `dialDigit` imperative
+      handle added so the homepage's demo-trigger button still works. No other line of its mechanism,
+      styling, or interaction logic changed
+- [x] Wired onto Home (hero card, replacing `Dial mode="rotary"`) and `/components/dial` (the
+      rotary side of the Mode toggle, replacing the same). `ComponentPreviews.tsx` (the library grid)
+      was left alone — the instruction named the homepage and the component page, not the grid — so it
+      still renders the A17 merged `Dial.tsx` at 96px
+- [x] Recorded rather than smoothed over, in DESIGN.md A18: this component is not interruptible
+      mid-return (the one rule this whole project repeats hardest, broken here on explicit
+      instruction), carries no connection to the shared 1300/46 spring, uses gradients/serif/hardcoded
+      colors outside tokens.css, and adds Web Audio clicks — the only sound on the site. The
+      DialPage code block and caption say plainly that this is not what `z-ui add dial` installs
+- [x] DialPage's rotary readouts rebuilt around what this component actually exposes (pulse count,
+      last dialed digit, the 300deg/s return, the 85% engage threshold) rather than keep showing
+      ω/spring readouts a component with no velocity telemetry and no spring connection can't honestly
+      report. The TELEMETRY/SpringGraph section is flywheel-only now, since rotary has no velocity
+      signal to graph
+- [x] Full gate sweep re-run: registry lint/test, motion scan, registry:check, spring-math, CLI test,
+      site typecheck/lint/build all pass. SSR-verified Home and DialPage render the new component
+      without crashing (10 hole targets, 6 gradient references matching the 3 defined gradients each
+      used once); confirmed the AudioContext code path never executes during SSR since it is only
+      touched inside pointer/key event handlers, never at render time
+- [ ] The site now carries two different rotary-dial implementations depending on which page you're
+      on — recorded as a deliberate outcome in DESIGN.md A18, not an oversight, but worth knowing if
+      it reads as inconsistent later

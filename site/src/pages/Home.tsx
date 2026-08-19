@@ -4,7 +4,7 @@ import { Page } from '../components/Page';
 import { Section } from '../components/Section';
 import { DemoCard } from '../components/DemoCard';
 import { REGISTRY, installCommand, REPO_URL } from '../data/registry';
-import { Dial, type DialHandle } from '../zui/Dial';
+import { RotaryDial, type RotaryDialHandle } from '../zui/RotaryDial';
 import { Chase } from '../zui/Chase';
 import { Heft } from '@z-ui/registry/heft/heft';
 import { Disclosure } from '../zui/Disclosure';
@@ -34,7 +34,7 @@ const SUB: Record<string, string> = {
 };
 
 export function Home() {
-  const dial = useRef<DialHandle>(null);
+  const dial = useRef<RotaryDialHandle>(null);
   const holdDrain = useRef<HoldDrainHandle>(null);
   const critique = useRef<LateCritiqueHandle>(null);
   const origin = useRef<OriginHandle>(null);
@@ -111,7 +111,7 @@ export function Home() {
           copyText={installCommand('dial')}
           href="/components/dial"
         >
-          <Dial ref={dial} mode="rotary" size={140} />
+          <RotaryDial ref={dial} size={140} />
         </DemoCard>
 
         <DemoCard

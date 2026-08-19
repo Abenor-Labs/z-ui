@@ -313,3 +313,47 @@ implementation choices, NOT product facts.
   synthesized Web Audio clicks — no other component on the site has sound, and adding it to exactly
   one would be a real inconsistency rather than a small addition, so it stayed out pending an explicit
   decision to add sound as a site-wide thing.
+
+- **A18 — the reference component itself replaces A17 on Home and `/components/dial`** (2026-08-19,
+  same day, user-directed, reversing part of A17). The user's instruction was "use this component,"
+  meaning the literal reference file, not a synthesis of ideas from it. A17 had instead merged the
+  reference's pulse-counting and letters into the project's own `Dial.tsx` while keeping this site's
+  usual rules — token colors, no gradients, interruptible mid-flight. That merge was the wrong call:
+  told to place specific code on specific pages, adapting it into different code that merely shares
+  some behavior is not the same request answered, even if the adaptation is defensible on its own
+  terms.
+
+  `site/src/zui/RotaryDial.tsx` is that reference file, ported with the minimum change that makes it
+  compile: TypeScript types added throughout (it arrived as plain JS with no annotations), the unused
+  `React` namespace import dropped (this project's JSX transform is automatic), and one integration
+  seam — a `dialDigit` imperative handle via `useImperativeHandle`, so the homepage's existing
+  demo-trigger button pattern keeps working — added because every other card on the landing page has
+  one and removing it from just this card would be its own inconsistency. No other line of its
+  mechanism, styling, or interaction logic was changed.
+
+  This means, as given and not smoothed over:
+  - It renders with three `radialGradient`s, a `feDropShadow` filter, a Georgia/Times serif face, and
+    roughly a dozen literal hex colors — none of it drawn from `tokens.css`, all of it in direct
+    conflict with this file's "colors only via custom properties, no new colors, no gradients except
+    the one named exception" rule stated above. Recorded as an explicit, acknowledged exception on
+    these two pages, not a silent violation.
+  - Its return is **not interruptible**. `onPointerDown` refuses to grab the wheel while
+    `returning` is true. This is the one rule repeated hardest across this entire project — "if it
+    can't reverse mid-flight, it doesn't ship" — and this component breaks it, deliberately, on the
+    user's explicit and twice-repeated instruction. It is the only component on the site that does.
+  - It has no connection to the shared 1300/46 spring; its return is pure constant-speed rAF motion
+    to zero, no spring settle phase at all.
+  - It synthesizes mechanical click sounds via the Web Audio API, `sound=true` by default — the only
+    audio anywhere on the site.
+  - It is not in the registry and is not what `z-ui add dial` installs. `/components/dial`'s code
+    block and caption say this plainly rather than let a visitor assume it.
+
+  A17's merged version — token-compliant, interruptible, spring-catch on seat, no audio — was not
+  deleted. It remains `Dial.tsx`'s `mode="rotary"`, and is still what the library grid preview at
+  96px renders (`ComponentPreviews.tsx` was not touched by this revision; the instruction named the
+  homepage and the component page specifically). So the site now shows two different rotary-dial
+  implementations depending on where you look, for a recorded reason rather than an accidental one:
+  the reference is the destination and the flagship; the merged version is what a component that
+  actually followed this project's own rules would look like, kept because deleting verified,
+  working, rule-honoring code to make room for code that knowingly breaks those rules was never asked
+  for.
