@@ -48,3 +48,5 @@ playground/
 # Anchored so it cannot swallow web/components or site/src/components.
 /components/
 /z-ui.json
+
+.vercel
