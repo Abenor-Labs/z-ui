@@ -42,3 +42,8 @@ playground/
 
 # Critique snapshots are a local record, not shared state.
 .impeccable/
+
+# CLI hand-test scaffolding. Kept on disk, not part of the repo.
+# Anchored so it cannot swallow web/components or site/src/components.
+/components/
+/z-ui.json

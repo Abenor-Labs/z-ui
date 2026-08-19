@@ -3,30 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "description": "Registry build output. Reads registry/ and writes public/r/ for the CLI. The website itself lives in site/.",
   "scripts": {
     "registry": "node scripts/build-registry.mjs",
-    "registry:check": "node scripts/build-registry.mjs --check",
-    "predev": "pnpm registry",
-    "dev": "next dev",
-    "prebuild": "pnpm registry",
-    "build": "next build",
-    "start": "next start",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "motion": "^12.43.0",
-    "next": "^16.3.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "tailwind-merge": "^3.6.0"
+    "registry:check": "node scripts/build-registry.mjs --check"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
-    "@types/node": "^26.1.2",
-    "@types/react": "^19.2.18",
-    "shiki": "^4.4.1",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2"
+    "shiki": "^4.4.1"
   }
 }

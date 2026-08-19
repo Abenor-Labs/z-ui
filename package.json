@@ -17,7 +17,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "pnpm --filter @z-ui/gallery dev",
+    "dev": "pnpm --filter @z-ui/site dev",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
@@ -28,7 +28,8 @@
     "lint:contrast": "node scripts/lint-contrast.mjs",
     "lint:contrast:test": "node scripts/lint-contrast.test.mjs",
     "test:spring-math": "node --test --experimental-strip-types scripts/spring-math.test.mjs",
-    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:motion:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check && pnpm test:spring-math && pnpm test"
+    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:motion:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check && pnpm test:spring-math && pnpm test",
+    "build:site": "pnpm --filter @z-ui/site build"
   },
   "devDependencies": {
     "ajv": "^8.20.0",

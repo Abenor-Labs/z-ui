@@ -1,0 +1,48 @@
+/* The only place colors exist.
+ *
+ * REVISED 2026-08-18 (user-directed): the site is DARK. The original committed
+ * direction was a light warm-paper instrument; the landing was rebuilt to the
+ * transitions.dev model — centered hero, dark surface, uniform demo grid — and
+ * the palette follows it site-wide rather than leaving one page inconsistent.
+ * See DESIGN.md → "Revision 2026-08-18".
+ *
+ * The two original hexes did not disappear, they swapped roles: #1A1815 was the
+ * ink and is now the raised surface family; #F4F1EA was the paper and is now the
+ * text. Signal orange is untouched and still means "live / measured".
+ */
+:root {
+  /* role: page background */
+  --paper: #0f0e0d;
+  /* role: primary text and hard contact edges */
+  --ink: #f4f1ea;
+  /* the only accent — live, interactive, measured things */
+  --signal: #ff4d00;
+  /* hairlines, borders, graph gridlines */
+  --rule: #2a2723;
+  /* raised panels: cards, stages, code blocks */
+  --recess: #1a1815;
+  /* a card sitting on --recess needs one step further up */
+  --recess-2: #211e1a;
+
+  --font-ui: 'Archivo', 'Archivo Fallback', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* 8pt grid */
+  --u: 8px;
+  --u2: 16px;
+  --u3: 24px;
+  --u4: 32px;
+  --u6: 48px;
+  --u8: 64px;
+  --u12: 96px;
+
+  --max-w: 1280px;
+
+  /* The single permitted shadow: 1px-offset hard contact on pressed/dragged elements. */
+  --contact-shadow: 1px 1px 0 0 var(--ink);
+
+  /* Radii — introduced with the 2026-08-18 revision; the original direction had none. */
+  --r-card: 14px;
+  --r-stage: 10px;
+  --r-pill: 999px;
+}

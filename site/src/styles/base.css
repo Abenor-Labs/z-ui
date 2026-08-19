@@ -1,0 +1,157 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  line-height: 1.5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+p {
+  max-width: 62ch;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+}
+a:hover {
+  text-decoration-color: var(--signal);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+/* ——— instrument utilities ——— */
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--rule);
+}
+.hairline-b {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* live measured values: mono, Signal orange */
+.readout {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--signal);
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+
+.grabbable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.grabbable:active,
+.grabbing {
+  cursor: grabbing;
+}
+
+/* pressed/dragged elements get contact, not glow */
+.contact {
+  box-shadow: var(--contact-shadow);
+}
+
+/* graph-paper column rules on the page frame (desktop) */
+.ruled {
+  position: relative;
+}
+.ruled::before,
+.ruled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule);
+  pointer-events: none;
+}
+.ruled::before {
+  left: 0;
+}
+.ruled::after {
+  right: 0;
+}
+
+@media (max-width: 720px) {
+  .ruled::before,
+  .ruled::after {
+    display: none;
+  }
+}

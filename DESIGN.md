@@ -1,103 +1,262 @@
+# DESIGN — Z-UI website
+
+Everything under "Committed direction" is decided fact. Anything decided later during the build
+goes under "Assumptions", clearly marked as an assumption, never presented as a product fact.
+
+## Committed direction
+
+### Identity
+
+"Instrument, not brochure." The site looks and behaves like a precision measuring instrument for
+motion — an oscilloscope crossed with an engineer's lab notebook. Every decorative element must be
+a REAL artifact of the product (actual spring curves, actual velocity readouts), never ornament.
+
+### Palette (exact hex, no additions) — REVISED 2026-08-18
+
+The site is DARK. The two neutrals swapped roles rather than being replaced: what was the ink is
+now the raised surface family, and what was the paper is now the text.
+
+- Paper (page background): `#0F0E0D`
+- Ink (text, hard contact edges): `#F4F1EA`
+- Recess (cards, stages, code blocks): `#1A1815`, one step up: `#211E1A`
+- Rule (hairlines, borders, gridlines): `#2A2723`
+
+Superseded light values, kept for the record: Paper `#F4F1EA`, Ink `#1A1815`, Rule `#D8D2C4`,
+Recess `#EAE6DB`.
+- Signal: `#FF4D00`  (international orange — the ONLY accent; reserved exclusively for live/interactive/measured things: spring curves, active states, the dial's indicator, velocity numbers)
+- Rule:   `#D8D2C4`  (hairlines, borders, graph gridlines)
+- Recess: `#EAE6DB`  (inset panels, code blocks)
+
+No gradients anywhere, with exactly one exception (2026-08-18): a single radial glow behind the
+landing's hero mark, `rgba(255,77,0,0.22)` fading to transparent. It appears once on the whole
+site. No box-shadows except a single 1px-offset hard shadow on pressed/dragged elements (objects
+have contact, not glow).
+
+Radii were introduced with the same revision: 14px cards, 10px stages, pill buttons. The rest of
+the site remains square.
+
+### Type (exact)
+
+- Headings + UI: Archivo (Google Fonts), tight tracking, weights 500/700 only
+- All numbers, code, measurements, labels: JetBrains Mono — every live physical value on screen
+  (velocity, spring stiffness, fill %) renders in mono in Signal orange, updating in real time
+- No Inter anywhere.
+
+### Layout system
+
+- Ruled like graph paper: visible 1px hairline column rules on desktop, content snapping to an
+  8pt grid
+- Section dividers are hairlines with mono labels ("01 / REGISTRY"), like schematic annotations
+- Left-aligned, dense, desktop-led. No centered hero, no vague headline floating in whitespace.
+
+### First frame (literal spec) — SUPERSEDED 2026-08-18, see "Revision 2026-08-18" below
+
+Above the fold: headline "Micro-animations you own." set huge in Archivo, left-aligned. To its
+right, a REAL working dial — the actual flywheel physics (interrupt + velocity carry-over,
+detents, spring catch). Next to the dial, a live mono readout: current velocity (rad/s) and the
+active spring constants (1300/46), printed in Signal orange, updating every frame. Below: the
+install command `npx @abenor/z-ui@latest add dial` in a Recess-colored block with a copy
+affordance. The user must be able to flick the dial within 1 second of load. Nothing autoplays;
+the page is still until touched.
+
+### Motion identity (one personality, everywhere)
+
+- Default site spring: stiffness 1300, damping 46 (the dial's own numbers — the site runs on the
+  product's physics)
+- Soft-follow spring for secondary elements: 300/30
+- EVERYTHING is interruptible; if a transition cannot be reversed mid-flight, it doesn't ship
+- Route transitions: content settles in on the stiff spring with a 20–40ms stagger down the ruled
+  sections — like an instrument powering on, not a fade
+- No opacity-only transitions, no ease-in-out CSS keyframes, no autoplaying loops
+
+### Showcase specs (per component — the site's actual centerpieces; each must match the described
+physics exactly, reimplemented for the site, not screenshots or fakes)
+
+- dial: hero placement as above; its detail page adds a live-drawn velocity-over-time graph
+  (SVG polyline) plotting the last 3 seconds of the user's own interaction
+- chase: IS the category filter on the Component Library page — the filter control is a real
+  chase instance (two independent springs, stiff leading edge, soft trailing edge, emergent
+  stretch); annotate the stretch with a hairline + mono label on first interaction
+- heft: full-width sandbox on its page — real gravity, contacts, friction; a "spawn object"
+  button adds boxes; live contact-count readout in mono
+- disclosure: the docs page's own accordions ARE disclosure instances (dogfooding); detail page
+  shows a height-over-time graph proving velocity carry-over on interrupt
+- hold-drain: fill % and drain rate as live mono readouts; one dry caption sentence explaining
+  the abort-cost principle
+- late-critique: real form on its page (e.g. an email field); a mono event log beside it prints
+  timestamped validation decisions as they happen, proving "no verdict mid-word, forgiveness
+  same-frame"
+- scramble-reveal: every page's section labels use it on first scroll-into-view — once per label,
+  never looping
+
+### Micro-details (non-negotiable checklist — verified in-browser 2026-08-14)
+
+- [x] `::selection` uses Signal orange with Paper text (computed: rgb(255,77,0) / rgb(244,241,234))
+- [x] Custom `:focus-visible` — 1px Ink outline offset 2px, no default blue ring
+- [x] `cursor: grab / grabbing` on all draggable physics elements (dial, heft boxes)
+- [x] Code blocks: Recess bg, mono, one-click copy whose confirmation state change uses the site
+      spring (not a toast) — verified: label stack springs with visible 1300/46 overshoot
+- [x] 404: heft-style fallen boxes; same physics; same voice — drop on first touch, no autoplay
+- [x] `prefers-reduced-motion`: springs collapse to instant state changes, dial becomes
+      click-to-step — documented below
+- [x] Responsive: desktop-led as flagship, nothing broken at 390px; physics playgrounds use
+      pointer events + touch-action: none for touch
+
+### Reduced motion (committed behavior)
+
+When `prefers-reduced-motion: reduce`:
+- All Motion springs collapse to instant state changes (duration 0).
+- The dial's freewheel is disabled; the dial becomes click-to-step — each click advances one
+  detent instantly. Readouts still update.
+- scramble-reveal renders its final text immediately, no glyph cycling.
+- Route transitions render the new page in place, no settle.
+- Heft remains draggable but boxes teleport-resolve rather than tumble (single relaxation step,
+  no continuous gravity animation is required to read the page).
+
 ---
-name: Z-UI
-description: A registry of spring-driven micro-interaction components, delivered as source you own.
+
+## Revision 2026-08-18 (user-directed)
+
+The landing was rebuilt on the transitions.dev model. What changed, and what did not:
+
+**Changed**
+- Hero is centered: a bordered mark tile with a single radial glow, the headline, a 3-line
+  subhead, two pill CTAs (Browse / GitHub), and the install command as a pill below them.
+- Site palette is dark (see Palette above). This is site-wide, not landing-only — colors live in
+  one token file and a half-dark site reads as a bug.
+- The landing IS the demo grid: eleven uniform cards (seven registry + four candidates), each
+  `stage / trigger / title / one-line mechanism / copy-install`. The old left-aligned hero with
+  the dial beside the headline is gone; the dial is now the first card in the grid.
+- Cards and stages have radii; pills exist.
+
+**Deliberately not changed**
+- Every stage holds a REAL component instance. Nothing is a video, a screenshot, or a loop.
+- The card trigger is not an "Animate" button. It fires the component's own input path and then
+  gets out of the way: `flick` hands the dial an impulse and its own friction takes over;
+  `hold 700ms` presses and releases so the real drain runs; `type a bad address` replays
+  keystrokes through the field's own input handler and the verdict lands on the real idle timer.
+  The one simulated input is intent's `simulate approach`, which dispatches a pointer path — the
+  decision it produces is the component's own, and the card label says the input is simulated.
+- Signal orange still means live/measured. Numbers still render mono in Signal.
+- Springs, interruptibility, and reduced-motion behavior are untouched.
+
+**Cost of the change, recorded honestly**: PRD.md's "no centered hero / no dark" non-goal was
+overridden by the user, and DESIGN.md's original first-frame spec (dial beside the headline,
+flickable within 1s) no longer describes the page — the dial is now one card down, still live and
+still flickable, but no longer above the fold on short viewports.
+
+## Revision 2026-08-18b — transitions.dev motion tokens (user-directed)
+
+The site's chrome had no transitions at all: every hover, border and tab change was instant, which
+is what read as "not smooth" next to transitions.dev. The `transitions-dev` and `transitions-polish`
+skills were installed and applied, with a hard scope line.
+
+**Installed** — `src/styles/motion.css`
+- The shared motion-token scale, copied from the skill's `_root.css`: `--duration-*`, `--ease-*`,
+  `--distance-*`, `--scale-*`, `--blur-*`.
+- Transition **16 · tabs sliding** was installed and then removed. The detail page's
+  preview/source/install bar now runs on a real `chase` instance — the same control the
+  /components filter uses, given a `label` prop for its own accessible name. Measured in-browser:
+  the indicator travels left 3px → 153px while its width goes 78 → 160 → 78, so the stretch is the
+  emergent one, not a tweened pill. A site selling an emergent-stretch indicator should not ship a
+  CSS pill doing the same job two clicks away.
+- Transition **14 · skeleton loader and reveal**, verbatim, on the registry read. The panel pulses
+  a placeholder in the same slot and cross-fades to whatever the registry answered.
+- A polish pass over chrome only: hover in at `--duration-quick`, resting state at
+  `--duration-fast`, both on `--ease-smooth-out`; `scroll-behavior: smooth` with a reduced-motion
+  guard.
+
+**The scope line — nothing above touches a component that owns physics.** The seven registry
+components and the four candidates keep their springs, their friction integrators and their
+velocity carry-over. A duration cannot carry velocity through an interrupt, and that is the
+product's whole claim: /architecture argues CSS keyframes cannot reverse mid-flight, so the
+components must not be built from them. Chrome is not the product, so chrome can be tokenized.
+
+Both snippets ship with their `prefers-reduced-motion` guard intact, plus a guard covering the
+polish-pass selectors.
+
 ---
 
-# Design System: Z-UI
+## Assumptions
 
-## 1. Overview
+Decisions made during the build that the creative direction did not specify. These are site
+implementation choices, NOT product facts.
 
-**Creative North Star: "The Lab Sheet"**
-
-Not a website that happens to show components. A sheet of engineering paper with live instruments mounted on it: warm cream ground, ink linework, serif display type set like a drawing title block, and a single rust signal that lights only on whatever is physically moving. The reference points are a Braun instruction sheet, a drafting table, and a specimen board — not a code editor.
-
-**Revision note (2026-08-14):** this replaces "The Instrument Panel", the dark warm-brown ramp that preceded it. Two dark ramps died for one structural reason: near-black plus one accent is the default dev-tool costume whatever the hue, and warming the browns only picked a different instance of it. So the ground flipped. A motion library's site is wall-to-wall dark demos everywhere else; paper is the differentiated position, and it photographs the components like specimens instead of dressing them like screenshots. The physical-object reading is still deliberate and load-bearing — this library is about tactility — but the object is now the drawing of the machine, with the machine parts themselves inset and operable.
-
-The one dark surface left is the plate that carries source code. That inversion is the system's depth story: paper is where things are touched, ink plates are where things are read.
-
-**Key Characteristics:**
-- Paper chassis, ink markings, one rust signal
-- Light-first; dark exists only as the code plate, which is the ink token itself
-- Nearly monochrome at rest; color is an event, not a surface
-- Serif display voice in a single weight — hierarchy from size and space, never boldness
-- Motion is the only ornament, and it is never idle
-
-## 2. Colors
-
-Restrained: warm paper neutrals carry the entire surface, and one desaturated signal colour is rationed to the moving part.
-
-### Primary
-- **Signal Rust** (`#A03D00`): The indicator. Burnt orange at ink-adjacent depth — a printed warning on an instrument sheet, not a glowing LED. Reserved for the element currently in motion or an active state the user just caused: a needle mid-spin, a pill mid-travel, a copied confirmation decaying. Never a background, never body text, never decoration on a static element. Clears the 4.5:1 text floor on every ground it appears against (5.9:1 on chassis, 5.2:1 on panel), so unlike the mint it replaces it may also label, sparingly.
-
-### Neutral
-- **Paper** (`#F5F1E6`): The base surface (`chassis`). Warm cream, R > G > B, unmistakably not white.
-- **Ink** (`#211D12`): Primary text, control markings, and the code plate's ground. Warm near-black; never pure `#000`.
-- **Sheet ramp**: `#EFEADB` (surface) → `#E9E3D0` (panel) → `#DFD7BF` (panel-2) → `#7E7661` (control border). Tonal steps of the same yellowed-paper family; every step warm, none borrowed from a framework ramp.
-- **Rules**: `#D6CEB6` (rule) and `#E0D9C4` (hair) — drafting linework, 1.4.11-exempt dividers only.
-
-### Named Rules
-
-**The Moving Part Rule.** Rust marks what moves, never what merely means. If a colour is carrying semantics on a static element, something in the neutral ramp is the right choice. An interface at rest shows almost no rust at all.
-
-**The Contrast Floor Rule.** Every foreground/ground pair the site paints is enforced by `scripts/lint-contrast.mjs` at the WCAG floors — 4.5:1 for text, 3:1 for meaningful non-text — measured with the spec's own math, not by eye. Registry components are additionally checked against a white consumer app, because the file leaves this repo.
-
-**The Second Channel Rule.** State is never encoded in hue alone. Every state change carries shape, fill, or position alongside colour, so the component still reads in forced-colors mode and to a color-blind user with the animation disabled.
-
-**The Ink Plate Rule.** Dark surfaces exist for exactly one job: mounting source code, using the ink token as ground so the site has one story about what dark is. A dark panel that carries anything other than code is wearing a costume.
-
-## 3. Typography
-
-**Display Font:** Instrument Serif (with `Georgia, serif`)
-**Body Font:** Instrument Sans (with `system-ui, sans-serif`)
-**Label/Mono Font:** IBM Plex Mono (with `ui-monospace, monospace`)
-
-**Character:** The serif is the drawing's title block — one weight, 400, which is the constraint that keeps the display voice honest: hierarchy comes from size and space, never from piling on boldness. Its italic is the system's single flourish, spent on at most one word per page. The sans does every sentence and disappears doing it. Plex Mono is the silkscreen: install commands, prop names, spring constants, state labels — anything a developer reads as a value.
-
-### Hierarchy
-
-- **Display** (`t-xl`, serif): Reserved for the masthead. Never appears in component UI.
-- **Title** (`t-lg`, serif): Section and page headers.
-- **Body** (sans): Prose and descriptions, capped at 65–75ch.
-- **Label** (`lbl` / `lbl-xs`, mono, tracked): The workhorse — eyebrows, units, paths, states.
-
-### Named Rules
-
-**The Snippet Is The Hero Rule.** On any component page, the largest and most contrasted element after the live demo is the code. Prose is subordinate to both.
-
-**The No Display Type In UI Rule.** Serif faces never appear inside a shipped component. Components carry Body and Label only, because they land inside someone else's type system and must not fight it.
-
-## 4. Elevation
-
-Flat by default, with tonal layering rather than shadows: paper planes are steps in the sheet ramp, and the one true depth change — code — inverts to the ink plate. Shadows are permitted in exactly one situation: as a transient response to direct user input, appearing and resolving with the same spring that drives the interaction.
-
-### Named Rules
-
-**The Flat-At-Rest Rule.** Surfaces have no shadow until the user touches them. If a screenshot of the idle state shows a shadow, the shadow is wrong.
-
-**The Milled Not Floated Rule.** Depth comes from tonal steps, not from blur. If depth is being read from a blurred edge, replace it with a step.
-
-## 5. Components
-
-Seven ship. The masthead's specimen is `dial` — the first component built to carry that slot: grabbable within a second of paint, and its one behaviour (it keeps spinning after your hand leaves) is the product thesis performed rather than stated. Every component: real spring or honest tween, `data-state` published, reduced-motion branch, 44px targets, keyboard path through the same physics.
-
-## 6. Do's and Don'ts
-
-### Do:
-- **Do** reserve Signal Rust for the element in motion or the state just caused, on 10% or less of any surface.
-- **Do** tint every neutral toward the paper family. Pure `#000` and pure `#fff` are forbidden.
-- **Do** convey depth with tonal steps; reserve dark ground for the code plate alone.
-- **Do** ship every component with default, hover, focus-visible, active, and disabled states.
-- **Do** give every component a real `prefers-reduced-motion` path that still communicates the state change. An instant swap is correct; a zero-duration animation is not.
-- **Do** keep hit targets at 44x44 CSS pixels minimum, even where the visual element is smaller.
-- **Do** let overshoot happen only when all four hold: element under 48px, direct response to user input, interruptible mid-flight, tied to a state change.
-
-### Don't:
-- **Don't** build Lottie / Rive asset dumps: motion with no state model is media, not a component.
-- **Don't** produce "Awesome CSS buttons" collections. Every component shares one API vocabulary or it does not ship.
-- **Don't** write enterprise motion specification documents. If a page explains more than it demonstrates, delete the prose and build the demo.
-- **Don't** ship toy and gimmick packages: confetti cannons, cursor trails, party mode.
-- **Don't** animate anything the user did not touch. No mount animations, no scroll-driven reveals, no idle loops inside a shipped component.
-- **Don't** use bounce or elastic easing as flavor. Overshoot comes from real spring physics under the four conditions above, never from a `cubic-bezier` that imitates one.
-- **Don't** let the paper drift toward grey or the panels toward Tailwind stone. If a neutral stops reading warm, the sheet has lost its material.
-- **Don't** use gradient text, `background-clip: text`, decorative glassmorphism, or colored side-stripe borders anywhere in the system.
-- **Don't** put display type, custom scrollbars, or invented affordances inside a shipped component. It lands in someone else's app and must disappear into it.
+- **A1 — Detent count and dial geometry.** The site's dial renders 12 detents (every 30°),
+  160px hero diameter. PRODUCT FACTS specify detents but not their count; 12 reads as an
+  instrument bezel.
+- **A2 — Chase spring numbers.** PRODUCT FACTS say chase "runs two springs simultaneously" but
+  give no constants. The site's chase uses 1300/46 for the leading edge and 300/30 for the
+  trailing edge — the site's own committed motion identity — and labels them as the site's
+  implementation, not the registry component's shipped values.
+- **A3 — Hold-drain rate.** Climb rate 60%/s (~1.67s to confirm), drain at the same 60%/s.
+  PRODUCT FACTS fix only the symmetry (drain rate = climb rate), not the rate itself.
+- **A4 — Late-critique idle window.** A verdict is considered "late enough" after 700ms of
+  typing silence or on blur. PRODUCT FACTS fix the behavior (no verdict mid-word, same-frame
+  forgiveness), not the exact idle threshold.
+- **A5 — Heft engine.** The site's heft sandbox is a bespoke axis-aligned rigid-body integrator
+  (gravity, impulse contacts, friction, no rotation) written for this site. The real registry
+  component's internals are not claimed or copied.
+- **A6 — CLI page terminal output. SUPERSEDED 2026-08-18.** Output on /cli was illustrative
+  rendering in the product's voice. It is now real: transcripts captured by running
+  `npx @abenor/z-ui@latest` (v0.1.1) in a scratch project on 2026-08-18, stored verbatim in
+  `src/data/cliRecordings.ts`, with only npm's own install noise trimmed and marked in place. The
+  page replays them two ways — a recorded cast with a play/pause transport, and a shell that
+  answers typed commands from the same set and refuses to invent anything outside it. What the
+  capture revealed about PRODUCT FACTS is written up in CLI-FINDINGS.md, unresolved on purpose. REVISED 2026-08-18: /cli is now an interactive shell rather than
+  static transcripts — it parses the seven real commands and the documented flags, accepts
+  `z-ui add dial`, `npx @abenor/z-ui@latest add dial` or bare `add dial`, and supports Tab
+  completion, ↑/↓ history, Ctrl+L and `clear`. It invents no commands: an unknown verb prints the
+  seven and stops. Two outputs are computed rather than written: `list` reads the registry data,
+  and `spring <name>` plots the damped step response from the component's real constants
+  (dial 1300/46 → 7.4% overshoot, settles ~170ms) as ASCII. The banner says "simulated shell"
+  so nobody reads it as a captured session. Nothing autoplays; it is still until typed in.
+- **A7 — Links.** GitHub repo URL `github.com/Abenor-Labs/z-ui` is taken from the shadcn
+  fallback URL in PRODUCT FACTS; npm package page from `@abenor/z-ui`. No other contact
+  channels exist in the facts, so the footer offers only these plus GitHub issues.
+- **A8 — Framework.** React + Vite + react-router (client-rendered). Reasoning recorded in
+  ARCHITECTURE.md.
+- **A9 — Scramble glyph set.** `#/\\<>[]{}=+*%—0123456789` — reads as instrument noise, not
+  matrix-rain. Duration ~500–700ms, chars lock left-to-right with jitter, ~2 shuffles per
+  frame-step. Runs once per label.
+- **A10 — 404 composition.** Three heft boxes glyphed "4", "0", "4" drop into the sandbox on
+  first pointer interaction (page loads still; spec forbids autoplay) — the pile they land in is
+  the 404 graphic. Since the engine is axis-aligned (A5), "fallen over" reads as
+  dropped-and-scattered, not rotated.
+- **A11 — Fonts self-hosted** via @fontsource packages (Archivo 500/700, JetBrains Mono 400/500)
+  rather than Google Fonts CDN — no third-party request, no FOUT flash of wrong font on repeat
+  visits.
+- **A12 — Compact live previews** (mini dial, three-segment chase, three-box heft, one-line
+  disclosure, small hold-drain bar, small email field, hover-scramble line) are shared by the
+  library cards AND the home page registry grid — interactive per the no-dead-previews
+  constraint, reduced in size only. The home registry section was revised from a text table to
+  this live grid after review: showing beats describing.
+- **A13 — Candidate lab route.** `/candidates` is a site-only bench for components that are NOT
+  in the registry: reel, origin, grip, intent. PRODUCT FACTS still says seven components, and the
+  page says so in its own header — no install command, no CLI mention, no registry card. The
+  slate they came from, and the source study behind it, live in CANDIDATES.md at the repo root.
+  A candidate becomes a component only when the CLI can install it and PRODUCT FACTS is updated.
+- **A14 — Candidate physics constants.** grip breaks loose at 22px of pull and trails by 8px;
+  intent counts a pointer as aimed within 32 degrees plus the target's own angular size, slow
+  below 70px/s, committed inside 280px; reel decays at 4.2/s and catches below 2.5 rows/s. These
+  are site-implementation numbers for unreleased components, not shipped values.
+- **A15 — Detail-page playground** (adopted 2026-08-19, user-directed, modeled on the playground
+  at orbs.jakubantalik.com): every component detail page is a controls panel over a live stage over
+  the code that stage is currently running. Each control group is a real `chase` instance — the
+  site does not ship a bespoke segmented control in order to demonstrate its own segmented control.
+  The code block is generated from the same state the stage renders from, so it cannot drift from
+  what is on screen. The preset sets are site-authored, not product facts: dial 8/12/24 detents at
+  96/160/220px; chase 2/3/5 options with annotate off/on; heft scenes stack / scatter / tower /
+  crowd at 260/420px; disclosure short/long content; hold-drain 30/60/120 %/s; late-critique log
+  off/on and full/compact; scramble-reveal hover/mount/in-view at 240/380/600ms. The reference
+  playground's speed multiplier and pause transport were deliberately NOT adopted in this pass —
+  an honest time-scale means every component reads a scale factor (rAF integrators multiply dt;
+  springs scale as k·s², c·s), which is a seven-component change and was deferred by decision.
+- **A16 — Heft solver constants.** VEL_ITERATIONS 8, POS_ITERATIONS 3, POS_PERCENT 0.8, SLOP 0.5px,
+  with warm starting (accumulated normal and friction impulses cached per contact between
+  substeps). The slop is load-bearing, not sloppiness: penetration is corrected to 0.5px and no
+  further, because a contact driven to exactly zero penetration disappears from the manifold list
+  and the body free-falls for a substep — a hard wall clamp was measured doing exactly that, with
+  resting bodies reaching 14400 px/s. Warm starting is what lets a stack converge in a bounded
+  iteration count; without it a seven-box stack still crept at 13 px/s after 16 iterations and
+  never slept.
