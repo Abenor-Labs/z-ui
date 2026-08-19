@@ -244,10 +244,15 @@ Context: `z-ui updated` was a separate directory holding a rebuilt site and a se
 implementation of all seven components. This repo held the registry, the CLI and the publishing
 pipeline. Phase 14 merged them without losing either.
 
-- [x] Committed the old working tree before touching anything — 55 dirty files, 3 unpushed
-      commits, and three finished components (`dial`, `chase`, `heft`) that had never been
-      tracked at all. Split into two commits: the publish set isolated so it can be
-      cherry-picked onto `main`, then an unreviewed snapshot of the rest
+- [x] Committed the old working tree before touching anything — 55 dirty files and three
+      finished components (`dial`, `chase`, `heft`) that had never been tracked at all. Split
+      into two commits: the publish set isolated so it can be cherry-picked onto `main`, then an
+      unreviewed snapshot of the rest. (Correction: this was first recorded as also including
+      "3 unpushed commits". Those three were ahead of `main` but already on the remote as
+      `fix/first-contact` — open as PR #13. Only the new work was ever unpushed.)
+- [x] Established the branch topology, which was not what it looked like: `publish/dial-chase-heft`
+      and `site/vite-swap` were cut from `fix/first-contact`, so every new commit stacks on top of
+      an open PR rather than on `main`
 - [x] Established that this is not a port but a choice: the registry components are already
       self-contained (351–702 lines, zero relative imports) and the site's are separate
       reimplementations. `heft` differs by physics *model* — circular penalty solver here,
