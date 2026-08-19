@@ -57,9 +57,10 @@ function SourcePanel({
       <div className="detail-note-block">
         <p className="mono detail-note">registry: 404 — nothing published under “{name}”</p>
         <p className="playground-caption">
-          The registry currently publishes four items. This one runs on the site as a faithful
-          reimplementation, but no file ships under this name yet, so there is nothing honest to
-          print here — and the shadcn fallback command on the Install tab will fail until it does.
+          The registry publishes all seven components today. This one runs on the site as a
+          faithful reimplementation, but no file ships under this name yet, so there is nothing
+          honest to print here — and the shadcn fallback command on the Install tab will fail
+          until it does.
         </p>
         <a className="mono detail-link" href={state.url} target="_blank" rel="noreferrer">
           {state.url} ↗

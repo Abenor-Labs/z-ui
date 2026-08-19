@@ -44,7 +44,6 @@ export function Home() {
   const [chaseValue, setChaseValue] = useState('two');
   const [spawn, setSpawn] = useState(0);
   const [open, setOpen] = useState(false);
-  const [scrambleKey, setScrambleKey] = useState(0);
   const [count, setCount] = useState(0);
 
   /** intent's decision is real; only the pointer is simulated, and the card says so */
@@ -201,17 +200,11 @@ export function Home() {
           name="scramble-reveal"
           title="Scramble-reveal"
           subtitle={SUB['scramble-reveal']}
-          action="run"
-          onAction={() => setScrambleKey((k) => k + 1)}
           copyText={installCommand('scramble-reveal')}
           href="/components/scramble-reveal"
         >
           <span className="mono demo-scramble">
-            <ScrambleReveal
-              key={scrambleKey}
-              trigger="mount"
-              text="text that decodes out of random glyphs."
-            />
+            <ScrambleReveal trigger="hover" text="text that decodes out of random glyphs." />
           </span>
         </DemoCard>
 
