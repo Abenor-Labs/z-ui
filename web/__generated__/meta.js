@@ -197,7 +197,7 @@ export const items = [
     "name": "heft",
     "type": "registry:component",
     "title": "Heft",
-    "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Gravity, contacts and friction, in one file.",
+    "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Axis-aligned rigid bodies, sequential impulses with warm starting, gravity, contacts and friction — in one file, with its stylesheet beside it.",
     "category": "tactile-feedback",
     "gesture": "drag",
     "states": [
@@ -212,23 +212,11 @@ export const items = [
         "dragging",
         "settling"
       ],
-      "springs": [
-        {
-          "name": "SPRING",
-          "stiffness": 1400,
-          "damping": 70,
-          "mass": 1,
-          "restDelta": null,
-          "restSpeed": null,
-          "preset": null
-        }
-      ],
+      "springs": [],
       "durations": [],
       "reducedMotion": "branch"
     },
-    "dependencies": [
-      "motion"
-    ],
+    "dependencies": [],
     "installs": [
       {
         "name": "heft",
@@ -236,7 +224,12 @@ export const items = [
           {
             "key": "heft/heft.tsx",
             "target": "components/z-ui/heft.tsx",
-            "sha": "95a5b5af5dae"
+            "sha": "317efe6dcc00"
+          },
+          {
+            "key": "heft/heft.css",
+            "target": "components/z-ui/heft.css",
+            "sha": "e4e29fa99e9d"
           }
         ]
       }

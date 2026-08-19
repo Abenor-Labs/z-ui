@@ -71,7 +71,7 @@
       "category": "tactile-feedback",
       "path": "components/heft",
       "title": "Heft",
-      "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Gravity, contacts and friction, in one file.",
+      "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Axis-aligned rigid bodies, sequential impulses with warm starting, gravity, contacts and friction — in one file, with its stylesheet beside it.",
       "spring": null,
       "states": [
         "idle",

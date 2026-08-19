@@ -52,6 +52,9 @@ const TARGET = {
   'registry:component': (f) => `components/z-ui/${f}`,
   'registry:hook': (f) => `hooks/${f}`,
   'registry:lib': (f) => `lib/${f}`,
+  // A stylesheet lands beside the component it dresses, not in a css/ silo:
+  // the consumer imports it from the component file by a relative path.
+  'registry:style': (f) => `components/z-ui/${f}`,
 }
 
 function collect() {

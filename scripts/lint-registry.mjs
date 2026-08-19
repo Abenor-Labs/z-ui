@@ -127,6 +127,27 @@ for (const entry of index.items) {
     const src = read(join(dir, f))
     const at = `${where}/${f}`
 
+    // A component may ship a stylesheet beside its source. Every check below
+    // this point reads TypeScript — import allowlists, 'use client', state
+    // machines, motion elements — and none of them mean anything against CSS.
+    // Running them on a stylesheet would fail it for not being a React file.
+    if (f.endsWith('.css')) {
+      // Comments stripped first: the file that documents "no @tailwind" must
+      // not fail for containing the word.
+      const rules = src.replace(/\/\*[\s\S]*?\*\//g, '')
+      check(
+        !/@(tailwind|apply)\b/.test(rules),
+        at,
+        'shipped CSS must be plain; @tailwind and @apply require a consumer build we do not assume',
+      )
+      check(
+        /^\s*(\.|:root|@media|@supports)/m.test(rules),
+        at,
+        'stylesheet appears empty or has no rules outside its comments',
+      )
+      continue
+    }
+
     const imports = [...src.matchAll(/from '([^']+)'/g)].map((m) => m[1])
     const usesMotion = imports.includes('motion/react')
     for (const imp of imports) {
@@ -142,6 +163,20 @@ for (const entry of index.items) {
 
     check(src.startsWith("'use client'"), at, "'use client' must be the first line")
     check(!/export default/.test(src), at, 'no default export; components are named exports')
+
+    // A stylesheet only ships if the component pulls it in. Without this a
+    // consumer installs two files, gets one of them wired, and sees an
+    // unstyled component with no error to explain it. Checked against the
+    // component's own file, not every file in the item.
+    if (f === `${manifest.name}.tsx`) {
+      for (const css of listed.filter((x) => x.endsWith('.css'))) {
+        check(
+          new RegExp(`import\\s+['"]\\./${css.replace(/\./g, '\\.')}['"]`).test(src),
+          at,
+          `files[] ships "${css}" but ${f} never imports it; the consumer would get an unstyled component`,
+        )
+      }
+    }
     /**
      * Scoped twice, for two different reasons.
      *

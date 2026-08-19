@@ -1,702 +1,567 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { motion, useMotionValue, useReducedMotion } from 'motion/react'
-
-/**
- * A box of objects that behave like objects.
- *
- * The box does not move. You reach into it, pick something up, and everything
- * that thing touches finds out: neighbours are shoved aside, anything resting
- * on top loses its floor and drops, and the pile rearranges itself into
- * whatever shape it can hold. Let go mid-throw and what you were holding keeps
- * going.
- *
- * There is no timeline in this file and there could not be one. What happens
- * next is a function of where every body is, how fast it is going, and what it
- * is touching — and the only input to that is your hand. You cannot write down
- * in advance how long a pile should take to collapse.
- *
- * The simulation is small and complete: gravity, a semi-implicit Euler
- * integrator on fixed sub-steps, penalty contacts against the walls and between
- * every pair of bodies, Coulomb friction, and a sleep test that ends the
- * animation frame loop the moment nothing is moving. Circles rather than boxes,
- * because a circle needs no orientation and rotation would double the state for
- * a component this size.
- *
- * DEPENDENCIES: react, motion. Nothing else. Paste it and own it.
- */
-
-/* ---------------------------------------------------------------- tuning -- */
+import { useCallback, useEffect, useRef, useState } from 'react';
+import './heft.css';
 
 /**
- * The contact spring. Every collision in this file is this, twice — once
- * against the walls, once between each overlapping pair.
+ * heft — a box of objects that behave like real objects. Drag one and
+ * everything it touches gets shoved aside; anything resting on top loses its
+ * floor and drops. Real gravity, contacts, and friction in one file.
  *
- * Contacts are penalties, not impulses: two overlapping bodies are pushed apart
- * by a force proportional to how far they have interpenetrated, damped by how
- * fast they are separating. Impulse solvers are the other standard answer and
- * they are stiffer, more correct, and much longer — and they make contact
- * infinitely rigid, which is wrong for what this is. A penalty contact has a
- * little give, so a dragged object presses into a pile before the pile yields,
- * and that give is most of what makes the thing feel like objects instead of
- * sprites refusing to overlap.
+ * Engine: axis-aligned rigid bodies, fixed-timestep sequential-impulse solver
+ * with warm starting. Rendering is transform-only (translate3d), written
+ * imperatively per frame. The solver never sees the DOM and the DOM never
+ * drives the solver.
  *
- * `stiffness` is the wall you feel. Below about 600 bodies visibly sink into
- * each other; above about 3000 the integrator needs more sub-steps than the
- * frame budget allows and the pile buzzes. `damping` is how much of the
- * approach speed is absorbed — drop it and the box turns into a ball pit, raise
- * it and everything lands dead.
+ * Styling ships beside this file as heft.css. It carries its own fallback
+ * values, so it renders correctly in a project with no design tokens, and
+ * reads --z-* custom properties where you do define them.
  */
-const SPRING = {
-  type: 'spring',
-  stiffness: 1400,
-  damping: 70,
-  mass: 1,
-} as const
+
+const STATES = ['idle', 'dragging', 'settling'] as const;
+type HeftState = (typeof STATES)[number];
 
 /**
- * The radius, in pixels, that weighs 1.
- *
- * Mass has to be expressed against a reference or the numbers stop meaning
- * anything. Contact acceleration is `stiffness · depth / mass`, so mass and
- * stiffness are read in the same units — and the first version of this file set
- * mass to raw area, `πr²`, which is about 1520 for a 44px disc. That made the
- * floor roughly fifteen hundred times too soft to hold one up, and every body
- * in the box sank straight through it and kept going. The bug was invisible in
- * the source and unmissable the moment a browser ran it.
- *
- * Squared, so a disc twice the diameter is four times the body and genuinely
- * shoves a smaller one; scaled, so a typical disc lands near 1 and the contact
- * spring is tuned against a number a person can hold in their head.
+ * prefers-reduced-motion, inlined rather than imported: a registry component
+ * ships as one file and cannot assume a hook exists in the consumer's project.
  */
-const MASS_REF = 20
-
-/** Pixels per second squared. Tuned by eye against a ~200px box: real gravity
- *  at this scale reads as slow motion, because the box is not two metres tall. */
-const GRAVITY = 2600
-
-/** Tangential friction at a contact, as a fraction of the normal force. Enough
- *  that a stack holds its shape; low enough that a shoved pile still slides. */
-const FRICTION = 0.28
-
-/** Velocity lost per second to the air. Keeps a long throw from ringing. */
-const DRAG_COEFF = 0.6
-
-/** Below this speed a body counts as quiet for the frame. Pixels/second. */
-const SLEEP_SPEED = 8
-
-/** Consecutive quiet frames before a body is asleep. About a tenth of a
- *  second, which is longer than any apex a body reaches inside a box. */
-const SLEEP_FRAMES = 7
-
-/** Integrator sub-step. A pile at this contact stiffness is unstable above
- *  roughly 1/200s, and the frame budget is spent long before 1/1000s buys
- *  anything visible. */
-const STEP_S = 1 / 300
-
-/** Keyboard nudge, in pixels per second of impulse. Large enough that one press
- *  visibly disturbs the pile rather than twitching one body. */
-const NUDGE = 420
-
-/**
- * Palette. Every value is a CSS variable with a fallback derived from
- * `currentColor` rather than a hex, so the component mixes its hairlines out of
- * whatever ink the host is using.
- *
- * The accent appears on one thing: the body currently held. Nothing at rest is
- * accented, because the accent marks what is being moved.
- */
-const TOKENS = {
-  '--hft-line': 'var(--z-line, color-mix(in oklab, currentColor 18%, transparent))',
-  '--hft-fill': 'var(--z-fill, color-mix(in oklab, currentColor 5%, transparent))',
-  '--hft-accent': 'var(--z-accent, oklch(0.53 0.17 45))',
-  '--hft-radius': 'var(--z-radius, 10px)',
-} as React.CSSProperties
-
-/* ----------------------------------------------------------------- state -- */
-
-/**
- * `data-state` values, on the box.
- *
- *   idle      — every body is asleep, and no animation frame is scheduled
- *   dragging  — a body is held
- *   settling  — nothing is held and the pile has not stopped moving
- *
- * `settling` is the window the component exists to show: you let go, and the
- * consequences keep happening without you. A consumer sequencing anything off
- * this box needs to know the difference between "the user stopped" and "the box
- * stopped", and those are not the same moment.
- */
-const STATES = ['idle', 'dragging', 'settling'] as const
-
-export type HeftState = (typeof STATES)[number]
-
-/* ---------------------------------------------------------------- bodies -- */
-
-type Body = {
-  /** Centre, in container coordinates. */
-  x: number
-  y: number
-  vx: number
-  vy: number
-  r: number
-  /** Squared and scaled against MASS_REF, so a bigger disc shoves a smaller one
-   *  while the number stays near 1. See MASS_REF for why raw area failed. */
-  m: number
-  /** Zero while held: an infinitely heavy body pushes and is not pushed. */
-  inv: number
-  /** Consecutive sub-frames spent below the sleep speed. See the sleep test. */
-  still: number
-  asleep: boolean
-  held: boolean
-  mx: ReturnType<typeof useMotionValue<number>>
-  my: ReturnType<typeof useMotionValue<number>>
-  el: HTMLElement
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const on = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return reduced;
 }
 
-type Registry = {
-  register: (el: HTMLElement, mx: Body['mx'], my: Body['my']) => () => void
-  grab: (el: HTMLElement, e: React.PointerEvent) => void
-  nudge: (el: HTMLElement, dx: number, dy: number) => void
-  reduced: boolean
+/**
+ * Pointer-velocity estimator over the last ~80ms, so a release hands the body
+ * the speed your hand actually had rather than the speed of the last frame.
+ */
+class VelocityTracker {
+  private samples: { t: number; v: number }[] = [];
+
+  push(value: number, t = performance.now()) {
+    this.samples.push({ t, v: value });
+    const cutoff = t - 120;
+    while (this.samples.length > 2 && this.samples[0].t < cutoff) this.samples.shift();
+  }
+
+  /** units of value per second */
+  read(now = performance.now()): number {
+    const s = this.samples.filter((x) => x.t >= now - 80);
+    const use = s.length >= 2 ? s : this.samples;
+    if (use.length < 2) return 0;
+    const a = use[0];
+    const b = use[use.length - 1];
+    const dt = (b.t - a.t) / 1000;
+    if (dt <= 0) return 0;
+    return (b.v - a.v) / dt;
+  }
+
+  reset() {
+    this.samples = [];
+  }
 }
 
-const HeftContext = React.createContext<Registry | null>(null)
+const G = 1800; // px/s²
+const SUBSTEP = 1 / 120;
+const VEL_ITERATIONS = 8; // sequential-impulse passes per substep
+const POS_ITERATIONS = 3; // penetration passes — position only, adds no energy
+const POS_PERCENT = 0.8; // fraction of penetration corrected per pass
+const FRICTION = 0.5; // Coulomb-ish
+const SLOP = 0.5; // allowed penetration; contacts must persist to stay solved
+const SLEEP_SPEED = 5; // px/s
+const SLEEP_FRAMES = 24;
 
-/* ------------------------------------------------------------------- box -- */
+export interface HeftBodySpec {
+  w: number;
+  h: number;
+  label?: string;
+  fontSize?: number;
+  x?: number;
+  y?: number;
+}
 
-export type HeftProps = Omit<
-  React.ComponentPropsWithRef<'div'>,
-  'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
-> & {
-  children: React.ReactNode
-  /** Accessible name for the box itself. Its contents carry their own. */
-  label?: string
-  /** Fires once, when the last body falls asleep. */
-  onSettle?: () => void
+interface Body {
+  id: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  vx: number;
+  vy: number;
+  invMass: number;
+  kinematic: boolean;
+  label?: string;
+  fontSize?: number;
+}
+
+/** one contact resolved this substep; `b === null` means a static wall */
+interface Manifold {
+  a: Body;
+  b: Body | null;
+  nx: number; // unit normal — the direction `a` separates along
+  ny: number;
+  key: string; // warm-start identity, stable while the contact persists
+  invSum: number;
+  jn: number; // accumulated normal impulse
+  jt: number; // accumulated tangent (friction) impulse
+}
+
+export interface HeftProps {
+  height?: number;
+  initialBodies: HeftBodySpec[];
+  /** bodies hold position until first pointer interaction — nothing autoplays */
+  startAsleep?: boolean;
+  onContacts?: (n: number) => void;
+  /** increment to drop a new object in */
+  spawnCount?: number;
+  className?: string;
+  /** accessible name for the sandbox */
+  label?: string;
 }
 
 export function Heft({
-  children,
-  label = 'A box of objects. Drag one; the others react.',
-  onSettle,
+  height = 360,
+  initialBodies,
+  startAsleep = false,
+  onContacts,
+  spawnCount = 0,
   className,
-  style,
-  ...rest
-}: HeftProps): React.ReactElement {
-  const reduced = useReducedMotion() ?? false
+  label = 'Physics sandbox',
+}: HeftProps) {
+  const reduced = useReducedMotion();
+  const [state, setState] = useState<HeftState>('idle');
+  const container = useRef<HTMLDivElement>(null);
+  const bodies = useRef<Body[]>([]);
+  const els = useRef(new Map<number, HTMLDivElement>());
+  const raf = useRef(0);
+  const running = useRef(false);
+  const stillFrames = useRef(0);
+  const nextId = useRef(0);
+  const lastContacts = useRef(-1);
+  const drag = useRef<{
+    id: number;
+    dx: number;
+    dy: number;
+    tx: VelocityTracker;
+    ty: VelocityTracker;
+    targetX: number;
+    targetY: number;
+  } | null>(null);
+  const [ids, setIds] = useState<number[]>([]);
+  const deepOverlap = useRef(false);
+  /** warm-start store: accumulated impulses keyed by contact identity */
+  const contactCache = useRef(new Map<string, { jn: number; jt: number }>());
+  const onContactsRef = useRef(onContacts);
+  onContactsRef.current = onContacts;
 
-  const boxRef = React.useRef<HTMLDivElement>(null)
-  const [state, setState] = React.useState<HeftState>('idle')
+  const bounds = useCallback(() => {
+    const el = container.current;
+    return { w: el?.clientWidth ?? 600, h: el?.clientHeight ?? height };
+  }, [height]);
 
-  const bodies = React.useRef<Body[]>([])
-  const raf = React.useRef(0)
-  const last = React.useRef(0)
-  const held = React.useRef<Body | null>(null)
-  const pointer = React.useRef({ id: -1, x: 0, y: 0, px: 0, py: 0 })
+  // ——— engine ———
 
-  const settleRef = React.useRef(onSettle)
-  React.useEffect(() => {
-    settleRef.current = onSettle
-  })
+  const step = useCallback((dt: number): number => {
+    const { w: W, h: H } = bounds();
+    const bs = bodies.current;
+    const cache = contactCache.current;
 
-  const write = (b: Body) => {
-    b.mx.set(b.x - b.r)
-    b.my.set(b.y - b.r)
-  }
-
-  /* ----------------------------------------------------------- the solver */
-
-  /**
-   * One sub-step. Integrate, then satisfy contacts.
-   *
-   * Order matters: forces first, then positions, then contact correction on the
-   * new positions. Correcting before integrating leaves a body one step inside
-   * a wall on every frame, which is visible as a permanent shimmer along the
-   * floor of the box.
-   */
-  const step = React.useCallback((h: number, w: number, ht: number) => {
-    const list = bodies.current
-    const { stiffness: k, damping: c } = SPRING
-
-    for (const b of list) {
-      if (b.held) continue
-      b.vy += GRAVITY * h
-      const d = Math.exp(-DRAG_COEFF * h)
-      b.vx *= d
-      b.vy *= d
-      b.x += b.vx * h
-      b.y += b.vy * h
-    }
-
-    // ---- walls. A penalty spring per penetrated side, plus friction along it.
-    for (const b of list) {
-      if (b.held) continue
-
-      const push = (depth: number, nx: number, ny: number) => {
-        if (depth <= 0) return
-        const rel = b.vx * nx + b.vy * ny
-        const f = k * depth - c * rel
-        if (f <= 0) return
-        b.vx += nx * f * b.inv * h
-        b.vy += ny * f * b.inv * h
-        // Coulomb friction on the tangent, which is what lets a pile hold a
-        // slope instead of flowing flat like a liquid.
-        const tx = -ny
-        const ty = nx
-        const vt = b.vx * tx + b.vy * ty
-        const damp = Math.min(1, (FRICTION * f * b.inv * h) / (Math.abs(vt) || 1))
-        b.vx -= tx * vt * damp
-        b.vy -= ty * vt * damp
-      }
-
-      push(b.r - b.x, 1, 0)
-      push(b.x + b.r - w, -1, 0)
-      push(b.r - b.y, 0, 1)
-      push(b.y + b.r - ht, 0, -1)
-    }
-
-    // ---- pairs. O(n²), which is correct at the size this component is for:
-    // a box holds a handful of things, and a broad phase would cost more to
-    // read than it saves to run.
-    for (let i = 0; i < list.length; i++) {
-      for (let j = i + 1; j < list.length; j++) {
-        const a = list[i]
-        const b = list[j]
-        if (!a || !b) continue
-
-        let dx = b.x - a.x
-        let dy = b.y - a.y
-        let dist = Math.hypot(dx, dy)
-        const min = a.r + b.r
-        if (dist >= min) continue
-
-        // Two bodies dropped at the same coordinate have no separating
-        // direction. Pick one rather than dividing by zero.
-        if (dist === 0) {
-          dx = 0
-          dy = -1
-          dist = 1e-6
-        }
-
-        const nx = dx / dist
-        const ny = dy / dist
-        const depth = min - dist
-        const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny
-        const f = k * depth - c * rel
-        if (f <= 0) continue
-
-        a.vx -= nx * f * a.inv * h
-        a.vy -= ny * f * a.inv * h
-        b.vx += nx * f * b.inv * h
-        b.vy += ny * f * b.inv * h
-
-        const tx = -ny
-        const ty = nx
-        const vt = (b.vx - a.vx) * tx + (b.vy - a.vy) * ty
-        const inv = a.inv + b.inv
-        if (inv > 0) {
-          const damp = Math.min(1, (FRICTION * f * inv * h) / (Math.abs(vt) || 1))
-          a.vx += tx * vt * damp * (a.inv / inv)
-          a.vy += ty * vt * damp * (a.inv / inv)
-          b.vx -= tx * vt * damp * (b.inv / inv)
-          b.vy -= ty * vt * damp * (b.inv / inv)
-        }
+    const d = drag.current;
+    if (d) {
+      const b = bs.find((x) => x.id === d.id);
+      if (b) {
+        b.vx = d.tx.read();
+        b.vy = d.ty.read();
+        b.x = d.targetX;
+        b.y = d.targetY;
       }
     }
 
-    /**
-     * The backstop. Nothing leaves the box, whatever the solver did.
-     *
-     * The penalty contacts above are a soft constraint: they push back in
-     * proportion to how far something has already gone wrong, which means a
-     * sufficiently wrong frame — a mistuned stiffness, a tab waking after a
-     * long task, a body thrown at a wall faster than one sub-step can arrest —
-     * can still put a body outside. That happened. Every disc in the first
-     * build fell through the floor and kept falling, because a soft constraint
-     * that is too soft is not a constraint at all.
-     *
-     * So the walls are also a hard clamp, applied last, with the outward
-     * component of velocity discarded. The penalty spring is what the walls
-     * *feel* like; this is what they *are*. A component whose contents can end
-     * up two thousand pixels below a 149px box has no business shipping a
-     * subtler answer than this.
-     */
-    for (const b of list) {
-      if (b.held) continue
-      if (b.x < b.r) {
-        b.x = b.r
-        if (b.vx < 0) b.vx = 0
-      } else if (b.x > w - b.r) {
-        b.x = w - b.r
-        if (b.vx > 0) b.vx = 0
-      }
-      if (b.y < b.r) {
-        b.y = b.r
-        if (b.vy < 0) b.vy = 0
-      } else if (b.y > ht - b.r) {
-        b.y = ht - b.r
-        if (b.vy > 0) b.vy = 0
+    for (const b of bs) {
+      if (b.kinematic) continue;
+      b.vy += G * dt;
+    }
+
+    // ——— manifolds: walls (floor + sides, open top), then body pairs ———
+    const ms: Manifold[] = [];
+    const add = (a: Body, b: Body | null, nx: number, ny: number, key: string) => {
+      const prev = cache.get(key);
+      ms.push({
+        a,
+        b,
+        nx,
+        ny,
+        key,
+        invSum: a.invMass + (b ? b.invMass : 0),
+        jn: prev ? prev.jn : 0,
+        jt: prev ? prev.jt : 0,
+      });
+    };
+
+    for (const b of bs) {
+      if (b.kinematic) continue;
+      if (b.y + b.h > H) add(b, null, 0, -1, `${b.id}|floor`);
+      if (b.x < 0) add(b, null, 1, 0, `${b.id}|left`);
+      if (b.x + b.w > W) add(b, null, -1, 0, `${b.id}|right`);
+    }
+    for (let i = 0; i < bs.length; i++) {
+      for (let j = i + 1; j < bs.length; j++) {
+        const a = bs[i];
+        const b = bs[j];
+        const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+        const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+        if (ox <= 0 || oy <= 0) continue;
+        if (a.invMass + b.invMass === 0) continue;
+        // resolve along the axis of least penetration
+        const yAxis = oy <= ox;
+        const s = yAxis
+          ? a.y + a.h / 2 < b.y + b.h / 2
+            ? -1
+            : 1
+          : a.x + a.w / 2 < b.x + b.w / 2
+            ? -1
+            : 1;
+        add(a, b, yAxis ? 0 : s, yAxis ? s : 0, `${a.id}|${b.id}|${yAxis ? 'y' : 'x'}|${s}`);
       }
     }
-  }, [])
 
-  const tick = React.useCallback(
-    (now: number) => {
-      raf.current = 0
-      const box = boxRef.current
-      if (!box) return
-
-      const prev = last.current || now
-      last.current = now
-      const frame = Math.min(0.05, (now - prev) / 1000)
-      const steps = Math.max(1, Math.min(24, Math.ceil(frame / STEP_S)))
-      const h = frame / steps
-
-      const w = box.clientWidth
-      const ht = box.clientHeight
-
-      // The held body is kinematic: it goes exactly where the pointer is, and
-      // carries the pointer's velocity so that letting go mid-throw throws it.
-      const grabbed = held.current
-      if (grabbed) {
-        const p = pointer.current
-        grabbed.vx = frame > 0 ? (p.x - p.px) / frame : 0
-        grabbed.vy = frame > 0 ? (p.y - p.py) / frame : 0
-        grabbed.x = p.x
-        grabbed.y = p.y
-        p.px = p.x
-        p.py = p.y
+    // impulse along the contact normal (jn) and its tangent t = (-ny, nx) (jt)
+    const applyImpulse = (m: Manifold, jn: number, jt: number) => {
+      const ix = m.nx * jn - m.ny * jt;
+      const iy = m.ny * jn + m.nx * jt;
+      if (!m.a.kinematic) {
+        m.a.vx += ix * m.a.invMass;
+        m.a.vy += iy * m.a.invMass;
       }
+      if (m.b && !m.b.kinematic) {
+        m.b.vx -= ix * m.b.invMass;
+        m.b.vy -= iy * m.b.invMass;
+      }
+    };
 
-      for (let i = 0; i < steps; i++) step(h, w, ht)
+    // warm start: last substep's impulse is this substep's first guess. Without it
+    // a stack cannot converge in a bounded iteration count — the pile creeps, never
+    // sleeps, and gravity accumulates in every resting body.
+    for (const m of ms) if (m.jn !== 0 || m.jt !== 0) applyImpulse(m, m.jn, m.jt);
 
-      let awake = false
-      for (const b of bodies.current) {
-        if (b.held) {
-          write(b)
-          awake = true
-          continue
-        }
-        /**
-         * Slow for several frames running, not slow once.
-         *
-         * A body at the top of a bounce is momentarily stationary and is not
-         * remotely at rest, so a single-frame speed test puts a mid-air disc to
-         * sleep. The first version tried to exclude that by also requiring the
-         * body to be touching the floor — and expressed "touching the floor" as
-         * a position test, which a disc that had fallen *through* the floor
-         * satisfied even more comfortably than one sitting on it. The box
-         * reported `idle` while visibly empty.
-         *
-         * A run of quiet frames needs no notion of support and cannot be
-         * satisfied by being in the wrong place. Falling is never quiet for
-         * long, because gravity is still adding to the speed every step.
-         */
-        const speed = Math.hypot(b.vx, b.vy)
-        b.still = speed < SLEEP_SPEED ? b.still + 1 : 0
+    for (let it = 0; it < VEL_ITERATIONS; it++) {
+      for (const m of ms) {
+        if (m.invSum === 0) continue;
+        const { a, b, nx, ny } = m;
+        const bvx = b ? b.vx : 0;
+        const bvy = b ? b.vy : 0;
+        // separating speed along a's outward normal; negative means still closing
+        const sn = (a.vx - bvx) * nx + (a.vy - bvy) * ny;
+        const oldN = m.jn;
+        // clamp the ACCUMULATED impulse, not the increment — contacts push, never pull
+        m.jn = Math.max(0, oldN - sn / m.invSum);
+        const dn = m.jn - oldN;
+        const st = (a.vx - bvx) * -ny + (a.vy - bvy) * nx;
+        const maxF = FRICTION * m.jn;
+        const oldT = m.jt;
+        m.jt = Math.max(-maxF, Math.min(maxF, oldT - st / m.invSum));
+        applyImpulse(m, dn, m.jt - oldT);
+      }
+    }
+    for (const m of ms) cache.set(m.key, { jn: m.jn, jt: m.jt });
+    if (cache.size > 512) {
+      const live = new Set(ms.map((m) => m.key));
+      for (const k of cache.keys()) if (!live.has(k)) cache.delete(k);
+    }
 
-        if (b.still >= SLEEP_FRAMES) {
-          b.vx = 0
-          b.vy = 0
-          b.asleep = true
+    for (const b of bs) {
+      if (b.kinematic) continue;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+    }
+
+    // penetration is corrected positionally, so the solver never injects energy.
+    // SLOP is deliberately left behind: a contact must stay slightly overlapped or
+    // it drops out of the manifold list and the body free-falls for a substep.
+    let worst = 0;
+    for (let it = 0; it < POS_ITERATIONS; it++) {
+      for (const m of ms) {
+        if (m.invSum === 0) continue;
+        const { a, b, nx, ny } = m;
+        let pen: number;
+        if (!b) {
+          pen = nx === 0 ? a.y + a.h - H : nx > 0 ? -a.x : a.x + a.w - W;
         } else {
-          b.asleep = false
-          awake = true
+          const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+          const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+          if (ox <= 0 || oy <= 0) continue;
+          pen = ny === 0 ? ox : oy;
         }
-        write(b)
+        if (it === 0 && pen > worst) worst = pen;
+        if (pen <= SLOP) continue;
+        const corr = (POS_PERCENT * (pen - SLOP)) / m.invSum;
+        if (!a.kinematic) {
+          a.x += nx * corr * a.invMass;
+          a.y += ny * corr * a.invMass;
+        }
+        if (b && !b.kinematic) {
+          b.x -= nx * corr * b.invMass;
+          b.y -= ny * corr * b.invMass;
+        }
       }
-
-      if (awake) {
-        raf.current = requestAnimationFrame(tick)
-        return
-      }
-
-      // Nothing is moving. The loop ends here rather than idling, which is what
-      // makes "no motion without input" a property of the code rather than a
-      // promise in a comment.
-      last.current = 0
-      setState('idle')
-      settleRef.current?.()
-    },
-    [step],
-  )
-
-  const kick = React.useCallback(() => {
-    if (reduced || raf.current) return
-    last.current = 0
-    raf.current = requestAnimationFrame(tick)
-  }, [reduced, tick])
-
-  React.useEffect(() => () => cancelAnimationFrame(raf.current), [])
-
-  /* --------------------------------------------------------- registration */
-
-  /**
-   * Bodies are laid out along the floor, already at rest.
-   *
-   * Dropping them in from the top would be a mount animation, which DESIGN.md
-   * bans outright and which this component would otherwise be the loudest
-   * possible violation of. They start where a settled pile would be, and the
-   * first thing that ever moves is the thing you move.
-   */
-  const place = React.useCallback(() => {
-    const box = boxRef.current
-    if (!box) return
-    const w = box.clientWidth
-    const ht = box.clientHeight
-    let cursor = 0
-    for (const b of bodies.current) {
-      if (b.held) continue
-      cursor += b.r
-      b.x = Math.min(w - b.r, cursor)
-      b.y = ht - b.r
-      cursor += b.r + 4
-      b.vx = 0
-      b.vy = 0
-      b.still = SLEEP_FRAMES
-      b.asleep = true
-      write(b)
     }
-  }, [])
 
-  const register = React.useCallback(
-    (el: HTMLElement, mx: Body['mx'], my: Body['my']) => {
-      const r = el.offsetWidth / 2 || 12
-      // Squared and scaled against MASS_REF, so a disc twice as wide is four
-      // times the body while the number itself stays near 1.
-      const m = Math.max(0.05, (r / MASS_REF) ** 2)
-      const body: Body = {
-        x: 0,
-        y: 0,
+    deepOverlap.current = worst > SLOP * 4;
+    return ms.length;
+  }, [bounds]);
+
+  const render = useCallback(() => {
+    for (const b of bodies.current) {
+      const el = els.current.get(b.id);
+      if (el) el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0)`;
+    }
+  }, []);
+
+  const settleInstant = useCallback(() => {
+    // reduced motion: relax to rest synchronously, render once
+    for (let i = 0; i < 1200; i++) {
+      step(SUBSTEP);
+      const moving = bodies.current.some(
+        (b) => !b.kinematic && (Math.abs(b.vx) > SLEEP_SPEED || Math.abs(b.vy) > SLEEP_SPEED),
+      );
+      if (!moving && i > 10) break;
+    }
+    render();
+  }, [step, render]);
+
+  const loop = useCallback(() => {
+    let last = performance.now();
+    const frame = (now: number) => {
+      const elapsed = Math.max(0, Math.min(0.033, (now - last) / 1000));
+      last = now;
+      let contacts = 0;
+      let acc = elapsed;
+      while (acc > 0) {
+        const dt = Math.min(SUBSTEP, acc);
+        contacts = step(dt);
+        acc -= dt;
+      }
+      render();
+      if (contacts !== lastContacts.current) {
+        lastContacts.current = contacts;
+        onContactsRef.current?.(contacts);
+      }
+      const moving =
+        drag.current !== null ||
+        deepOverlap.current ||
+        bodies.current.some((b) => Math.abs(b.vx) > SLEEP_SPEED || Math.abs(b.vy) > SLEEP_SPEED);
+      stillFrames.current = moving ? 0 : stillFrames.current + 1;
+      if (stillFrames.current > SLEEP_FRAMES) {
+        running.current = false;
+        setState('idle');
+        return; // sleep — no idle rAF burn, no autoplaying motion
+      }
+      raf.current = requestAnimationFrame(frame);
+    };
+    raf.current = requestAnimationFrame(frame);
+  }, [step, render]);
+
+  const wake = useCallback(() => {
+    stillFrames.current = 0;
+    // The reduced-motion branch: no rAF loop at all. The solver is relaxed to
+    // rest synchronously and painted once, so the pile is arranged correctly
+    // without anything ever being seen to move.
+    if (reduced) {
+      settleInstant();
+      setState(drag.current ? 'dragging' : 'idle');
+      return;
+    }
+    if (!running.current) {
+      running.current = true;
+      setState(drag.current ? 'dragging' : 'settling');
+      loop();
+    }
+  }, [loop, reduced, settleInstant]);
+
+  // ——— seeding ———
+
+  useEffect(() => {
+    const { w: W, h: H } = bounds();
+    const bs: Body[] = [];
+    // auto-placed bodies fill a row along the floor and wrap onto the next row up.
+    // Clamping them all to the same x instead would seed the pile deeply
+    // interpenetrated, which no solver can unpick cleanly.
+    let cursor = 16;
+    let rowFloor = H;
+    let rowH = 0;
+    for (const spec of initialBodies) {
+      const auto = spec.x === undefined;
+      if (auto && cursor + spec.w > W - 8 && cursor > 16) {
+        rowFloor -= rowH;
+        cursor = 16;
+        rowH = 0;
+      }
+      const id = nextId.current++;
+      bs.push({
+        id,
+        x: spec.x ?? Math.min(cursor, Math.max(0, W - spec.w - 8)),
+        y: spec.y ?? rowFloor - spec.h,
+        w: spec.w,
+        h: spec.h,
         vx: 0,
         vy: 0,
-        r,
-        m,
-        inv: 1 / m,
-        still: 0,
-        asleep: true,
-        held: false,
-        mx,
-        my,
-        el,
+        invMass: 1 / ((spec.w * spec.h) / 1000),
+        kinematic: false,
+        label: spec.label,
+        fontSize: spec.fontSize,
+      });
+      if (auto) {
+        cursor += spec.w + 14;
+        if (spec.h > rowH) rowH = spec.h;
       }
-      bodies.current.push(body)
-      place()
-      return () => {
-        bodies.current = bodies.current.filter((b) => b !== body)
-        place()
-      }
-    },
-    [place],
-  )
-
-  React.useEffect(() => {
-    const box = boxRef.current
-    if (!box) return
-    const observer = new ResizeObserver(() => place())
-    observer.observe(box)
-    return () => observer.disconnect()
-  }, [place])
-
-  /* ---------------------------------------------------------- interaction */
-
-  const find = (el: HTMLElement) => bodies.current.find((b) => b.el === el) ?? null
-
-  const grab = React.useCallback(
-    (el: HTMLElement, e: React.PointerEvent) => {
-      const box = boxRef.current
-      const body = find(el)
-      if (!box || !body || reduced) return
-
-      const rect = box.getBoundingClientRect()
-      const px = e.clientX - rect.left
-      const py = e.clientY - rect.top
-
-      body.held = true
-      body.inv = 0
-      held.current = body
-      pointer.current = { id: e.pointerId, x: px, y: py, px, py }
-
-      el.setPointerCapture(e.pointerId)
-      setState('dragging')
-      kick()
-    },
-    [kick, reduced],
-  )
-
-  const move = (e: React.PointerEvent) => {
-    const box = boxRef.current
-    if (!box || !held.current || e.pointerId !== pointer.current.id) return
-    const rect = box.getBoundingClientRect()
-    const b = held.current
-    // Clamped to the box: a held body cannot be dragged through a wall, which
-    // is what keeps the walls meaning something while you are holding one.
-    pointer.current.x = Math.max(b.r, Math.min(box.clientWidth - b.r, e.clientX - rect.left))
-    pointer.current.y = Math.max(b.r, Math.min(box.clientHeight - b.r, e.clientY - rect.top))
-  }
-
-  const drop = (e: React.PointerEvent) => {
-    const b = held.current
-    if (!b || e.pointerId !== pointer.current.id) return
-    b.held = false
-    b.inv = 1 / b.m
-    b.asleep = false
-    b.still = 0
-    held.current = null
-    pointer.current.id = -1
-    try {
-      b.el.releasePointerCapture(e.pointerId)
-    } catch {
-      /* already released */
     }
-    setState('settling')
-    kick()
-  }
+    bodies.current = bs;
+    setIds(bs.map((b) => b.id));
+    if (!startAsleep) {
+      // settle the seed stack once so nothing hovers
+      requestAnimationFrame(() => {
+        render();
+        wake();
+      });
+    } else {
+      requestAnimationFrame(render);
+    }
+    return () => cancelAnimationFrame(raf.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  /**
-   * Keyboard gets the physics, not a shortcut past it.
-   *
-   * An arrow key gives the focused body an impulse — the same velocity a small
-   * flick would — and everything downstream of that is the same solver. This
-   * project has already shipped one component whose tactile feedback was
-   * pointer-only, which put the entire product thesis out of reach of anyone
-   * not using a mouse.
-   */
-  const nudge = React.useCallback(
-    (el: HTMLElement, dx: number, dy: number) => {
-      const body = find(el)
-      if (!body || reduced) return
-      body.vx += dx
-      body.vy += dy
-      body.asleep = false
-      body.still = 0
-      setState('settling')
-      kick()
-    },
-    [kick, reduced],
-  )
+  // spawn on demand
+  const spawned = useRef(0);
+  useEffect(() => {
+    if (spawnCount <= spawned.current) return;
+    const { w: W } = bounds();
+    for (; spawned.current < spawnCount; spawned.current++) {
+      const id = nextId.current++;
+      const w = 40 + ((id * 37) % 50);
+      const h = 32 + ((id * 53) % 46);
+      bodies.current.push({
+        id,
+        x: W / 2 - w / 2 + (((id * 91) % 120) - 60),
+        y: -h - 4,
+        w,
+        h,
+        vx: 0,
+        vy: 60,
+        invMass: 1 / ((w * h) / 1000),
+        kinematic: false,
+        label: `OBJ-${String(id + 1).padStart(2, '0')}`,
+      });
+    }
+    setIds(bodies.current.map((b) => b.id));
+    wake();
+  }, [spawnCount, wake, bounds]);
 
-  const registry = React.useMemo<Registry>(
-    () => ({ register, grab, nudge, reduced }),
-    [register, grab, nudge, reduced],
-  )
+  // ——— drag ———
 
-  return (
-    <HeftContext.Provider value={registry}>
-      <div
-        ref={boxRef}
-        data-state={state}
-        role="group"
-        aria-label={label}
-        onPointerMove={move}
-        onPointerUp={drop}
-        onPointerCancel={drop}
-        style={{ ...TOKENS, touchAction: 'none', ...style }}
-        className={[
-          'relative touch-none select-none overflow-hidden',
-          'rounded-[var(--hft-radius)] border border-[var(--hft-line)] bg-[var(--hft-fill)]',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        {...rest}
-      >
-        {children}
-      </div>
-    </HeftContext.Provider>
-  )
-}
+  const onPointerDown = (e: React.PointerEvent) => {
+    const target = (e.target as HTMLElement).closest('[data-heft-id]') as HTMLElement | null;
+    wake();
+    if (!target) return;
+    e.preventDefault();
+    const id = Number(target.dataset.heftId);
+    const b = bodies.current.find((x) => x.id === id);
+    const rect = container.current!.getBoundingClientRect();
+    if (!b) return;
+    b.kinematic = true;
+    b.invMass = 0;
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    drag.current = {
+      id,
+      dx: px - b.x,
+      dy: py - b.y,
+      tx: new VelocityTracker(),
+      ty: new VelocityTracker(),
+      targetX: b.x,
+      targetY: b.y,
+    };
+    drag.current.tx.push(b.x);
+    drag.current.ty.push(b.y);
+    setState('dragging');
+    target.classList.add('z-heft-contact');
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    container.current?.classList.add('z-heft-grabbing');
+  };
 
-/* ------------------------------------------------------------------ item -- */
+  const onPointerMove = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d) return;
+    const rect = container.current!.getBoundingClientRect();
+    const { w: W, h: H } = bounds();
+    const b = bodies.current.find((x) => x.id === d.id);
+    if (!b) return;
+    d.targetX = Math.max(0, Math.min(W - b.w, e.clientX - rect.left - d.dx));
+    d.targetY = Math.max(-b.h, Math.min(H - b.h, e.clientY - rect.top - d.dy));
+    d.tx.push(d.targetX);
+    d.ty.push(d.targetY);
+    if (reduced) settleInstant();
+    else wake();
+  };
 
-export type HeftItemProps = Omit<
-  React.ComponentPropsWithRef<'div'>,
-  'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
-> & {
-  /** Accessible name. Each body is individually focusable and draggable, so
-   *  each needs one; there is no visible label to borrow. */
-  label: string
-}
-
-export function HeftItem({
-  label,
-  className,
-  style,
-  children,
-  ...rest
-}: HeftItemProps): React.ReactElement {
-  const ctx = React.useContext(HeftContext)
-  const ref = React.useRef<HTMLDivElement>(null)
-
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-
-  React.useEffect(() => {
-    const el = ref.current
-    if (!ctx || !el) return
-    return ctx.register(el, x, y)
-  }, [ctx, x, y])
-
-  /**
-   * Under reduced motion nothing simulates. The bodies keep the static layout
-   * the box gave them, dragging is inert, and `data-state` never leaves `idle`.
-   *
-   * That is the honest path here rather than a slower version of the same
-   * thing. This component is inertia and collision; there is no gentler
-   * rendering of a pile collapsing, so what it offers instead is a legible
-   * arrangement that does not move at all.
-   */
-  if (ctx?.reduced) {
-    return (
-      <div
-        ref={ref}
-        className={['relative', className].filter(Boolean).join(' ')}
-        style={style}
-        aria-label={label}
-        {...rest}
-      >
-        {children}
-      </div>
-    )
-  }
+  const onPointerUp = () => {
+    const d = drag.current;
+    if (!d) return;
+    const b = bodies.current.find((x) => x.id === d.id);
+    if (b) {
+      b.kinematic = false;
+      b.invMass = 1 / ((b.w * b.h) / 1000);
+      b.vx = d.tx.read();
+      b.vy = d.ty.read();
+      els.current.get(b.id)?.classList.remove('z-heft-contact');
+    }
+    drag.current = null;
+    container.current?.classList.remove('z-heft-grabbing');
+    setState(reduced ? 'idle' : 'settling');
+    wake();
+  };
 
   return (
-    <motion.div
-      ref={ref}
-      role="button"
-      tabIndex={0}
+    <div
+      ref={container}
+      className={`z-heft${className ? ` ${className}` : ''}`}
+      data-state={state}
+      role="group"
       aria-label={label}
-      aria-roledescription="draggable object"
-      onPointerDown={(e) => {
-        e.preventDefault()
-        if (ref.current) ctx?.grab(ref.current, e)
-      }}
-      onKeyDown={(e) => {
-        const map: Record<string, [number, number]> = {
-          ArrowLeft: [-NUDGE, 0],
-          ArrowRight: [NUDGE, 0],
-          ArrowUp: [0, -NUDGE],
-          ArrowDown: [0, NUDGE],
-        }
-        const d = map[e.key]
-        if (!d || !ref.current) return
-        e.preventDefault()
-        ctx?.nudge(ref.current, d[0], d[1])
-      }}
-      style={{ x, y, position: 'absolute', top: 0, left: 0, ...style }}
-      className={[
-        'cursor-grab touch-none will-change-transform active:cursor-grabbing',
-        'outline-none focus-visible:outline-2 focus-visible:outline-solid',
-        'focus-visible:outline-offset-2 focus-visible:outline-[var(--hft-accent)]',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      {...rest}
+      style={{ height }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
-      {children}
-    </motion.div>
-  )
+      {ids.map((id) => {
+        const b = bodies.current.find((x) => x.id === id);
+        if (!b) return null;
+        return (
+          <div
+            key={id}
+            ref={(el) => {
+              if (el) els.current.set(id, el);
+              else els.current.delete(id);
+            }}
+            data-heft-id={id}
+            className="z-heft-box"
+            style={{
+              width: b.w,
+              height: b.h,
+              transform: `translate3d(${b.x}px, ${b.y}px, 0)`,
+              fontSize: b.fontSize,
+            }}
+          >
+            {b.label ? <span className="z-heft-label">{b.label}</span> : null}
+          </div>
+        );
+      })}
+    </div>
+  );
 }

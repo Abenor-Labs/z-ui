@@ -4,28 +4,50 @@
   "title": "Z-UI registry item",
   "description": "A strict superset of shadcn's registry-item schema. Z-UI fields live under `meta`, which shadcn ignores, so `npx shadcn add <url>` works on these manifests unmodified.",
   "type": "object",
-  "required": ["name", "type", "title", "description", "files"],
+  "required": [
+    "name",
+    "type",
+    "title",
+    "description",
+    "files"
+  ],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "name": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
       "description": "kebab-case, and identical to the directory name."
     },
     "type": {
-      "enum": ["registry:component", "registry:hook", "registry:lib"]
+      "enum": [
+        "registry:component",
+        "registry:hook",
+        "registry:lib"
+      ]
     },
-    "title": { "type": "string", "minLength": 1 },
-    "description": { "type": "string", "minLength": 1 },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
     "dependencies": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "npm packages the CLI installs."
     },
     "registryDependencies": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Other registry item names, resolved transitively."
     },
     "files": {
@@ -33,56 +55,134 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["path", "type"],
+        "required": [
+          "path",
+          "type"
+        ],
         "additionalProperties": false,
         "properties": {
-          "path": { "type": "string" },
-          "type": { "enum": ["registry:component", "registry:hook", "registry:lib"] },
-          "target": { "type": "string" }
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "registry:component",
+              "registry:hook",
+              "registry:lib",
+              "registry:style"
+            ]
+          },
+          "target": {
+            "type": "string"
+          }
         }
       }
     },
-    "tailwind": { "type": "object" },
-    "cssVars": { "type": "object" },
+    "tailwind": {
+      "type": "object"
+    },
+    "cssVars": {
+      "type": "object"
+    },
     "meta": {
       "type": "object",
-      "required": ["category"],
+      "required": [
+        "category"
+      ],
       "additionalProperties": false,
       "properties": {
         "category": {
-          "enum": ["primitive", "tactile-feedback", "state-morphing", "input-utility"]
+          "enum": [
+            "primitive",
+            "tactile-feedback",
+            "state-morphing",
+            "input-utility"
+          ]
         },
         "gesture": {
-          "enum": ["press", "drag", "hold", "hover", "type"],
+          "enum": [
+            "press",
+            "drag",
+            "hold",
+            "hover",
+            "type"
+          ],
           "description": "The input that drives the component's signature motion. `category` says what kind of thing it is; this says what the reader has to do to see it work, which is the axis the catalogue actually filters on."
         },
         "states": {
           "type": "array",
           "minItems": 2,
-          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
           "description": "Every value data-state can take. Must equal the component's STATES tuple and the keys of every variants object."
         },
         "motion": {
           "type": "object",
           "description": "Derived from the component source by scripts/motion-scan.mjs. Never authored by hand — the generator overwrites it, and lint-registry fails if it disagrees with a fresh scan.",
           "additionalProperties": false,
-          "required": ["springs", "durations", "reducedMotion"],
+          "required": [
+            "springs",
+            "durations",
+            "reducedMotion"
+          ],
           "properties": {
-            "states": { "type": ["array", "null"], "items": { "type": "string" } },
+            "states": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
             "springs": {
               "type": "array",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["name", "stiffness", "damping", "mass", "preset"],
+                "required": [
+                  "name",
+                  "stiffness",
+                  "damping",
+                  "mass",
+                  "preset"
+                ],
                 "properties": {
-                  "name": { "type": "string" },
-                  "stiffness": { "type": "number" },
-                  "damping": { "type": "number" },
-                  "mass": { "type": "number" },
-                  "restDelta": { "type": ["number", "null"] },
-                  "restSpeed": { "type": ["number", "null"] },
-                  "preset": { "enum": ["snap", "bounce", "settle", "fling", null] }
+                  "name": {
+                    "type": "string"
+                  },
+                  "stiffness": {
+                    "type": "number"
+                  },
+                  "damping": {
+                    "type": "number"
+                  },
+                  "mass": {
+                    "type": "number"
+                  },
+                  "restDelta": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "restSpeed": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "preset": {
+                    "enum": [
+                      "snap",
+                      "bounce",
+                      "settle",
+                      "fling",
+                      null
+                    ]
+                  }
                 }
               }
             },
@@ -91,15 +191,36 @@
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["name", "ms"],
-                "properties": { "name": { "type": "string" }, "ms": { "type": "number" } }
+                "required": [
+                  "name",
+                  "ms"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "ms": {
+                    "type": "number"
+                  }
+                }
               }
             },
-            "reducedMotion": { "enum": ["branch", null] }
+            "reducedMotion": {
+              "enum": [
+                "branch",
+                null
+              ]
+            }
           }
         },
         "spring": {
-          "enum": ["snap", "bounce", "settle", "fling", null],
+          "enum": [
+            "snap",
+            "bounce",
+            "settle",
+            "fling",
+            null
+          ],
           "description": "Derived, not authored. The generator writes the preset the scanned spring matches, or null when the component tunes its own. A component.json carrying this field is rejected by lint-registry."
         }
       }
@@ -107,11 +228,25 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "type": { "const": "registry:component" } } },
-      "then": {
-        "required": ["meta"],
+      "if": {
         "properties": {
-          "meta": { "required": ["category", "gesture", "states"] }
+          "type": {
+            "const": "registry:component"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "meta"
+        ],
+        "properties": {
+          "meta": {
+            "required": [
+              "category",
+              "gesture",
+              "states"
+            ]
+          }
         },
         "description": "Components must declare their category, driving gesture and state machine; the showcase builds its state inspector and its catalogue filter from these. Spring and motion data are derived from source by the generator, never authored."
       }

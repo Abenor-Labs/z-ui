@@ -1,0 +1,73 @@
+/**
+ * heft — shipped styling.
+ *
+ * Every value reads a --z-* custom property with a literal fallback, so this
+ * renders correctly in a project that defines no tokens at all, and themes
+ * cleanly in one that does. Set them on :root, or on any ancestor to scope a
+ * single instance.
+ *
+ *   --z-paper    surface behind the objects
+ *   --z-ink      object edges and labels
+ *   --z-rule     hairlines: the sandbox border and the graph tile
+ *   --z-mono     label typeface
+ *
+ * No @tailwind, no @apply, no build step. Import it from heft.tsx, which
+ * already does, or drop the import and include it however your project
+ * prefers.
+ */
+
+.z-heft {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--z-rule, #2a2723);
+  background-color: var(--z-paper, #0f0e0d);
+  /* Graph-paper tile drawn as SVG hairlines rather than a gradient, so it
+     stays crisp at any zoom and costs one decode. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M63.5 0V64M0 63.5H64' stroke='%232A2723' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.z-heft-grabbing {
+  cursor: grabbing;
+}
+
+.z-heft-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--z-paper, #0f0e0d);
+  border: 1px solid var(--z-ink, #f4f1ea);
+  color: var(--z-ink, #f4f1ea);
+  /* The solver writes translate3d here every frame; promoting the layer keeps
+     that off the main thread's paint path. */
+  will-change: transform;
+}
+
+.z-heft-label {
+  font-family: var(--z-mono, ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+/* The one shadow this component draws: a hard 1px offset while a body is held.
+   Objects have contact, not glow. */
+.z-heft-contact {
+  box-shadow: 1px 1px 0 0 var(--z-ink, #f4f1ea);
+}
+
+/* The sandbox sleeps when nothing is moving. Nothing here animates on its own;
+   under prefers-reduced-motion the solver is relaxed to rest synchronously and
+   painted once, so there is no motion to suppress. */
+@media (prefers-reduced-motion: reduce) {
+  .z-heft-box {
+    will-change: auto;
+  }
+}
