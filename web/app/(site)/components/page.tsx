@@ -41,7 +41,7 @@ export default function ComponentsPage() {
         // An empty grid is worse than an honest sentence. Rendered from the
         // same manifest as the gallery, so it disappears on its own the moment
         // a component is generated rather than needing to be remembered.
-        <div className="mt-12 rounded-xl border border-dashed border-white/10 px-6 py-14 text-center">
+        <div className="mt-12 rounded-xl border border-dashed border-control px-6 py-14 text-center">
           <p className="text-base text-ink">Nothing is published yet.</p>
           <p className="lbl mx-auto mt-2 max-w-md">
             the registry is empty on purpose · new designs in progress

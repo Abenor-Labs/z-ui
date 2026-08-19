@@ -86,6 +86,23 @@ export type UseScrambleOptions = {
   chars?: string
   /** What starts the decode. `hover` and `view` need `ref` attached. */
   trigger?: ScrambleTrigger
+  /**
+   * Rest as noise instead of as the answer.
+   *
+   * Without this, a `hover` reveal is backwards: the line sits there fully
+   * legible, and hovering it scrambles the thing you had already read. With
+   * it, the line rests as a static field of glyphs and the first trigger is a
+   * genuine reveal — the decode runs toward text the reader has not seen.
+   *
+   * The concealment is static, not an idle animation, and it is deterministic
+   * on purpose: a random frame would differ between server and client and
+   * trip hydration. The visually-hidden node still carries the real string at
+   * every moment, so a screen reader is never behind the effect — but a
+   * sighted keyboard-only user has no way to fire a `hover` trigger, so
+   * conceal decorative or repeated text, never the only copy of something
+   * load-bearing.
+   */
+  concealed?: boolean
   /** Gates the *trigger* only. `run()` is imperative and always runs, so a replay button still works. */
   playOnce?: boolean
   /** Fires once per completed run, including the reduced-motion path. */
@@ -123,6 +140,23 @@ function frame(target: string, head: number, pool: string, chance: number): stri
   return out
 }
 
+/**
+ * The resting frame of a concealed line. Every non-space glyph maps to a pool
+ * character by position — `i * 7 + 3` walks the pool unevenly enough to read
+ * as noise — and never by `Math.random()`, because this string is rendered on
+ * the server too and the two frames must be byte-identical or React reports a
+ * hydration mismatch on a component that has not even run yet. Spaces survive
+ * for the same reason they survive in `frame`: word shapes are the only
+ * structure the reader has while the glyphs are noise.
+ */
+function conceal(target: string, pool: string): string {
+  let out = ''
+  for (let i = 0; i < target.length; i++) {
+    out += target.charAt(i) === ' ' ? ' ' : pool.charAt((i * 7 + 3) % pool.length)
+  }
+  return out
+}
+
 const REDUCE = '(prefers-reduced-motion: reduce)'
 
 // Module scope so the identity is stable; useSyncExternalStore resubscribes on
@@ -149,13 +183,17 @@ export function useScramble<T extends HTMLElement = HTMLElement>({
   chance = 0.86,
   chars = SCRAMBLE_SETS.symbols,
   trigger = 'hover',
+  concealed = false,
   playOnce = true,
   onComplete,
 }: UseScrambleOptions): UseScrambleResult<T> {
   const ref = React.useRef<T>(null)
   const timer = React.useRef<number | null>(null)
   const played = React.useRef(false)
-  const [out, setOut] = React.useState(text)
+  // The pool has to be resolved before first paint, not just inside `run`,
+  // because a concealed line draws its resting glyphs from it.
+  const pool = chars.length > 0 ? chars : SCRAMBLE_SETS.symbols
+  const [out, setOut] = React.useState(() => (concealed ? conceal(text, pool) : text))
   const [state, setState] = React.useState<ScrambleState>('idle')
 
   const reduced = usePrefersReducedMotion()
@@ -193,9 +231,6 @@ export function useScramble<T extends HTMLElement = HTMLElement>({
       return
     }
 
-    // An empty pool would concatenate '' for every glyph and silently erase the
-    // string, so fall back rather than render nothing.
-    const pool = chars.length > 0 ? chars : SCRAMBLE_SETS.symbols
     const p = chance < 0 ? 0 : chance > 1 ? 1 : chance
     const tick = Math.max(MIN_TICK, Math.round(duration / ticksFor(text.length)))
 
@@ -222,7 +257,7 @@ export function useScramble<T extends HTMLElement = HTMLElement>({
       }
       setOut(frame(text, head, pool, p))
     }, tick)
-  }, [chance, chars, duration, reduced, stop, text])
+  }, [chance, duration, pool, reduced, stop, text])
 
   const runRef = React.useRef(run)
   React.useEffect(() => {
@@ -231,13 +266,15 @@ export function useScramble<T extends HTMLElement = HTMLElement>({
 
   // A new target abandons whatever is mid-decode: the old head index means
   // nothing against a different string. Resetting `played` lets the trigger
-  // arm again, so changing the text of a `playOnce` reveal reveals the new one.
+  // arm again, so changing the text of a `playOnce` reveal reveals the new
+  // one. A concealed line goes back to noise — the new string has not been
+  // revealed yet, whatever the old one had got to.
   React.useEffect(() => {
     stop()
     played.current = false
-    setOut(text)
+    setOut(concealed ? conceal(text, pool) : text)
     setState('idle')
-  }, [stop, text])
+  }, [concealed, pool, stop, text])
 
   // Turning the preference on mid-run has to land immediately. Waiting for the
   // interval to finish would honour the setting only for people who set it

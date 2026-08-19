@@ -197,6 +197,38 @@ for (const entry of index.items) {
         at,
         'imports motion but no spring constant or duration default is readable; scripts/motion-scan.mjs found neither',
       )
+
+      /*
+       * A component that pulls in `motion` owes a spring.
+       *
+       * ADR 0001 justifies the dependency on exactly one property — real
+       * interruptible springs with velocity carry-over — and PRODUCT.md
+       * principle 2 states the consequence: "Interruptible or it is not
+       * physics." A file that imports the engine and then drives a tween with
+       * a duration and an ease is paying that dependency's cost for something
+       * CSS does natively, and every surface of this project goes on saying
+       * "springs, not easings" over it.
+       *
+       * Nothing checked this until now, and the registry drifted: of four
+       * shipped components exactly one declares a spring. The linter is
+       * exhaustive about structure — 93 checks, a three-way STATES invariant,
+       * a fake-cubic-bezier detector — and had nothing at all to say about
+       * whether a component does the thing the library is about.
+       *
+       * The exceptions below are the drift as it stood on 2026-08-14, recorded
+       * rather than grandfathered silently. Each is a decision owed, not a
+       * permanent carve-out; the list only shrinks. Anything new that imports
+       * motion without a spring fails here.
+       */
+      const SPRINGLESS_EXCEPTIONS = new Set(['hold-drain'])
+
+      if (!SPRINGLESS_EXCEPTIONS.has(manifest.name)) {
+        check(
+          scan.springs.length > 0,
+          at,
+          'imports motion but declares no spring; ADR 0001 justifies the dependency on interruptible springs alone, so a duration-and-ease tween does not earn it',
+        )
+      }
     }
 
     // The accessibility contract from ADR 0002, generalised off the deleted

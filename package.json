@@ -27,7 +27,8 @@
     "lint:motion:test": "node scripts/motion-scan.test.mjs",
     "lint:contrast": "node scripts/lint-contrast.mjs",
     "lint:contrast:test": "node scripts/lint-contrast.test.mjs",
-    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:motion:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check && pnpm test"
+    "test:spring-math": "node --test --experimental-strip-types scripts/spring-math.test.mjs",
+    "verify": "pnpm typecheck && pnpm lint:registry && pnpm lint:registry:test && pnpm lint:motion:test && pnpm lint:contrast && pnpm lint:contrast:test && pnpm registry:check && pnpm test:spring-math && pnpm test"
   },
   "devDependencies": {
     "ajv": "^8.20.0",

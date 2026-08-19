@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { components } from '@/__generated__/meta.js'
 import { SiteNav } from '@/components/site-nav'
 import { SiteFooter } from '@/components/site-footer'
-import { componentHref } from '@/lib/registry'
+import { componentHref, hasComponentPage } from '@/lib/registry'
 
 /**
  * Stays at the app root rather than moving into `(site)` with the other
@@ -34,16 +34,30 @@ export default function NotFound() {
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {components.map((c) => (
-                <Link
-                  key={c.name}
-                  href={componentHref(c.name)}
-                  className="flex items-center gap-3 rounded-xl border border-control bg-panel px-5 py-4 transition-colors hover:border-muted"
-                >
-                  <span className="font-mono text-sm text-ink">{c.name}</span>
-                  <span className="lbl ml-auto">{c.category}</span>
-                </Link>
-              ))}
+              {/* A 404 page must not manufacture more 404s: a component with
+                  no route of its own renders as a plain row pointing at the
+                  catalogue tile that does exist, not as a link to nowhere. */}
+              {components.map((c) =>
+                hasComponentPage(c.name) ? (
+                  <Link
+                    key={c.name}
+                    href={componentHref(c.name)}
+                    className="flex items-center gap-3 rounded-xl border border-control bg-panel px-5 py-4 transition-colors hover:border-muted"
+                  >
+                    <span className="font-mono text-sm text-ink">{c.name}</span>
+                    <span className="lbl ml-auto">{c.category}</span>
+                  </Link>
+                ) : (
+                  <Link
+                    key={c.name}
+                    href="/components"
+                    className="flex items-center gap-3 rounded-xl border border-control bg-panel px-5 py-4 transition-colors hover:border-muted"
+                  >
+                    <span className="font-mono text-sm text-ink">{c.name}</span>
+                    <span className="lbl ml-auto">in the catalogue</span>
+                  </Link>
+                ),
+              )}
             </div>
           </>
         )}

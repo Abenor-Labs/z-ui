@@ -36,7 +36,10 @@ const LINTER = join(ROOT, 'scripts', 'lint-contrast.mjs')
 
 const CSS = 'web/app/globals.css'
 const SRC = 'registry/components/disclosure/disclosure.tsx'
-const CARD = 'web/components/section-head.tsx'
+// Was section-head.tsx until the 2026-08-14 redesign deleted it. Any live web
+// component that paints `text-base text-muted` will do — the mutation below
+// swaps that exact string — and the footer is the least likely file to lose it.
+const CARD = 'web/components/site-footer.tsx'
 const FILES = [CSS, SRC, CARD]
 // Repo-relative for the messages, absolute for every actual write.
 const abs = (f) => join(ROOT, f)
@@ -142,9 +145,10 @@ const seen = new Set(base)
  * The unmutated tree, asserted directly. These are the claims no mutation can
  * make, because they are about what the linter does *not* do.
  *
- * The scope-split one has teeth: ink is #e8e4dc, so if web/ tokens were
- * ever measured against a light surface it would land at 1.27:1 and that
- * assertion would fire immediately.
+ * The scope-split one still has teeth after the paper flip, just quieter
+ * ones: the web pairs are only ever measured against the tokens PAIRS names,
+ * and a #ffffff appearing in a web: line would mean the registry's
+ * light-consumer surface had leaked into the site checks.
  */
 const baseline = [
   // Was: assert failure. Both the site palette and the registry's icon
@@ -212,20 +216,22 @@ const variants = (hex) =>
  * for the ride.
  */
 const mutations = [
+  // #7a7a7a on the paper chassis is 3.80:1 — inside the band that fails the
+  // 4.5 text floor while clearing the 3.0 UI floor, which is the whole claim.
   ['text floor is 4.5 and the UI floor is genuinely not', () =>
-    edit(CSS, '--color-accent: #479c78;', '--color-accent: #6a6a6a;'),
-    /^web: accent on chassis is 3\.61:1, below the 4\.5:1 floor for text/,
+    edit(CSS, '--color-accent: #a03d00;', '--color-accent: #7a7a7a;'),
+    /^web: accent on chassis is 3\.80:1, below the 4\.5:1 floor for text/,
     /accent on chassis is .+ floor for non-text/],
 
   ['new token with no declared pair', () =>
-    edit(CSS, '  --color-accent: #479c78;', '  --color-accent: #479c78;\n  --color-alarm: #ff2d2d;'),
+    edit(CSS, '  --color-accent: #a03d00;', '  --color-accent: #a03d00;\n  --color-alarm: #ff2d2d;'),
     /--color-alarm \(#ff2d2d\) appears in no declared pair/],
 
   // `rule` is declared decorative, never text, so painting body copy with it is
   // the cheapest way to prove rule B reads utilities rather than tokens.
   ['text- utility with no declared text pair', () =>
     edit(CARD, 'text-base text-muted', 'text-base text-rule'),
-    /^web\/components\/section-head\.tsx: "text-rule" is used here but "rule" is the foreground of no declared text pair/],
+    /^web\/components\/site-footer\.tsx: "text-rule" is used here but "rule" is the foreground of no declared text pair/],
 
   ['token renamed out from under a pair', () =>
     edit(CSS, '--color-accent:', '--color-glow:'),
@@ -261,15 +267,24 @@ const mutations = [
    * keeps these cases alive across a registry whose contents change: they
    * assert the linter's behaviour, not a particular component's palette.
    */
-  ['registry colour fails on the dark chassis only', () =>
-    edit(SRC, 'const STATES = [', `${variants('#1a1a1a')}\nconst STATES = [`),
-    /^disclosure\/disclosure\.tsx: probeVariants #1a1a1a \(closed\) on #0f0c09 is 1\.12:1/,
-    /#1a1a1a \(closed\) on #ffffff/],
+  /**
+   * Both audit surfaces are light since the paper flip, so the split a dark
+   * chassis used to give — a colour failing one surface and sailing on the
+   * other — survives in only one direction. #909090 sits in that band: 2.83:1
+   * on the paper chassis (fails the 3:1 floor) and 3.19:1 on white (passes).
+   * The `absent` half is what proves the two surfaces are measured
+   * independently rather than the report being copied across both.
+   */
+  ['registry colour fails on the site chassis only', () =>
+    edit(SRC, 'const STATES = [', `${variants('#909090')}\nconst STATES = [`),
+    /^disclosure\/disclosure\.tsx: probeVariants #909090 \(closed\) on #f5f1e6 is 2\.83:1/,
+    /#909090 \(closed\) on #ffffff/],
 
-  ['registry colour fails on the light surface only', () =>
+  // The white consumer app is still its own measurement: #fff vanishes on it
+  // completely, and the message must name that surface.
+  ['registry colour is measured against the white consumer app', () =>
     edit(SRC, 'const STATES = [', `${variants('#fff')}\nconst STATES = [`),
-    /^disclosure\/disclosure\.tsx: probeVariants #fff \(closed\) on #ffffff is 1\.00:1/,
-    /#fff \(closed\) on #0f0c09/],
+    /^disclosure\/disclosure\.tsx: probeVariants #fff \(closed\) on #ffffff is 1\.00:1/],
 
   // A bare module constant, outside any variants object. Rule D has to key off
   // source position rather than collect hex strings, or a colour parked at
@@ -278,11 +293,13 @@ const mutations = [
     edit(SRC, 'const STATES = [', "const SHADOW = '#f43f5e'\nconst STATES = ["),
     /^disclosure\/disclosure\.tsx: hex "#f43f5e" sits outside a variants object/],
 
-  // The control. Brightening a foreground must never manufacture a failure;
-  // without this the whole suite is satisfiable by a linter that fails on
-  // everything.
+  // The control. Improving a foreground's contrast must never manufacture a
+  // failure; without this the whole suite is satisfiable by a linter that
+  // fails on everything. On paper the improving direction is darker, not
+  // lighter — pure #000 is banned by DESIGN.md, not by WCAG, and the linter
+  // must only ever enforce the second.
   ['a passing pair stays passing', () =>
-    edit(CSS, '--color-ink: #e8e4dc;', '--color-ink: #ffffff;'),
+    edit(CSS, '--color-ink: #211d12;', '--color-ink: #000000;'),
     null,
     /ink on (chassis|panel|panel-2)/],
 ]

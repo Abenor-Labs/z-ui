@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 12 — Field Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =============================================================== journal */
+/* THE STORY: the registry is an expedition log. Components are SPECIES,
+   observed in the wild (real interfaces), caught, pinned and described —
+   binomial names, habitat, observed behaviour, a motion trace drawn like a
+   flight path. "Seven specimens collected; the expedition continues" says
+   scope, growth and curation without a single feature sentence. Aged paper,
+   iron-gall ink, moss accent; Garamond because naturalists wrote in it. */
+:root {
+  --paper: #f3ecdb;
+  --paper-2: #ece3cd;
+  --ink: #2b241a;
+  --faded: #6d6250;
+  --hair: rgba(43,36,26,.18);
+  --moss: #5c6b3c;         /* the collector's one green */
+  --wax: #a34a2a;          /* sealing-wax red, tags and pins */
+  --serif: 'EB Garamond', Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { margin: 0; box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(90% 60% at 50% 0%, rgba(43,36,26,.045), transparent 70%);
+}
+::selection { background: var(--moss); color: var(--paper); }
+.wrap { max-width: 66rem; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
+
+.banner { border-bottom: 1px solid var(--hair); padding: 10px 0; font-family: var(--mono); font-size: 12px; color: var(--faded); }
+.banner .wrap { display: flex; gap: 14px; align-items: baseline; }
+.banner b { color: var(--wax); letter-spacing: .06em; }
+.banner nav { margin-left: auto; display: flex; gap: 10px; }
+.banner a { color: var(--faded); text-decoration: none; }
+.banner a:hover { color: var(--ink); }
+
+/* ── title page ── */
+.cover { text-align: center; padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2.4rem, 6vw, 4rem); border-bottom: 1px solid var(--hair); }
+.cover .ex { font-family: var(--mono); font-size: 12px; letter-spacing: .3em; color: var(--faded); }
+.cover h1 { margin-top: 20px; font-weight: 500; font-size: clamp(2.4rem, 6.4vw, 4.2rem); line-height: 1.06; letter-spacing: .005em; }
+.cover h1 i { color: var(--moss); }
+.cover .sub { margin-top: 16px; font-style: italic; font-size: 18px; color: var(--faded); }
+.cover .tally { display: inline-flex; gap: 26px; margin-top: 26px; padding: 12px 22px; border: 1px solid var(--hair); font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+.cover .tally b { color: var(--wax); font-weight: 600; }
+
+/* ── plates ── */
+.plates { display: grid; gap: clamp(1.6rem, 4vw, 2.6rem); padding-block: clamp(2.2rem, 6vw, 3.6rem); }
+@media (min-width: 58rem) { .plates { grid-template-columns: 1fr 1fr; } }
+
+.plate {
+  position: relative; background: var(--paper-2); border: 1px solid var(--hair);
+  padding: 22px 24px 20px; box-shadow: 0 1px 0 rgba(43,36,26,.08);
+}
+.plate.wide { grid-column: 1 / -1; }
+/* the pin: a wax-red head and a fine shadowed shaft */
+.pin { position: absolute; top: -7px; left: 50%; width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #c9663f, var(--wax)); translate: -50% 0;
+  box-shadow: 0 8px 6px -4px rgba(43,36,26,.35); }
+.plate .no { position: absolute; top: 14px; right: 16px; font-family: var(--mono); font-size: 11px; color: var(--faded); }
+
+.plate h2 { font-size: 26px; font-weight: 500; font-style: italic; }
+.plate h2 small { display: block; margin-top: 2px; font-style: normal; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--faded); text-transform: uppercase; }
+.obs { margin-top: 12px; font-size: 15.5px; line-height: 1.62; color: #473e30; max-width: 58ch; }
+.obs i { color: var(--moss); }
+
+.fact { display: grid; grid-template-columns: 7.5rem 1fr; gap: 3px 12px; margin-top: 14px; font-size: 13.5px; }
+.fact dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faded); padding-top: 2px; }
+.fact dd { color: var(--ink); }
+.fact dd.mono { font-family: var(--mono); font-size: 12.5px; }
+
+/* the observation box where the live specimen sits */
+.cage { margin-top: 16px; border: 1px dashed rgba(43,36,26,.35); background: var(--paper); min-height: 96px; display: grid; place-items: center; padding: 18px; }
+.cage .hint { font-family: var(--mono); font-size: 11px; color: var(--faded); }
+
+/* flight path trace */
+.trace svg { display: block; width: 100%; height: 70px; margin-top: 12px; }
+.trace path { fill: none; stroke: var(--moss); stroke-width: 1.6; stroke-dasharray: 3 5; }
+.trace text { font-family: var(--mono); font-size: 10px; fill: var(--faded); }
+
+/* a live pinned specimen: the disclosure, hand-built for the plate */
+.spec-disc { width: 100%; max-width: 340px; border: 1px solid rgba(43,36,26,.4); background: var(--paper); }
+.spec-disc button { all: unset; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; padding: 12px 14px; font-family: var(--serif); font-size: 15.5px; cursor: pointer; }
+.spec-disc button:hover { background: rgba(43,36,26,.05); }
+.spec-disc .chev { font-family: var(--mono); color: var(--moss); }
+.spec-disc .body { overflow: hidden; height: 0; }
+.spec-disc .inner { padding: 0 14px 14px; font-size: 14px; font-style: italic; color: var(--faded); line-height: 1.55; }
+
+/* margin annotations, rotated like pencil notes */
+.margin { position: absolute; font-style: italic; font-size: 13.5px; color: var(--moss); rotate: -2.4deg; }
+
+.next { border-top: 1px solid var(--hair); text-align: center; padding: 34px 0 20px; }
+.next .lead { font-style: italic; font-size: 17px; color: var(--faded); }
+.next .cmd { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 13.5px; color: var(--paper); background: var(--ink); padding: 12px 20px; cursor: pointer; border: 0; }
+.next .cmd:hover { background: var(--moss); }
+footer { padding: 22px 0 40px; text-align: center; font-family: var(--mono); font-size: 11.5px; color: var(--faded); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 12</b><span>Field Notes — the registry as an expedition log of tactile species</span>
+  <nav><a href="10-the-lesson.html">10</a><a href="11-the-teardown.html">11</a><a href="13-the-score.html">13</a></nav>
+</div></div>
+
+<!-- ── title page ── -->
+<header class="cover wrap">
+  <span class="ex">EXPEDITION LOG · VOL. 0.1</span>
+  <h1>Field Notes on<br><i>Tactile Species</i></h1>
+  <p class="sub">observations of small interface behaviours, collected live and pinned as source</p>
+  <div class="tally"><span><b>7</b> specimens collected</span><span><b>3</b> genera</span><span>expedition <b>ongoing</b></span></div>
+</header>
+
+<!-- ── plates ── -->
+<main class="plates wrap">
+
+  <!-- Plate I — the dial -->
+  <figure class="plate wide">
+    <span class="pin"></span><span class="no">PLATE I</span>
+    <h2>Volanta detentis <small>the flywheel dial · genus tactile-feedback</small></h2>
+    <p class="obs">Rare. Responds to being <i>flicked</i>: spins freely, shedding speed to
+    friction, then is caught by the nearest of its thirteen detents and rings once before
+    resting. Subject remains fully tame mid-flight — a hand placed on it at any point takes the
+    spin over at its true velocity. No specimen has ever been observed to follow a timeline.</p>
+    <dl class="fact">
+      <dt>caught</dt><dd>14 Aug 2026, the masthead</dd>
+      <dt>habitat</dt><dd>settings panels, audio tools, anywhere a value has weight</dd>
+      <dt>drive</dt><dd class="mono">detent spring 1300/46 · friction 3.2/s</dd>
+      <dt>call</dt><dd class="mono">data-state: idle → turning → coasting</dd>
+    </dl>
+    <div class="trace"><svg viewBox="0 0 560 70" preserveAspectRatio="none" aria-label="Observed flight path: fast spin decaying into detent capture">
+      <path id="flight"/>
+      <text x="4" y="64">observed trace — one flick, 1.3s, terminating on detent 9</text>
+    </svg></div>
+    <span class="margin" style="right: 26px; top: 24px;">it kept spinning after I let go! —</span>
+  </figure>
+
+  <!-- Plate II — the disclosure, alive in its cage -->
+  <figure class="plate">
+    <span class="pin"></span><span class="no">PLATE II</span>
+    <h2>Disclosura interrupta <small>the reversing panel · genus state-morphing</small></h2>
+    <p class="obs">Common once seen, unmistakable afterwards. Opens at a spring's pace; disturbed
+    mid-open, it <i>turns around from wherever it got to</i>, at the speed it was travelling.
+    Live specimen below — disturb it twice, quickly.</p>
+    <div class="cage">
+      <div class="spec-disc" id="disc">
+        <button type="button" aria-expanded="false"><span>field observation № 12</span><span class="chev">▸</span></button>
+        <div class="body"><div class="inner">The height is a spring, so a second press reverses
+        from where it got to. The chevron is a reading of the same value, never its own clock.</div></div>
+      </div>
+      <span class="hint" style="margin-top:10px">poke it — then again before it settles</span>
+    </div>
+  </figure>
+
+  <!-- Plate III — chase -->
+  <figure class="plate">
+    <span class="pin"></span><span class="no">PLATE III</span>
+    <h2>Caudex elasticus <small>the chasing indicator · genus state-morphing</small></h2>
+    <p class="obs">Moves in the manner of a caterpillar: the forward edge strikes out on a stiff
+    spring, the hind edge follows on a soft one, and the animal is longest at its fastest. Never
+    observed to squash by script — the stretch <i>is</i> its speed, and long journeys deform it
+    visibly more than short ones.</p>
+    <dl class="fact">
+      <dt>caught</dt><dd>14 Aug 2026, a range picker</dd>
+      <dt>habitat</dt><dd>toolbars, filters, anywhere one-of-N is chosen</dd>
+      <dt>drive</dt><dd class="mono">lead 950/62 · trail 380/34</dd>
+      <dt>call</dt><dd class="mono">data-state: idle → moving</dd>
+    </dl>
+    <span class="margin" style="left: 30px; bottom: 14px;">two springs, one animal</span>
+  </figure>
+
+</main>
+
+<!-- ── the invitation ── -->
+<section class="next wrap">
+  <p class="lead">Specimens survive transport: each ships as one legible file,<br>pinned into your
+  repository, yours to breed variants from.</p>
+  <button class="cmd" type="button">npx @abenor/z-ui add dial</button>
+</section>
+
+<footer>Z-UI · expedition notes · aged paper, iron-gall ink, moss &amp; sealing wax · MIT</footer>
+
+<script>
+/* Plate I trace: the dial integrator, drawn once as a static observed path */
+{
+  let w = 620, x = 0, v = w * 1.15, pts = []   // flick velocity, deg/s-ish units
+  const detent = 270 / 13
+  for (let i = 0; i <= 200; i++) {
+    const dt = 1.3 / 200
+    if (Math.abs(v) > 150) { v *= Math.exp(-3.2 * dt) }
+    else { const rest = Math.round(x / detent) * detent; const a = -1300 * (x - rest) - 46 * v; v += a * dt }
+    x += v * dt
+    pts.push(`${(i / 200) * 560},${62 - (x / 270) * 52}`)
+  }
+  document.getElementById('flight').setAttribute('d', 'M' + pts.join(' L'))
+}
+
+/* Plate II: a real interruptible spring on the pinned disclosure */
+{
+  const root = document.getElementById('disc')
+  const btn = root.querySelector('button')
+  const body = root.querySelector('.body')
+  const chev = root.querySelector('.chev')
+  const full = () => root.querySelector('.inner').offsetHeight
+  let open = false, h = 0, v = 0, raf = 0, last = 0
+  function tick(now) {
+    raf = 0
+    const dt = Math.min(.032, (now - (last || now)) / 1000); last = now
+    const to = open ? full() : 0
+    const a = -520 * (h - to) - 46 * v
+    v += a * dt; h += v * dt
+    body.style.height = Math.max(0, h) + 'px'
+    chev.textContent = h > full() * .5 ? '▾' : '▸'
+    if (Math.abs(v) > 2 || Math.abs(h - to) > .5) { raf = requestAnimationFrame(tick); return }
+    h = to; v = 0; last = 0; body.style.height = to + 'px'
+  }
+  btn.addEventListener('click', () => {
+    open = !open
+    btn.setAttribute('aria-expanded', String(open))
+    if (!raf) { last = 0; raf = requestAnimationFrame(tick) }
+  })
+}
+</script>
+</body>
+</html>

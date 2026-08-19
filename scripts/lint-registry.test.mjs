@@ -88,6 +88,25 @@ const mutations = [
   // failure the old useZTransition grep was supposed to catch and never could.
   ['reduced-motion branch removed', () =>
     writeFileSync(SRC, orig.src.replace('    if (reduced) {', '    if (false) {'))],
+  /*
+   * The thesis gate, added 2026-08-14.
+   *
+   * Swapping disclosure's spring for a duration-and-ease is the exact drift
+   * that had already happened three times in a four-component registry without
+   * anything noticing: import the engine ADR 0001 justifies on interruptible
+   * springs, then use it to run a tween. The linter was exhaustive about
+   * structure and silent about whether a component does the thing the library
+   * is for.
+   *
+   * This mutation is the one that keeps the rule honest, because the rule
+   * carries an exceptions list and an exceptions list is how a check quietly
+   * becomes a no-op. If someone adds `disclosure` to it, this goes red.
+   */
+  ['spring replaced by a duration tween', () =>
+    writeFileSync(SRC, orig.src
+      .replace("  type: 'spring',", "  type: 'tween',")
+      .replace('  stiffness: 520,', '  duration: 0.4,')
+      .replace('  damping: 46,', "  ease: 'easeOut',"))],
 ]
 
 let caught = 0

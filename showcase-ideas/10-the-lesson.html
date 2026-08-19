@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 10 — The Lesson</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ================================================================== board */
+/* THE STORY: the site is a physics lecture. It does not describe the
+   library; it argues the library's one claim — "easings lie about
+   interruption, springs don't" — and makes the reader run the experiment
+   with their own hand before any component is even named. Every section is
+   a numbered step of that argument. The palette is a chalkboard because a
+   chalkboard is where an argument is worked, not where a product is sold. */
+:root {
+  --board: #1d2420;         /* slate board, green-leaning, not black */
+  --board-2: #232b26;
+  --chalk: #e9e5d8;         /* worked chalk, not white */
+  --chalk-dim: #9aa094;
+  --dust: rgba(233,229,216,.14);
+  --ochre: #e8b04b;         /* the one colored stick of chalk */
+  --red: #d97862;           /* reserved for the wrong answer */
+  --serif: 'Fraunces', Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { margin: 0; box-sizing: border-box; }
+html { color-scheme: dark; }
+body {
+  background: var(--board);
+  color: var(--chalk);
+  font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+  /* faint chalk residue: two soft radial smudges, no texture image */
+  background-image:
+    radial-gradient(60% 40% at 20% 10%, rgba(233,229,216,.03), transparent 70%),
+    radial-gradient(50% 30% at 85% 60%, rgba(233,229,216,.02), transparent 70%);
+}
+::selection { background: var(--ochre); color: var(--board); }
+.wrap { max-width: 68rem; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
+
+.banner { border-bottom: 1px solid var(--dust); padding: 10px 0; font-family: var(--mono); font-size: 12px; color: var(--chalk-dim); }
+.banner .wrap { display: flex; gap: 14px; align-items: baseline; }
+.banner b { color: var(--ochre); letter-spacing: .06em; }
+.banner nav { margin-left: auto; display: flex; gap: 10px; }
+.banner a { color: var(--chalk-dim); text-decoration: none; }
+.banner a:hover { color: var(--chalk); }
+
+/* ================================================================ lesson */
+.step { border-bottom: 1px dashed var(--dust); padding-block: clamp(3rem, 7vw, 5.5rem); }
+.roman { font-family: var(--mono); font-size: 13px; letter-spacing: .35em; color: var(--ochre); }
+h1, h2 { font-weight: 400; letter-spacing: -.01em; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1.05; max-width: 18ch; margin-top: 18px; }
+h1 em, h2 em { font-style: italic; color: var(--ochre); }
+h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-top: 14px; max-width: 24ch; }
+.note { margin-top: 16px; max-width: 52ch; font-size: 17px; line-height: 1.65; color: var(--chalk-dim); }
+.note code, .mono { font-family: var(--mono); font-size: .85em; color: var(--chalk); }
+
+/* the chalk underline: a hand-ruled SVG stroke, not text-decoration */
+.rule-hand { display: block; margin-top: 10px; width: min(320px, 60%); height: 7px; }
+.rule-hand path { stroke: var(--ochre); stroke-width: 2.5; fill: none; stroke-linecap: round; opacity: .85; }
+
+/* ========================================================== experiment I */
+/* Two identical tracks. One runs a cubic-bezier, one runs a real spring.
+   The reader clicks to send both; clicking AGAIN mid-flight is the lesson:
+   the eased box restarts from rest, the sprung box turns with its speed. */
+.bench { margin-top: 34px; display: grid; gap: 18px; }
+@media (min-width: 56rem) { .bench { grid-template-columns: 1fr 1fr; } }
+.rig { border: 1px solid var(--dust); background: var(--board-2); padding: 18px 18px 14px; }
+.rig header { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 12px; }
+.rig header .tag { letter-spacing: .12em; }
+.rig.wrong header .tag { color: var(--red); }
+.rig.right header .tag { color: var(--ochre); }
+.rig header .law { color: var(--chalk-dim); }
+.track { position: relative; margin-top: 16px; height: 64px; border-block: 1px solid var(--dust); }
+.puck {
+  position: absolute; top: 50%; left: 0; width: 40px; height: 40px;
+  translate: 0 -50%; background: var(--chalk); border-radius: 3px;
+}
+.rig.wrong .puck { transition: transform 900ms cubic-bezier(.25,.1,.25,1); }
+.rig .verdict { margin-top: 12px; font-family: var(--mono); font-size: 12px; min-height: 2.6em; color: var(--chalk-dim); line-height: 1.5; }
+.rig.wrong .verdict b { color: var(--red); font-weight: 600; }
+.rig.right .verdict b { color: var(--ochre); font-weight: 600; }
+.bench-cta { grid-column: 1 / -1; font-family: var(--mono); font-size: 13px; color: var(--chalk); }
+.bench-cta button {
+  font: inherit; letter-spacing: .06em; color: var(--board); background: var(--ochre);
+  border: 0; padding: 12px 22px; cursor: pointer; border-radius: 3px;
+}
+.bench-cta button:hover { filter: brightness(1.07); }
+.bench-cta .hint { margin-left: 14px; color: var(--chalk-dim); }
+
+/* ============================================================== formula */
+.chalkline { margin-top: 26px; font-family: var(--mono); font-size: clamp(15px, 2.4vw, 19px); color: var(--chalk); letter-spacing: .02em; }
+.chalkline .gloss { display: block; margin-top: 8px; font-size: 13px; color: var(--chalk-dim); }
+.plot { margin-top: 26px; border: 1px solid var(--dust); background: var(--board-2); padding: 16px; }
+.plot svg { display: block; width: 100%; height: 180px; }
+.plot .cap { display: flex; gap: 18px; margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--chalk-dim); }
+.plot .cap i { font-style: normal; color: var(--ochre); }
+
+/* ============================================================ takeaway */
+.take { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 30px; }
+.cmd {
+  font-family: var(--mono); font-size: 14px; color: var(--board);
+  background: var(--chalk); padding: 14px 20px; border-radius: 3px; cursor: pointer; border: 0;
+}
+.cmd:hover { filter: brightness(1.04); }
+.take .aside { font-size: 15px; color: var(--chalk-dim); font-style: italic; }
+footer { padding: 26px 0 40px; font-family: var(--mono); font-size: 12px; color: var(--chalk-dim); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 10</b><span>The Lesson — the site is an argument the reader runs by hand</span>
+  <nav><a href="11-the-teardown.html">11</a><a href="12-field-notes.html">12</a><a href="13-the-score.html">13</a></nav>
+</div></div>
+
+<!-- ── I. the claim ─────────────────────────────────────────────────── -->
+<section class="step"><div class="wrap">
+  <span class="roman">LECTURE I — THE CLAIM</span>
+  <h1>Easings <em>lie</em> about interruption.</h1>
+  <svg class="rule-hand" viewBox="0 0 320 8" aria-hidden="true"><path d="M2 5 C 60 2, 140 7, 200 4 S 300 3, 318 5"/></svg>
+  <p class="note">Every animation curve looks fine in a video, because a video is never
+  interrupted. Your users interrupt everything. This page is one experiment, run with your own
+  hand — no component is named until you have seen the difference yourself.</p>
+</div></section>
+
+<!-- ── II. the experiment ───────────────────────────────────────────── -->
+<section class="step"><div class="wrap">
+  <span class="roman">LECTURE II — THE EXPERIMENT</span>
+  <h2>Send both boxes. Then change your mind <em>mid-flight</em>.</h2>
+
+  <div class="bench">
+    <div class="rig wrong" id="rig-ease">
+      <header><span class="tag">CUBIC-BEZIER(.25,.1,.25,1)</span><span class="law">what CSS gives you</span></header>
+      <div class="track"><div class="puck" id="puck-ease"></div></div>
+      <p class="verdict" id="v-ease">Waiting.</p>
+    </div>
+    <div class="rig right" id="rig-spring">
+      <header><span class="tag">SPRING 520/46</span><span class="law">what this registry ships</span></header>
+      <div class="track"><div class="puck" id="puck-spring"></div></div>
+      <p class="verdict" id="v-spring">Waiting.</p>
+    </div>
+    <div class="bench-cta">
+      <button id="send" type="button">send both →</button>
+      <span class="hint" id="hint">then press again before they arrive</span>
+    </div>
+  </div>
+</div></section>
+
+<!-- ── III. the physics ─────────────────────────────────────────────── -->
+<section class="step"><div class="wrap">
+  <span class="roman">LECTURE III — THE PHYSICS</span>
+  <h2>A curve has no memory. A spring has <em>velocity</em>.</h2>
+  <p class="chalkline">x&#x0308; = −(k/m)·x − (c/m)·x&#x0307;
+    <span class="gloss">position and speed persist outside any animation — reversal is the same mass with the force sign flipped</span>
+  </p>
+  <div class="plot">
+    <svg viewBox="0 0 600 160" preserveAspectRatio="none" aria-label="Step response of the disclosure spring, 520 stiffness 46 damping">
+      <line x1="0" y1="40" x2="600" y2="40" stroke="rgba(233,229,216,.25)" stroke-dasharray="4 6"/>
+      <path id="curve" fill="none" stroke="#e8b04b" stroke-width="2.5"/>
+    </svg>
+    <div class="cap"><span><i>—</i> disclosure, 520/46, plotted from the shipped constants</span><span>t90 = 68ms</span></div>
+  </div>
+</div></section>
+
+<!-- ── IV. take the file ────────────────────────────────────────────── -->
+<section class="step"><div class="wrap">
+  <span class="roman">LECTURE IV — TAKE THE FILE</span>
+  <h2>Seven components keep this property. <em>As source.</em></h2>
+  <p class="note">The CLI writes the file into your repository and is finished with it. Edit the
+  spring, rewrite the markup, delete half of it — the physics above is now yours to retune.</p>
+  <div class="take">
+    <button class="cmd" type="button">npx @abenor/z-ui add dial</button>
+    <span class="aside">homework: interrupt everything.</span>
+  </div>
+</div></section>
+
+<footer><div class="wrap">Z-UI · lecture notes, MIT · board slate, worked chalk, one ochre stick</footer></div>
+
+<script>
+/* ---- the experiment: one eased box, one integrated spring ------------- */
+const trackW = () => document.querySelector('.track').clientWidth - 40
+let target = 0                       // 0 = left, 1 = right
+let sent = 0                         // how many presses this run
+
+const ease = document.getElementById('puck-ease')
+const vE = document.getElementById('v-ease')
+const vS = document.getElementById('v-spring')
+
+/* spring puck: semi-implicit Euler, velocity survives retarget */
+const spr = { x: 0, v: 0, k: 520, c: 46 }
+const sPuck = document.getElementById('puck-spring')
+let raf = 0, last = 0
+function tick(now) {
+  raf = 0
+  const dt = Math.min(0.032, (now - (last || now)) / 1000); last = now
+  const to = target * trackW()
+  const a = -spr.k * (spr.x - to) - spr.c * spr.v
+  spr.v += a * dt; spr.x += spr.v * dt
+  sPuck.style.transform = `translateX(${spr.x}px)`
+  if (Math.abs(spr.v) > 2 || Math.abs(spr.x - to) > 0.5) { raf = requestAnimationFrame(tick); return }
+  spr.x = to; spr.v = 0; last = 0
+  sPuck.style.transform = `translateX(${to}px)`
+  if (sent > 1) vS.innerHTML = 'Turned <b>mid-flight, kept its speed</b>. No stall, no restart.'
+}
+function send() {
+  target = 1 - target
+  sent++
+  ease.style.transform = `translateX(${target * trackW()}px)`
+  if (!raf) { last = 0; raf = requestAnimationFrame(tick) }
+  if (sent === 1) {
+    vE.textContent = 'Travelling. Now press again before it lands.'
+    vS.textContent = 'Travelling. Same target, real velocity.'
+    document.getElementById('hint').textContent = 'now — before they arrive'
+  } else {
+    vE.innerHTML = 'Threw the journey away and <b>started a new one from rest</b> — the stutter you just saw.'
+    document.getElementById('hint').textContent = 'again, as many times as you like'
+  }
+}
+document.getElementById('send').addEventListener('click', send)
+
+/* ---- the plot: same integrator, drawn once (static, no idle motion) --- */
+{
+  const pts = []; let x = 0, v = 0
+  for (let i = 0; i <= 240; i++) {
+    const a = -520 * (x - 1) - 46 * v
+    v += a * (1 / 240); x += v * (1 / 240)
+    pts.push(`${(i / 240) * 600},${160 - x * 120 - 0}`)
+  }
+  document.getElementById('curve').setAttribute('points', '')
+  document.getElementById('curve').setAttribute('d', 'M' + pts.join(' L'))
+}
+</script>
+</body>
+</html>

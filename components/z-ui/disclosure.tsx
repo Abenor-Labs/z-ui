@@ -76,7 +76,7 @@ const TOKENS = {
   '--dsc-line': 'var(--z-line, color-mix(in oklab, currentColor 18%, transparent))',
   '--dsc-hover': 'var(--z-hover, color-mix(in oklab, currentColor 7%, transparent))',
   '--dsc-muted': 'var(--z-muted, color-mix(in oklab, currentColor 58%, transparent))',
-  '--dsc-accent': 'var(--z-accent, oklch(0.53 0.17 45))',
+  '--dsc-accent': 'var(--z-accent, oklch(0.75 0.19 145))',
   '--dsc-radius': 'var(--z-radius, 4px)',
 } as React.CSSProperties
 

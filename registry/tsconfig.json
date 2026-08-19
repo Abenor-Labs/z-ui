@@ -14,8 +14,11 @@
     // lint-registry fails the build when one is missing, so a forgotten entry
     // cannot reach CI.
     "paths": {
+      "@/components/z-ui/chase": ["./components/chase/chase.tsx"],
+      "@/components/z-ui/dial": ["./components/dial/dial.tsx"],
       "@/components/z-ui/disclosure": ["./components/disclosure/disclosure.tsx"],
       "@/components/z-ui/hold-drain": ["./components/hold-drain/hold-drain.tsx"],
+      "@/components/z-ui/heft": ["./components/heft/heft.tsx"],
       "@/components/z-ui/late-critique": ["./components/late-critique/late-critique.tsx"],
       "@/components/z-ui/scramble-reveal": ["./components/scramble-reveal/scramble-reveal.tsx"]
     }

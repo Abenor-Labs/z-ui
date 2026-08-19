@@ -6,48 +6,49 @@
 
 @theme {
   /*
-   * Warm Instrument palette, replacing the near-black-plus-indigo ramp.
+   * The Lab Sheet palette, replacing the Warm Instrument dark ramp.
    *
-   * That ramp's actual defect wasn't the hue, it was the structure: a cool,
-   * blue-leaning near-black (chassis read closer to neutral-cool than warm —
-   * #09090b has more blue than red) plus one saturated accent is the single
-   * most common AI/generic dark-mode template regardless of which hue plays
-   * the accent. Swapping mint for indigo earlier just picked a different
-   * instance of the same shape.
+   * Two dark ramps died here for the same structural reason: near-black plus
+   * one accent is the default dev-tool costume whatever the hue, and warming
+   * the browns only picked a different instance of it. So the ground flips.
+   * The site is now a sheet of engineering paper — warm cream, ink linework,
+   * one signal colour rationed to whatever is physically moving — and the
+   * only dark surfaces left are the plates that carry source code, where a
+   * dark ground is doing a job instead of striking a pose.
    *
-   * This ramp is warm on purpose, every step: R > G > B on the neutrals,
-   * matching an actual OP-1 body rather than default Tailwind zinc/slate.
-   * --color-ink now equals DESIGN.md's documented Silkscreen Sand exactly
-   * (#E8E4DC) instead of the #e5e1e4 it had drifted to.
+   * Every neutral is warm (R ≥ G > B), mixed from the same yellowed-paper
+   * family rather than a Tailwind stone/neutral ramp. Verified against the
+   * WCAG floors by scripts/lint-contrast.mjs: ink and muted clear 4.5:1 on
+   * every ground they sit on, control clears 3:1 as a boundary, and the
+   * signal clears 4.5:1 as text on all three grounds it appears against.
    */
-  --color-chassis: #0f0c09;
-  --color-surface: #151109;
-  --color-panel: #1c1712;
-  --color-panel-2: #29201a;
-  --color-ink: #e8e4dc;
-  --color-muted: #a79a87;
-  --color-rule: #241e17;
-  --color-hair: #1f1912;
+  --color-chassis: #f5f1e6;
+  --color-surface: #efeadb;
+  --color-panel: #e9e3d0;
+  --color-panel-2: #dfd7bf;
+  --color-ink: #211d12;
+  --color-muted: #5d5748;
+  --color-rule: #d6ceb6;
+  --color-hair: #e0d9c4;
   /*
-   * Signal Mint, re-mixed rather than replaced. The name and the "rare,
-   * moving-part-only" contract stay from DESIGN.md; the old #00E5A0 was
-   * spring-green at near-maximum saturation, the exact acid-green-on-black
-   * pop that reads as generated rather than designed. This version is
-   * desaturated and shifted toward a muted teal — closer to a printed
-   * pigment than a glowing LED — and clears 4.5:1 text contrast on chassis,
-   * surface, and panel with real headroom (5.3-5.9:1), so it isn't riding
-   * the floor the way the previous indigo-400 pick did (3.97:1 uncorrected).
+   * Signal Rust. Burnt orange at ink-adjacent depth — the colour of a printed
+   * warning on an instrument panel, not of a glowing LED. It keeps the same
+   * contract mint had: it marks the element currently in motion or the state
+   * the user just caused, and an interface at rest shows none of it. 5.8:1 on
+   * chassis, 5.2:1 on panel — clear of the 4.5:1 text floor with headroom,
+   * so it can label as well as indicate.
    */
-  --color-accent: #479c78;
+  --color-accent: #a03d00;
   /* Interactive boundaries only. `rule` and `hair` are dividers and exempt
      under 1.4.11; a chip border is the only thing saying a chip is a control,
-     so it owes 3:1 and gets its own token rather than borrowing a decorative
-     one. */
-  --color-control: #7e7161;
+     so it owes 3:1 on every ground including panel-2, and gets its own token
+     rather than borrowing a decorative one. */
+  --color-control: #7e7661;
 
   /* Bound to the next/font variables set on <html> in the root layout. */
-  --font-sans: var(--font-geist), system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-sans: var(--font-instrument-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --radius-lg: 0.25rem;
   --radius-xl: 0.5rem;
@@ -63,44 +64,47 @@
  * setting --z-* globally, and it gives the contrast gate real values to
  * check both themes against instead of checking nothing.
  *
- * Dark values are read from the same neutral/accent family the site now
- * uses (chassis/panel/ink/muted/accent, all warm — see the theme tokens
- * declared above for why). Light is unchanged from when it was first written:
- * nothing in this repo renders a light surface, so its indigo signal/focus
- * stays as the neutral-safe choice it always was rather than chasing a
- * warm-mint value that's never actually seen. Dark's signal/focus now
- * match --color-accent instead of indigo, for the same "the site's own ramp
- * is one flat, self-consistent story" reason the old comment gave.
+ * Both blocks now carry the paper palette, because the site itself renders
+ * on paper: :root is what every demo on this site consumes, and `.light` is
+ * the same statement kept under the class-switch contract the gate audits.
+ * A consumer's dark app never sees either — with no Z-UI CSS present the
+ * components fall back to currentColor mixes and adapt to whatever ink the
+ * host uses, which is the path that actually ships.
  */
 :root {
-  --z-bg: #0f0c09;
-  --z-panel: #1c1712;
-  --z-fill: #29201a;
-  --z-fill-hover: #2e2519;
-  --z-fg: #e8e4dc;
-  --z-fg-muted: #a79a87;
-  --z-border: #7e7161;
-  --z-signal: #479c78;
-  --z-on-signal: #0f0c09;
-  --z-focus: #479c78;
+  --z-bg: #f5f1e6;
+  --z-panel: #e9e3d0;
+  --z-fill: #dfd7bf;
+  --z-fill-hover: #d6cdb0;
+  --z-fg: #211d12;
+  --z-fg-muted: #5d5748;
+  --z-border: #79715c;
+  --z-signal: #a03d00;
+  --z-on-signal: #f5f1e6;
+  --z-focus: #a03d00;
+  /* The accent the registry components actually read for their moving parts.
+     Declared so demos on this site light up in the site's own signal rather
+     than each file's shipped fallback. */
+  --z-accent: #a03d00;
 }
 
 .light {
-  --z-bg: #f6f4f1;
-  --z-panel: #ede9e4;
-  --z-fill: #e1dcd5;
-  --z-fill-hover: #d4cec5;
-  --z-fg: #181512;
-  --z-fg-muted: #5c584f;
-  --z-border: #726d62;
-  --z-signal: #4338ca;
-  --z-on-signal: #f6f4f1;
-  --z-focus: #4338ca;
+  --z-bg: #f5f1e6;
+  --z-panel: #e9e3d0;
+  --z-fill: #dfd7bf;
+  --z-fill-hover: #d6cdb0;
+  --z-fg: #211d12;
+  --z-fg-muted: #5d5748;
+  --z-border: #79715c;
+  --z-signal: #a03d00;
+  --z-on-signal: #f5f1e6;
+  --z-focus: #a03d00;
+  --z-accent: #a03d00;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
     background: var(--color-chassis);
   }
 
@@ -138,7 +142,7 @@
     font-family: var(--font-mono);
     font-size: 0.75rem;
     line-height: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.05em;
     color: var(--color-muted);
   }
@@ -149,52 +153,53 @@
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     line-height: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.06em;
   }
 
-  /* Sans, not mono: badges and readouts that carry a word rather than a token.
-     Both of these were in use across the catalogue, the component pages, and
-     every code panel while being defined nowhere — Tailwind emits nothing for
-     an unknown class, so all of it was silently rendering at inherited body
-     size. */
+  /* Sans, not mono: badges and readouts that carry a word rather than a token. */
   .txt-xs {
     font-size: 0.75rem;
     line-height: 1.05rem;
   }
 
-  /* The two display sizes. Everything else is body or mono. */
+  /* The two display sizes, now in the serif. Instrument Serif has one weight,
+     and that is the constraint that keeps the display voice honest: hierarchy
+     comes from size and space, never from piling on boldness. Everything else
+     on the page is the sans or the mono. */
   .t-xl {
-    font-size: clamp(2rem, 7vw, 3rem);
-    line-height: 1.16;
-    letter-spacing: -0.04em;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 8vw, 4.75rem);
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    font-weight: 400;
   }
 
   .t-lg {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    letter-spacing: -0.01em;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 2.15rem;
+    letter-spacing: -0.005em;
+    font-weight: 400;
   }
 
   @media (min-width: 768px) {
     .t-lg {
-      font-size: 2rem;
-      line-height: 2.5rem;
-      letter-spacing: -0.02em;
+      font-size: 2.25rem;
+      line-height: 2.7rem;
     }
   }
 
-  /* Engineering-drawing grid. It sits under the hero at very low contrast to
-     give the shader something to be measured against — a gradient alone reads
-     as a screensaver, a gradient over a grid reads as an instrument. */
+  /* Engineering-drawing grid, in ink on paper. It sits under the hero at low
+     contrast so the specimen has something to be measured against — a bare
+     cream field reads as a stationery shop, a cream field with a faint grid
+     reads as a drawing that is about to be worked on. */
   .grid-paper {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-    background-size: 64px 64px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 100%);
+      linear-gradient(to right, rgba(33, 29, 18, 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(33, 29, 18, 0.055) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 85% 65% at 50% 38%, #000 30%, transparent 100%);
   }
 
   /* A hairline that fades out at both ends, so section boundaries stop short of
@@ -210,7 +215,13 @@
     );
   }
 
-  /* Shiki emits its own background; the panel supplies the ground instead. */
+  /* Source sits on an ink plate — the one dark surface left in the system,
+     kept because Shiki's vesper theme is cut for a dark ground and because a
+     specimen sheet mounts its photographs on black. The plate is the ink
+     token, so the site has exactly one story about what dark is. */
+  .code {
+    background: var(--color-ink);
+  }
   .code pre {
     background: transparent !important;
     padding: 1.25rem;

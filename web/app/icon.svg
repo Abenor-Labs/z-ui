@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    The two rules are ink, the traverse is the signal.
+
+    DESIGN.md reserves Signal Rust for the moving part, and in a Z that is
+    exactly one of the three strokes: the rules are where the letter starts and
+    stops, the diagonal is the distance it covers between them. Colouring the
+    whole mark in the signal would spend the one signal the palette has on
+    something static, which is the misuse the rule exists to prevent.
+
+    Ground is chassis rather than transparent. A tab strip can be light or
+    dark, and ink on a dark one is invisible - the mark carries its own paper
+    so it reads the same in both.
+  -->
+  <rect width="32" height="32" rx="7" fill="#f5f1e6"/>
+  <path d="M9 10h14" stroke="#211d12" stroke-width="3.1" stroke-linecap="round"/>
+  <path d="M22.4 10.6 9.6 21.4" stroke="#a03d00" stroke-width="3.1" stroke-linecap="round"/>
+  <path d="M9 22h14" stroke="#211d12" stroke-width="3.1" stroke-linecap="round"/>
+</svg>

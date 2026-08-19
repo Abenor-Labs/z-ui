@@ -73,25 +73,14 @@
   --cp-chrome: 64px;
 
   /*
-   * The light theme is gone, not ported.
-   *
-   * The design shipped a `[data-theme="light"]` block and a nav toggle to drive
-   * it. There is nothing to point that block at: DESIGN.md's Contrast Floor
-   * Rule makes the system dark-first by necessity — Signal Mint measures ~3.3:1
-   * on white, so it is forbidden on text, icon-only controls and focus rings
-   * over light surfaces, and every accent use on this page is one of those.
-   * globals.css follows the rule to its conclusion, setting `color-scheme: dark`
-   * and painting chassis onto `html`; there is no light Z-UI palette to map a
-   * second block onto, and writing one would mean inventing the exact colours
-   * the rule exists to forbid. The 240ms cross-fade the root used to run went
-   * with it — it animated the theme swap and nothing else, so it could no
-   * longer fire.
-   *
    * `color-scheme` is restated here rather than inherited because the range
    * inputs below draw native parts from it, and a subtree that paints its own
    * ground should not be relying on an ancestor to say which way round it is.
+   * It flipped to `light` with the Lab Sheet palette: every alias above now
+   * resolves to a paper value, and native scrollbars and thumbs drawn dark
+   * against them would be the one part of the page still wearing the old ramp.
    */
-  color-scheme: dark;
+  color-scheme: light;
   /* Minus the chrome: this box starts below the fixed bar's 64px, so a flat
      100vh would push the footer that far past the fold on a short page. */
   min-height: calc(100vh - var(--cp-chrome));
@@ -346,15 +335,17 @@
  * the rest of the page already uses.
  *
  * Measured against every ground this page paints, because a code panel is text
- * and owes 4.5:1 like any other text — on panel / chassis / panel-2:
- * terracotta 7.75 / 8.50 / 6.96, sage 8.66 / 9.50 / 7.77, gold 8.90 / 9.75 /
- * 7.98. None of them is the accent: syntax colour is the most static ink on
- * the page and the Moving Part Rule spends mint elsewhere.
+ * and owes 4.5:1 like any other text — on chassis / panel / panel-2:
+ * terracotta 6.48 / 5.70 / 5.09, sage 6.25 / 5.50 / 4.91, gold 6.40 / 5.62 /
+ * 5.02. The values deepened when the ramp flipped to paper: the same three
+ * hues, re-mixed as printed pigments instead of phosphors. None of them is
+ * the accent: syntax colour is the most static ink on the page and the Moving
+ * Part Rule spends the signal elsewhere.
  */
 .component-page {
-  --tk-structure: #e09b7d;
-  --tk-literal: #93bfa4;
-  --tk-number: #d8b26c;
+  --tk-structure: #8c4020;
+  --tk-literal: #38614a;
+  --tk-number: #6e5312;
 }
 
 .component-page .tk-comment {

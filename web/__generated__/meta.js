@@ -45,7 +45,7 @@ export const items = [
           {
             "key": "disclosure/disclosure.tsx",
             "target": "components/z-ui/disclosure.tsx",
-            "sha": "d397dd56c8f4"
+            "sha": "559d5361dff1"
           }
         ]
       }
@@ -187,7 +187,161 @@ export const items = [
           {
             "key": "scramble-reveal/scramble-reveal.tsx",
             "target": "components/z-ui/scramble-reveal.tsx",
-            "sha": "e9736478c4f2"
+            "sha": "7a2c79b51357"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "heft",
+    "type": "registry:component",
+    "title": "Heft",
+    "description": "A box of objects that behave like objects. Drag one and everything it touches is shoved aside; anything resting on top loses its floor and drops. Gravity, contacts and friction, in one file.",
+    "category": "tactile-feedback",
+    "gesture": "drag",
+    "states": [
+      "idle",
+      "dragging",
+      "settling"
+    ],
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "dragging",
+        "settling"
+      ],
+      "springs": [
+        {
+          "name": "SPRING",
+          "stiffness": 1400,
+          "damping": 70,
+          "mass": 1,
+          "restDelta": null,
+          "restSpeed": null,
+          "preset": null
+        }
+      ],
+      "durations": [],
+      "reducedMotion": "branch"
+    },
+    "dependencies": [
+      "motion"
+    ],
+    "installs": [
+      {
+        "name": "heft",
+        "files": [
+          {
+            "key": "heft/heft.tsx",
+            "target": "components/z-ui/heft.tsx",
+            "sha": "95a5b5af5dae"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "dial",
+    "type": "registry:component",
+    "title": "Dial",
+    "description": "A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again.",
+    "category": "tactile-feedback",
+    "gesture": "drag",
+    "states": [
+      "idle",
+      "turning",
+      "coasting"
+    ],
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "turning",
+        "coasting"
+      ],
+      "springs": [
+        {
+          "name": "SPRING",
+          "stiffness": 1300,
+          "damping": 46,
+          "mass": 1,
+          "restDelta": null,
+          "restSpeed": null,
+          "preset": null
+        }
+      ],
+      "durations": [],
+      "reducedMotion": "branch"
+    },
+    "dependencies": [
+      "motion"
+    ],
+    "installs": [
+      {
+        "name": "dial",
+        "files": [
+          {
+            "key": "dial/dial.tsx",
+            "target": "components/z-ui/dial.tsx",
+            "sha": "14759bd3ab84"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "chase",
+    "type": "registry:component",
+    "title": "Chase",
+    "description": "A segmented control whose indicator gives chase: the edge facing the target leaves on a stiff spring, the edge behind follows on a soft one, and the stretch between them is the speed. Nothing scripts the squash.",
+    "category": "state-morphing",
+    "gesture": "press",
+    "states": [
+      "idle",
+      "moving"
+    ],
+    "spring": null,
+    "motion": {
+      "states": [
+        "idle",
+        "moving"
+      ],
+      "springs": [
+        {
+          "name": "SPRING_LEAD",
+          "stiffness": 950,
+          "damping": 62,
+          "mass": 1,
+          "restDelta": 0.5,
+          "restSpeed": 5,
+          "preset": null
+        },
+        {
+          "name": "SPRING_TRAIL",
+          "stiffness": 380,
+          "damping": 34,
+          "mass": 1,
+          "restDelta": 0.5,
+          "restSpeed": 5,
+          "preset": null
+        }
+      ],
+      "durations": [],
+      "reducedMotion": "branch"
+    },
+    "dependencies": [
+      "motion"
+    ],
+    "installs": [
+      {
+        "name": "chase",
+        "files": [
+          {
+            "key": "chase/chase.tsx",
+            "target": "components/z-ui/chase.tsx",
+            "sha": "210a4b1e426a"
           }
         ]
       }

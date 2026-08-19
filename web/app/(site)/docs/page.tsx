@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { byName, components } from '@/__generated__/meta.js'
 import { CopyButton } from '@/components/copy-button'
-import { componentHref, manifestUrl } from '@/lib/registry'
+import { componentHref, hasComponentPage, manifestUrl } from '@/lib/registry'
 
 export const metadata: Metadata = {
   title: 'Docs',
@@ -56,13 +56,22 @@ export default function DocsPage() {
       </header>
 
       <Section title="Install a component">
+        {/* This paragraph outlived its own subject. It described 0.1.0's
+            default registry URL pointing at the source tree, which was true
+            until 0.1.1 corrected the constant on 2026-08-10 — after which the
+            docs went on telling readers the documented command did not resolve
+            while it did. Both paths are now stated as working because both were
+            run: `npx @abenor/z-ui add <component>` into an empty project
+            outside this repository, and the shadcn command against the same
+            manifest. */}
         <p className="mb-5 max-w-2xl text-sm text-muted">
-          The shadcn path works now — the manifests landed on{' '}
+          Both paths resolve. The manifests landed on{' '}
           <code className="font-mono text-ink">main</code> on 2026-08-10 and are a strict
-          superset of its registry-item schema. The first-party CLI is on npm, but{' '}
-          <code className="font-mono text-ink">0.1.0</code> shipped a default registry URL
-          pointing at the source tree rather than the generated manifests, so it needs{' '}
-          <code className="font-mono text-ink">0.1.1</code> before its own command resolves.
+          superset of the shadcn registry-item schema, so a general client reads them with
+          nothing added. The first-party CLI is{' '}
+          <code className="font-mono text-ink">@abenor/z-ui</code> on npm, and adds
+          install-time spring selection and per-file digest verification that a general
+          client cannot.
         </p>
         <div className="grid gap-4 md:grid-cols-2">
           <Cmd
@@ -70,11 +79,7 @@ export default function DocsPage() {
             status="live"
             cmd={`npx shadcn@latest add ${manifestUrl(EXAMPLE)}`}
           />
-          <Cmd
-            label="z-ui"
-            status="needs 0.1.1"
-            cmd={`npx @abenor/z-ui add ${EXAMPLE}`}
-          />
+          <Cmd label="z-ui" status="live" cmd={`npx @abenor/z-ui add ${EXAMPLE}`} />
         </div>
       </Section>
 
@@ -158,10 +163,13 @@ export default function DocsPage() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
+            {/* A component without a page of its own routes to its catalogue
+                tile rather than to a URL that 404s — the same rule the 404
+                page and the gallery already keep. */}
             {components.map((c) => (
               <Link
                 key={c.name}
-                href={componentHref(c.name)}
+                href={hasComponentPage(c.name) ? componentHref(c.name) : '/components'}
                 className="flex items-center gap-3 rounded-xl border border-control bg-panel px-5 py-4 transition-colors hover:border-muted"
               >
                 <span className="font-mono text-sm text-ink">{c.name}</span>

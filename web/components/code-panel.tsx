@@ -23,7 +23,7 @@ export function CodePanel({ files }: { files: CodeFile[] }) {
   const file = files[active]!
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-panel">
+    <div className="overflow-hidden rounded-xl border border-control bg-panel">
       <div className="flex flex-wrap items-center gap-1 border-b border-hair px-2 py-2">
         {files.map((f, i) => (
           <button

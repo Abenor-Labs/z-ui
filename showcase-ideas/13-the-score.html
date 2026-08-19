@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept 13 — The Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ================================================================= score */
+/* THE STORY: motion is not played back, it is PERFORMED — by the user.
+   So the registry is a score: each component is a measure of notation with
+   tempo and dynamics taken from its real constants, and the hero stave is
+   an instrument the reader plays. A recording is fixed; a performance
+   responds to the performer. That is precisely the spring-vs-timeline
+   argument, restated as music. Stark white, engraver's black, one
+   vermilion — the language of printed scores, set editorially. */
+:root {
+  --page: #faf8f4;
+  --ink: #131210;
+  --grey: #77716a;
+  --hair: rgba(19,18,16,.16);
+  --verm: #c8351c;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { margin: 0; box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--serif); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--verm); color: var(--page); }
+.wrap { max-width: 70rem; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
+
+.banner { border-bottom: 1px solid var(--hair); padding: 10px 0; font-family: var(--mono); font-size: 12px; color: var(--grey); }
+.banner .wrap { display: flex; gap: 14px; align-items: baseline; }
+.banner b { color: var(--verm); letter-spacing: .06em; }
+.banner nav { margin-left: auto; display: flex; gap: 10px; }
+.banner a { color: var(--grey); text-decoration: none; }
+.banner a:hover { color: var(--ink); }
+
+/* ── frontispiece ── */
+.front { padding-block: clamp(2.6rem, 7vw, 5rem) 0; text-align: center; }
+.front .op { font-family: var(--mono); font-size: 12px; letter-spacing: .34em; color: var(--grey); }
+.front h1 { margin-top: 16px; font-size: clamp(3rem, 9.5vw, 6.4rem); line-height: .98; letter-spacing: -.01em; font-weight: 400; }
+.front h1 i { color: var(--verm); }
+.front .direction { margin-top: 14px; font-style: italic; font-size: clamp(16px, 2.4vw, 20px); color: var(--grey); }
+
+/* ── the playable stave ── */
+.stave-box { margin-top: clamp(2rem, 5vw, 3rem); border-block: 1px solid var(--hair); padding-block: 26px; }
+.stave-lab { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; color: var(--grey); margin-bottom: 14px; }
+.stave-lab b { color: var(--verm); font-weight: 600; }
+#stave { display: block; width: 100%; height: 190px; cursor: crosshair; touch-action: none; }
+#stave .line { stroke: var(--ink); stroke-width: 1; opacity: .8; }
+#stave .barline { stroke: var(--ink); stroke-width: 2.4; }
+#stave text { font-family: var(--mono); }
+
+/* ── the programme: each component is a measure ── */
+.prog { padding-block: clamp(2.4rem, 6vw, 4rem); }
+.prog h2 { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 400; }
+.prog h2 i { color: var(--verm); }
+.mvts { margin-top: 26px; border-top: 1px solid var(--ink); }
+.mvt { display: grid; gap: 6px 24px; padding: 20px 0; border-bottom: 1px solid var(--hair); align-items: baseline; }
+@media (min-width: 56rem) { .mvt { grid-template-columns: 2.6rem 15rem 1fr auto; } }
+.mvt .n { font-family: var(--mono); font-size: 13px; color: var(--grey); }
+.mvt .name { font-size: 21px; }
+.mvt .name small { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; color: var(--grey); text-transform: uppercase; margin-top: 2px; }
+.mvt .tempo { font-style: italic; font-size: 16px; color: #3c3833; max-width: 46ch; line-height: 1.5; }
+.mvt .dyn { font-family: var(--mono); font-size: 12.5px; color: var(--verm); white-space: nowrap; }
+
+/* ── coda ── */
+.coda { text-align: center; border-top: 1px solid var(--hair); padding: 36px 0 16px; }
+.coda .line { font-style: italic; font-size: 19px; color: var(--grey); }
+.coda .cmd { display: inline-block; margin-top: 16px; font-family: var(--mono); font-size: 13.5px; background: var(--ink); color: var(--page); border: 0; padding: 13px 22px; cursor: pointer; }
+.coda .cmd:hover { background: var(--verm); }
+footer { padding: 20px 0 40px; text-align: center; font-family: var(--mono); font-size: 11.5px; color: var(--grey); }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">
+  <b>CONCEPT 13</b><span>The Score — motion as notation; the user is the performer</span>
+  <nav><a href="10-the-lesson.html">10</a><a href="11-the-teardown.html">11</a><a href="12-field-notes.html">12</a></nav>
+</div></div>
+
+<!-- ── frontispiece ── -->
+<header class="front wrap">
+  <span class="op">Z-UI · OPUS 0.1 · FOR SEVEN COMPONENTS &amp; ONE HAND</span>
+  <h1>Your interface,<br><i>performed.</i></h1>
+  <p class="direction">con slancio, sempre interrompibile — a recording plays at you; a performance answers you.</p>
+</header>
+
+<!-- ── the playable stave ── -->
+<div class="stave-box"><div class="wrap">
+  <div class="stave-lab">
+    <span><b>SIGHT-READING</b> — strike the stave anywhere; each note lands on the disclosure spring, 520/46</span>
+    <span id="count">0 notes performed</span>
+  </div>
+  <svg id="stave" viewBox="0 0 1000 190" preserveAspectRatio="none" aria-label="A five-line musical stave. Click or tap to perform notes; each rings on a real spring.">
+    <line class="line" x1="0" x2="1000" y1="55" y2="55"/>
+    <line class="line" x1="0" x2="1000" y1="75" y2="75"/>
+    <line class="line" x1="0" x2="1000" y1="95" y2="95"/>
+    <line class="line" x1="0" x2="1000" y1="115" y2="115"/>
+    <line class="line" x1="0" x2="1000" y1="135" y2="135"/>
+    <line class="barline" x1="2" x2="2" y1="55" y2="135"/>
+    <line class="barline" x1="998" x2="998" y1="55" y2="135"/>
+    <text x="14" y="46" font-size="12" fill="#77716a">♩ = your pointer · dynamics from stiffness</text>
+    <g id="notes"></g>
+  </svg>
+</div></div>
+
+<!-- ── programme ── -->
+<section class="prog wrap">
+  <h2>Programme — seven measures, <i>no tape.</i></h2>
+  <div class="mvts">
+    <div class="mvt"><span class="n">i.</span>
+      <span class="name">Dial <small>tactile-feedback</small></span>
+      <span class="tempo">Vivace, poi morendo — flicked hard, it spins down through its detents and is caught ringing.</span>
+      <span class="dyn">ff · k1300 · rit. 3.2/s</span></div>
+    <div class="mvt"><span class="n">ii.</span>
+      <span class="name">Chase <small>state-morphing</small></span>
+      <span class="tempo">Legato, two voices — the forward edge leads, the hind edge answers a third behind.</span>
+      <span class="dyn">mf · k950 / k380</span></div>
+    <div class="mvt"><span class="n">iii.</span>
+      <span class="name">Disclosure <small>state-morphing</small></span>
+      <span class="tempo">Da capo, from wherever it got to — reversal keeps the phrase's momentum.</span>
+      <span class="dyn">mp · k520</span></div>
+    <div class="mvt"><span class="n">iv.</span>
+      <span class="name">Heft <small>tactile-feedback</small></span>
+      <span class="tempo">Tutti — move one voice and every voice it touches answers. Gravity conducts.</span>
+      <span class="dyn">f · k1400</span></div>
+    <div class="mvt"><span class="n">v.</span>
+      <span class="name">Hold Drain <small>tactile-feedback</small></span>
+      <span class="tempo">Tenuto — held to the double bar, or released early and paid back at tempo.</span>
+      <span class="dyn">sost. · 1200ms</span></div>
+    <div class="mvt"><span class="n">vi.</span>
+      <span class="name">Late Critique <small>input-utility</small></span>
+      <span class="tempo">Colla voce — criticism waits for the singer's pause; forgiveness lands on the beat.</span>
+      <span class="dyn">p · 700ms</span></div>
+    <div class="mvt"><span class="n">vii.</span>
+      <span class="name">Scramble Reveal <small>state-morphing</small></span>
+      <span class="tempo">Tremolo, resolving — noise settles into the written line, glyph by glyph.</span>
+      <span class="dyn">pp · 620ms</span></div>
+  </div>
+</section>
+
+<!-- ── coda ── -->
+<section class="coda wrap">
+  <p class="line">The score ships as source. Your users are the performers;<br>give them an instrument, not a tape.</p>
+  <button class="cmd" type="button">npx @abenor/z-ui add dial</button>
+</section>
+
+<footer>Z-UI · engraved edition · page white, engraver's ink, one vermilion · MIT</footer>
+
+<script>
+/* The stave: every strike is a note that lands on a real spring — it drops
+   from above the staff to the struck line and rings past it before settling,
+   exactly as the disclosure panel does. No note moves unless struck. */
+const svg = document.getElementById('stave')
+const layer = document.getElementById('notes')
+const count = document.getElementById('count')
+const LINES = [55, 75, 95, 115, 135]
+let performed = 0
+const live = []
+let raf = 0, last = 0
+
+function tick(now) {
+  raf = 0
+  const dt = Math.min(.032, (now - (last || now)) / 1000); last = now
+  let any = false
+  for (const n of live) {
+    const a = -520 * (n.y - n.to) - 26 * n.v      /* under-damped: the ring IS the point */
+    n.v += a * dt; n.y += n.v * dt
+    n.el.setAttribute('cy', n.y)
+    n.stem.setAttribute('y1', n.y); n.stem.setAttribute('y2', n.y - 46)
+    if (Math.abs(n.v) > 2 || Math.abs(n.y - n.to) > .4) any = true
+  }
+  if (any) { raf = requestAnimationFrame(tick) } else { last = 0 }
+}
+
+svg.addEventListener('pointerdown', (e) => {
+  const r = svg.getBoundingClientRect()
+  const x = ((e.clientX - r.left) / r.width) * 1000
+  const rawY = ((e.clientY - r.top) / r.height) * 190
+  /* snap pitch to the nearest line-or-space, like a copyist would */
+  const to = Math.round((rawY - 55) / 10) * 10 + 55
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+  const head = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse')
+  head.setAttribute('cx', x); head.setAttribute('cy', -20)
+  head.setAttribute('rx', 7.6); head.setAttribute('ry', 5.6)
+  head.setAttribute('transform', `rotate(-18 ${x} ${to})`)
+  head.setAttribute('fill', performed % 4 === 3 ? '#c8351c' : '#131210')
+  const stem = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+  stem.setAttribute('x1', x + 7); stem.setAttribute('x2', x + 7)
+  stem.setAttribute('y1', -20); stem.setAttribute('y2', -66)
+  stem.setAttribute('stroke', head.getAttribute('fill')); stem.setAttribute('stroke-width', 1.6)
+  g.append(head, stem); layer.append(g)
+  /* keep the manuscript legible: oldest notes fade out past 24 */
+  if (layer.children.length > 24) layer.firstChild.remove()
+  live.push({ el: head, stem, y: Math.min(40, to - 90), v: 0, to })
+  performed++
+  count.textContent = `${performed} note${performed === 1 ? '' : 's'} performed`
+  if (!raf) { last = 0; raf = requestAnimationFrame(tick) }
+})
+</script>
+</body>
+</html>
