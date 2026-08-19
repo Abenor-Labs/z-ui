@@ -237,3 +237,54 @@ one's items are done.
       +120°, governed 300°/s return seated by 1300/46, grabbable mid-return, mode flag with
       flywheel as the PRD-true default). Parked before approval; needs a PRD.md line 15 decision
       before any code
+
+## Phase 14 — the two repos became one (2026-08-19, unattended)
+
+Context: `z-ui updated` was a separate directory holding a rebuilt site and a second
+implementation of all seven components. This repo held the registry, the CLI and the publishing
+pipeline. Phase 14 merged them without losing either.
+
+- [x] Committed the old working tree before touching anything — 55 dirty files, 3 unpushed
+      commits, and three finished components (`dial`, `chase`, `heft`) that had never been
+      tracked at all. Split into two commits: the publish set isolated so it can be
+      cherry-picked onto `main`, then an unreviewed snapshot of the rest
+- [x] Established that this is not a port but a choice: the registry components are already
+      self-contained (351–702 lines, zero relative imports) and the site's are separate
+      reimplementations. `heft` differs by physics *model* — circular penalty solver here,
+      axis-aligned sequential impulses there. Registry components were therefore left alone
+- [x] Confirmed the real constraint before moving anything: the published CLI hardcodes
+      `raw.githubusercontent.com/Abenor-Labs/z-ui/main/web/public`, so `web/public/r/` is a
+      fixed repo path. ADR 0003 means it is fetched from raw GitHub, not served by the site —
+      so the website itself was free to move
+- [x] `web/` reduced to the registry build: `scripts/build-registry.mjs`, `public/`,
+      `__generated__/`. Its package.json dropped Next, React and Tailwind and kept shiki
+- [x] `site/` added as `@z-ui/site` in the pnpm workspace — the Vite rebuild, building clean
+- [x] `liquid-gooey` removed from the site along with its sandbox route and import
+- [x] Nothing deleted. `archive/` created with a README explaining every entry: `web-next/`
+      (the Next app), `showcase-ideas/` (14 HTML studies), `prototypes/`, `docs-v1/` (the
+      original PRODUCT.md and DESIGN.md), `gooey-sandbox/`
+- [x] Root docs replaced with the rebuild's PRD / DESIGN / CANDIDATES / ARCHITECTURE /
+      CLI-FINDINGS / TASKS. `.claude/CLAUDE.md` rewritten — this repo is no longer "the website,
+      not the registry"; it is both
+- [x] `components/` and `z-ui.json` untracked as CLI hand-test scaffolding, kept on disk, with
+      ignore rules anchored so they cannot swallow `web/components` or `site/src/components`
+- [x] CI retargeted: it built `@z-ui/web`, which no longer has a build script
+- [x] Verified: `site` builds; `build-registry.mjs --check` clean at 12 files; anchored ignore
+      rules confirmed against the real directories; 67 renames recorded at 100% similarity so
+      archived history survives
+
+### Not done, deliberately
+
+- [ ] **Nothing pushed.** Three local commits sit on `publish/dial-chase-heft` and
+      `site/vite-swap`. Pushing publishes to a public repo and that decision was not mine to make
+- [ ] **`pnpm install` not run for real** — only the lockfile was regenerated. CI runs
+      `--frozen-lockfile`, so the lockfile must be correct before the first push
+- [ ] **No browser verification.** Still no playwright/puppeteer MCP, third session running.
+      The site compiles and the registry check passes; nobody has looked at the pixels
+- [ ] **Deploy config untouched.** There is no `vercel.json` or `netlify.toml` in the repo, so
+      the build command lives in a hosting dashboard. Whoever owns that must change the
+      framework preset from Next to Vite and the output directory to `site/dist`
+- [ ] **`README.md` at root still describes the old site.** Left alone rather than rewritten
+      unattended
+- [ ] ADR cross-links to `PRODUCT.md` / `DESIGN.md` now resolve into `archive/docs-v1/`.
+      Accurate, but the ADRs were not edited

@@ -60,7 +60,7 @@ jobs:
         run: pnpm test
 
       - name: Build site
-        run: pnpm --filter @z-ui/web build
+        run: pnpm --filter @z-ui/site build
 
       # The CLI is published from dist/, so a package that typechecks but does
       # not emit is still broken for everyone who installs it.
