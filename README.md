@@ -1,5 +1,7 @@
 # Z-UI
 
+[![npm version](https://img.shields.io/npm/v/@abenor%2Fz-ui.svg)](https://www.npmjs.com/package/@abenor/z-ui)
+
 **Micro-animations you own.**
 
 A copy-paste registry of React micro-interactions — installed as source into your project, not pulled in as a runtime dependency you can never change.
@@ -8,7 +10,7 @@ A copy-paste registry of React micro-interactions — installed as source into y
 npx @abenor/z-ui@latest add dial
 ```
 
-> **Status: v0.1, early.** The CLI is published and installs working files. Seven components are in the registry. The showcase site runs locally but is not deployed yet, so the registry is served from raw GitHub. Component names and props may still move before v1.
+> **Status: v0.1, early.** The CLI is published and installs working files. Seven components are in the registry. The showcase site is live at [z-ui-eight.vercel.app](https://z-ui-eight.vercel.app); the registry itself is still served from raw GitHub. Component names and props may still move before v1.
 
 ---
 
