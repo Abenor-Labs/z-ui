@@ -63,7 +63,7 @@ export const RECORDINGS: Recording[] = [
   },
   {
     cmd: 'z-ui list',
-    note: 'the registry publishes four items today, not the seven this site documents',
+    note: 'the registry publishes four items today, not the eight this site documents',
     lines: [
       'z-ui 0.1.1 · Abenor Labs',
       'z-ui 0.1.0  https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/web/public',

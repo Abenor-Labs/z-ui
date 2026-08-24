@@ -1,0 +1,429 @@
+/* The single-route showcase.
+ *
+ * ONE PALETTE, TWO SURFACES.
+ *
+ * The page is warm paper. The components read tokens.css, which is dark — so
+ * rather than force every card dark to suit them, the light half of that token
+ * set is re-declared on `.ob-cell`. Those values are not invented: DESIGN.md
+ * records them as the superseded light direction (Paper #F4F1EA, Ink #1A1815,
+ * Rule #D8D2C4, Recess #EAE6DB), so the components are being asked for a state
+ * they were originally built for.
+ *
+ * `--signal` is per-surface, because one accent cannot serve both: volt on the
+ * dark terminal and dark cells, olive #4C7A0B on light cards. Same hue family,
+ * legible on each. Both values come from the supplied design.
+ *
+ * Two cells stay dark on purpose — heft and thinking-orb. heft reads its own
+ * `--z-*` namespace with dark fallbacks and the orb is a canvas that takes a
+ * `theme` prop, so neither follows a CSS token swap. Keeping them dark makes
+ * that a rhythm rather than an exception, and restores the light-grid /
+ * dark-accent contrast the supplied design was built on.
+ */
+:root {
+  --ob-paper: #e7e5df;
+  --ob-paper-hi: #f2f0eb;
+  --ob-slab: #14161a;
+  --ob-slab-2: #1e2126;
+  --ob-ink: #14161a;
+  --ob-muted: #5f5e58;
+  --ob-faint: #a4a29a;
+  --ob-rule: #cdcbc2;
+  --ob-volt: #c8ff4d;
+
+  --ob-sans: 'Instrument Sans', system-ui, sans-serif;
+  --ob-disp: 'Bricolage Grotesque', system-ui, sans-serif;
+  --ob-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --ob-lift: 0 1px 2px rgba(20, 22, 26, 0.06), 0 8px 24px -8px rgba(20, 22, 26, 0.18);
+  --ob-lift-hi: 0 2px 4px rgba(20, 22, 26, 0.08), 0 20px 44px -12px rgba(20, 22, 26, 0.28);
+
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: var(--ob-paper);
+  color: var(--ob-ink);
+  font-family: var(--ob-sans);
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background: var(--ob-volt);
+  color: var(--ob-slab);
+}
+a {
+  color: inherit;
+}
+/* base.css is not imported here (it owns `body` and `html` for the other site),
+   but this one rule from it is load-bearing: the UA stylesheet gives <button>
+   `color: buttontext`, which is pure black and does NOT inherit. HoldDrain's
+   track is a button, so its label rendered black-on-black at 1.19:1 until this
+   was restored. */
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.ob-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ------------------------------------------------------------------ hero -- */
+.ob-hero {
+  padding: 76px 0 0;
+}
+.ob-eyebrow {
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ob-muted);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 26px;
+}
+.ob-eyebrow s {
+  flex: 1;
+  height: 1px;
+  background: var(--ob-rule);
+  text-decoration: none;
+}
+.ob-wordmark {
+  font-family: var(--ob-disp);
+  font-weight: 800;
+  font-size: clamp(72px, 15vw, 168px);
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  margin: 0 0 22px;
+}
+.ob-wordmark i {
+  font-style: normal;
+  color: var(--ob-faint);
+}
+.ob-sub {
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ob-muted);
+  max-width: 34ch;
+  margin: 0 0 40px;
+}
+.ob-sub b {
+  color: var(--ob-ink);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- slab --- */
+.ob-slab {
+  background: var(--ob-slab);
+  border-radius: 14px;
+  box-shadow: var(--ob-lift-hi);
+  overflow: hidden;
+  margin-bottom: 96px;
+}
+.ob-slab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.ob-dots {
+  display: flex;
+  gap: 6px;
+}
+.ob-dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #33373e;
+}
+.ob-slab-tag {
+  font-family: var(--ob-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5c6069;
+}
+.ob-slab-body {
+  padding: 34px 30px 36px;
+}
+.ob-slab-cmd {
+  font-family: var(--ob-mono);
+  font-size: clamp(14px, 2.7vw, 25px);
+  font-weight: 500;
+  color: #edeef0;
+  white-space: nowrap;
+  overflow-x: auto;
+  letter-spacing: -0.02em;
+}
+.ob-slab-cmd u {
+  text-decoration: none;
+  color: var(--ob-volt);
+  margin-right: 16px;
+}
+.ob-slab-cmd em {
+  font-style: normal;
+  color: #8a8f98;
+}
+.ob-slab-cmd mark {
+  background: none;
+  color: var(--ob-volt);
+}
+.ob-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  background: var(--ob-volt);
+  vertical-align: -0.16em;
+  margin-left: 4px;
+  animation: ob-blink 1.1s steps(1) infinite;
+}
+@keyframes ob-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.ob-slab-note {
+  margin-top: 22px;
+  font-size: 13px;
+  color: #8b9099;
+}
+
+/* ---------------------------------------------------------------- grid --- */
+.ob-sec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+.ob-sec-head h2 {
+  font-family: var(--ob-disp);
+  font-weight: 600;
+  font-size: 34px;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.ob-sec-head p {
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ob-faint);
+  margin: 0;
+}
+
+.ob-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  padding-bottom: 100px;
+}
+
+/* Every cell is dark: the components read tokens.css, which is dark, so this is
+   the surface they were written for rather than a theme laid over them. */
+.ob-cell {
+  background: var(--ob-paper-hi);
+  color: var(--ob-ink);
+
+  /* the light half of tokens.css, scoped to the card — see the note above */
+  --paper: #f4f1ea;
+  --ink: #1a1815;
+  --rule: #d8d2c4;
+  --recess: #eae6db;
+  --recess-2: #f4f1ea;
+  --signal: #4c7a0b;
+  --contact-shadow: 1px 1px 0 0 var(--ink);
+  border-radius: 12px;
+  box-shadow: var(--ob-lift);
+  padding: 22px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  border: none;
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.18s ease;
+}
+/* Touch fires a false hover on tap and it sticks there. Movement is gated to
+   real pointers; the shadow is not, so a tap still gets its feedback. */
+.ob-cell:hover {
+  box-shadow: var(--ob-lift-hi);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ob-cell:hover {
+    transform: translateY(-4px);
+  }
+}
+.ob-cell:focus-visible {
+  outline: 2px solid var(--ob-slab);
+  outline-offset: 3px;
+}
+.ob-span-2 {
+  grid-column: span 2;
+}
+.ob-span-3 {
+  grid-column: span 3;
+}
+.ob-span-4 {
+  grid-column: span 4;
+}
+.ob-cell.ob-tall {
+  min-height: 300px;
+}
+
+/* heft and thinking-orb: dark by nature, and the grid's accent. */
+.ob-cell.ob-dark {
+  background: var(--ob-slab-2);
+  color: #edeef0;
+
+  --paper: #0f0e0d;
+  --ink: #f4f1ea;
+  --rule: #2a2723;
+  --recess: #1a1815;
+  --recess-2: #211e1a;
+  --signal: #c8ff4d;
+}
+.ob-cell.ob-dark .ob-cell-meta {
+  color: #9aa0a8;
+}
+.ob-cell.ob-dark .ob-cell-copy {
+  color: var(--ob-faint);
+}
+
+.ob-cell-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 0 20px;
+  /* the card is the copy target; the component is not */
+  cursor: auto;
+}
+.ob-cell-foot {
+  display: grid;
+  gap: 3px;
+}
+.ob-cell-name {
+  font-family: var(--ob-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ob-cell-copy {
+  font-family: var(--ob-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ob-faint);
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+/* Hidden until pointed at, but never hidden from the keyboard: a control that
+   only appears on hover is unreachable without a pointer. */
+.ob-cell:hover .ob-cell-copy,
+.ob-cell-copy:focus-visible {
+  opacity: 1;
+}
+.ob-cell-copy:focus-visible {
+  outline: 2px solid var(--ob-volt);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+/* Press feedback belongs on the button, never on the card: the card wraps a
+   live drag surface, and scaling an ancestor mid-drag would shrink the dial
+   under the pointer. 0.96 exactly — 0.95 and below reads as exaggerated. */
+.ob-cell-copy:active {
+  transform: scale(0.96);
+}
+.ob-cell-copy {
+  transition: opacity 0.15s ease, transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ob-cell.ob-copied .ob-cell-name,
+.ob-cell.ob-copied .ob-cell-copy {
+  color: #4c7a0b;
+  opacity: 1;
+}
+.ob-cell.ob-dark.ob-copied .ob-cell-name,
+.ob-cell.ob-dark.ob-copied .ob-cell-copy {
+  color: var(--ob-volt);
+}
+.ob-cell-meta {
+  font-size: 12.5px;
+  color: var(--ob-muted);
+  line-height: 1.45;
+}
+
+/* -------------------------------------------------------------- footer --- */
+.ob-footer {
+  border-top: 1px solid var(--ob-rule);
+  padding: 26px 0 80px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--ob-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ob-faint);
+}
+
+/* Reduced motion means fewer and gentler animations, not none. Movement goes
+   (the hover lift, the press scale, the caret's blink); the colour and opacity
+   transitions stay, because they are the static cue that a copy happened — and
+   killing them would leave the state change with no feedback channel at all. */
+@media (prefers-reduced-motion: reduce) {
+  .ob-cell:hover {
+    transform: none;
+  }
+  .ob-cell-copy:active {
+    transform: none;
+  }
+  .ob-caret {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .ob-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ob-span-2,
+  .ob-span-3,
+  .ob-span-4 {
+    grid-column: span 2;
+  }
+  .ob-cell,
+  .ob-cell.ob-tall {
+    min-height: 200px;
+  }
+  .ob-hero {
+    padding-top: 48px;
+  }
+  .ob-slab {
+    margin-bottom: 64px;
+  }
+}

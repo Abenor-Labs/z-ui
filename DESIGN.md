@@ -124,9 +124,11 @@ The landing was rebuilt on the transitions.dev model. What changed, and what did
   subhead, two pill CTAs (Browse / GitHub), and the install command as a pill below them.
 - Site palette is dark (see Palette above). This is site-wide, not landing-only — colors live in
   one token file and a half-dark site reads as a bug.
-- The landing IS the demo grid: eleven uniform cards (seven registry + four candidates), each
-  `stage / trigger / title / one-line mechanism / copy-install`. The old left-aligned hero with
-  the dial beside the headline is gone; the dial is now the first card in the grid.
+- The landing IS the demo grid: eleven uniform cards (seven gesture-driven registry components +
+  four candidates), each `stage / trigger / title / one-line mechanism / copy-install`. The old
+  left-aligned hero with the dial beside the headline is gone; the dial is now the first card in
+  the grid. See A20: thinking-orb, the eighth registry component, has no driving gesture and
+  sits out of this action-per-card grid on purpose.
 - Cards and stages have radii; pills exist.
 
 **Deliberately not changed**
@@ -166,10 +168,12 @@ skills were installed and applied, with a hard scope line.
   `--duration-fast`, both on `--ease-smooth-out`; `scroll-behavior: smooth` with a reduced-motion
   guard.
 
-**The scope line — nothing above touches a component that owns physics.** The seven registry
-components and the four candidates keep their springs, their friction integrators and their
-velocity carry-over. A duration cannot carry velocity through an interrupt, and that is the
-product's whole claim: /architecture argues CSS keyframes cannot reverse mid-flight, so the
+**The scope line — nothing above touches a component that owns physics.** Seven of the eight
+registry components and the four candidates keep their springs, their friction integrators and
+their velocity carry-over (thinking-orb is the one exception — parametric canvas animation, no
+spring, no interrupt to carry velocity through; see A20). A duration cannot carry velocity
+through an interrupt, and that is the product's whole claim: /architecture argues CSS keyframes
+cannot reverse mid-flight, so the
 components must not be built from them. Chrome is not the product, so chrome can be tokenized.
 
 Both snippets ship with their `prefers-reduced-motion` guard intact, plus a guard covering the
@@ -232,7 +236,7 @@ implementation choices, NOT product facts.
   constraint, reduced in size only. The home registry section was revised from a text table to
   this live grid after review: showing beats describing.
 - **A13 — Candidate lab route.** `/candidates` is a site-only bench for components that are NOT
-  in the registry: reel, origin, grip, intent. PRODUCT FACTS still says seven components, and the
+  in the registry: reel, origin, grip, intent. PRODUCT FACTS still says eight components, and the
   page says so in its own header — no install command, no CLI mention, no registry card. The
   slate they came from, and the source study behind it, live in CANDIDATES.md at the repo root.
   A candidate becomes a component only when the CLI can install it and PRODUCT FACTS is updated.
@@ -251,7 +255,7 @@ implementation choices, NOT product facts.
   off/on and full/compact; scramble-reveal hover/mount/in-view at 240/380/600ms. The reference
   playground's speed multiplier and pause transport were deliberately NOT adopted in this pass —
   an honest time-scale means every component reads a scale factor (rAF integrators multiply dt;
-  springs scale as k·s², c·s), which is a seven-component change and was deferred by decision.
+  springs scale as k·s², c·s), which is an eight-component change and was deferred by decision.
 - **A16 — Heft solver constants.** VEL_ITERATIONS 8, POS_ITERATIONS 3, POS_PERCENT 0.8, SLOP 0.5px,
   with warm starting (accumulated normal and friction impulses cached per contact between
   substeps). The slop is load-bearing, not sloppiness: penetration is corrected to 0.5px and no
@@ -357,3 +361,92 @@ implementation choices, NOT product facts.
   actually followed this project's own rules would look like, kept because deleting verified,
   working, rule-honoring code to make room for code that knowingly breaks those rules was never asked
   for.
+- **A19 — `/lab/navigation`** (built 2026-08-21, user-directed): eight navigation interactions
+  (magnetic links, cursor-follow underline, active pill, morphing nav, dock, expanding menu,
+  circular menu, radial nav), reached from the top nav's `lab` link. This is a new, explicitly
+  separate track from the registry — same status as `/candidates`, not a promotion path for it.
+  Nothing here has a CLI command, an install target, or a `registry/components/` file, and PRD.md's
+  eight is unchanged by this page. The brief that prompted it asked for an "acid/lime" accent; that
+  color does not exist in `tokens.css` and was not added — `--signal` (orange) is used throughout,
+  per the no-new-colors rule and because the page is meant to read as this site, not a separate
+  product skin. Underline and pill indicators reuse the two-edge stiff/trailing-soft chase mechanic
+  (`lab/navigation/useChaseTrack.ts`) rather than re-deriving it, mirroring `zui/Chase.tsx`'s L/R
+  motion-value technique. Code tabs were requested; existing `Playground`/`CodeBlock` infrastructure
+  was reused instead of building a new tab UI, so each demo shows one illustrative usage snippet, not
+  live-generated code reflecting interaction state (the eight components are gesture-driven, not
+  prop-driven, so there is no selection state to generate code from the way the detail-page
+  playgrounds do). Only the Navigation category from the source brief (buttons, text, cards,
+  toggles, loaders, cursors, scroll, inputs, navigation) was built; the rest is unbuilt scope, not a
+  rejected one.
+- **A20 — `thinking-orb`, the eighth registry component** (added 2026-08-22, user-directed).
+  Vendored from `thinking-orbs` (MIT, Jakub Antalik, github.com/Jakubantalik/thinking-orbs): nine
+  hand-tuned canvas animations for nine agent states (working, searching, solving, listening,
+  connecting, weaving, composing, breathing, shaping), z-sorted and depth-shaded on a plain 2D
+  canvas, no WebGL. The upstream package spans sixteen modules across component/presets/theme/a
+  nine-file draw engine; ported into one self-contained `.tsx` with zero runtime imports beyond
+  `react`, because that is the registry's contract — geometry and tuning unchanged, only the module
+  boundaries collapsed. PRD.md PRODUCT FACTS moved from seven components to eight; every "seven"
+  reference describing component count across `.claude/CLAUDE.md`, PRD.md, README.md, this file,
+  and the site's own copy was audited and updated to eight in the same pass — "seven commands"
+  (the CLI surface) is a separate fact and stayed seven, unaffected.
+  Two things make this component structurally unlike the other seven. First, it declares no
+  Motion spring, no friction integrator, no interrupt/velocity-carry-over — the "scope line" above
+  no longer holds for all eight registry components without this carve-out (see the paragraph
+  above A13). Second, and the reason it needed a schema change rather than just a manifest entry:
+  `registry-item.schema.json`'s `meta.gesture` enum was `press | drag | hold | hover | type`, and
+  none of those five is honest here — nothing on the orb waits for a press, a hold, a drag, a
+  hover, or a keystroke. Its `state` prop is set by whatever it stands in for (an agent, a job, a
+  socket), not by anything the reader does to the component. `none` was added to the enum
+  (`registry-item.schema.json` and the generator's hand-authored `ZGesture` type in
+  `web/scripts/build-registry.mjs`, which is not derived from the schema and needed its own edit)
+  rather than picking the least-wrong of the five existing values. Nothing on the CLI side
+  (`packages/cli`) types `gesture` as an enum, so no CLI change was needed.
+  On the site: `/components` shows it as the eighth live card, same grid, same rules; its detail
+  page (`/components/thinking-orb`) uses the standard `Playground` state-select pattern (Chase
+  chips choose the state, the code block reflects the selection exactly, same as every prop-driven
+  detail page) plus an "ALL NINE" section showing every state at once. It does NOT appear in the
+  Home landing `demo-grid` (see A12/A13 above it): that grid's whole premise is one card per
+  gesture-driven component, `action` button wired to the component's own input path, and
+  thinking-orb has no such input to wire — forcing a fabricated trigger onto it would misrepresent
+  the one property that makes it different. The eleven-card landing count is therefore unchanged;
+  the eighth registry component is real but sits outside that specific grid on purpose.
+
+- **A21 — `site-orbs` rebuilt on a light "paper" palette, outside this document's committed
+  direction** (2026-08-24, user-directed, from a supplied HTML design). The one-page showcase now
+  reads its own `--ob-*` properties: paper `#E7E5DF`, slab `#14161A`, volt `#C8FF4D`, Bricolage
+  Grotesque for display and Instrument Sans for UI. That departs from four decisions recorded
+  above — the site is dark, Archivo/JetBrains Mono are the two faces, `--signal` orange is the only
+  accent, and there are no box-shadows beyond the single 1px hard shadow. The page uses soft
+  elevation shadows and a hover lift, both of which the rest of the product does not.
+
+  The departure is scoped and does not leak: `site/` is untouched, and the components themselves
+  are not restyled — they are asked for a different token state, not overridden. The cards are warm
+  paper (`#F2F0EB`) and re-declare the light half of tokens.css on `.ob-cell`, using the values this
+  document already records above as the superseded light direction: Paper `#F4F1EA`, Ink `#1A1815`,
+  Rule `#D8D2C4`, Recess `#EAE6DB`. That palette was never wrong, only set aside, and the six site
+  components still render correctly under it — verified, every text pair at or above 4.5:1.
+
+  An earlier revision of this entry made every card dark instead. That was a workaround for the
+  components reading a dark tokens.css, not a decision, and it cost two things: the page's warm
+  paper (`#E7E5DF`, R>G>B) fought the cool slate cards (`#1E2126`, B>G>R) on opposite colour
+  temperatures, and flattening all eight cards to one surface threw away the light-grid /
+  dark-accent rhythm the supplied design was built on.
+
+  `--signal` is per-surface rather than global, because one accent cannot serve both: volt
+  `#C8FF4D` on the dark terminal and dark cells, olive `#4C7A0B` on light cards. Both values come
+  from the supplied design, which used exactly that pair for the same reason.
+
+  Two cells stay dark deliberately — `heft` reads its own `--z-*` namespace with dark fallbacks and
+  `thinking-orb` is a canvas driven by a `theme` prop, so neither follows a CSS token swap. Keeping
+  them dark makes that a rhythm rather than an exception.
+
+  Two conventions carried over from the previous build because they are load-bearing, not stylistic:
+  every chrome class is prefixed `ob-` (site.css is loaded for the component classes and already
+  defines `.hero`, `.wordmark` and `.footer` — the first build of this page lost its hero layout to
+  exactly that collision), and the card is a `<div>` rather than a `<button>`, since Chase,
+  HoldDrain and Disclosure each contain a real `<button>` and nesting them is invalid HTML that
+  React refuses to hydrate.
+
+  The eight names, the version string, and the install command are read from PRODUCT FACTS, not
+  from the supplied design, which had listed seven components that do not exist (`button`, `toggle`,
+  `badge`, `input`, `card`, `progress`, `tooltip`) and a version of `v1.4.0`.

@@ -4,7 +4,7 @@ This is the whole product: the registry, the CLI that installs from it, and the 
 
 ## Layout
 
-- `registry/components/` — the seven shipped components, one self-contained .tsx each.
+- `registry/components/` — the eight shipped components, one self-contained .tsx each.
 - `packages/cli/` — the published `@abenor/z-ui` CLI. Do not move it.
 - `web/` — registry build only. `scripts/build-registry.mjs` reads `registry/` and writes
   `web/public/r/`. **That path is a hard contract**: the published CLI hardcodes
@@ -21,7 +21,7 @@ specific one earns it on evidence.
 
 - **PRD.md → "PRODUCT FACTS" is the only source of truth about the product.** Never invent, rename,
   or extend components, CLI commands, flags, architecture reasoning, or product claims beyond it.
-  There are exactly seven components and exactly seven CLI commands. If a fact isn't in PRD.md,
+  There are exactly eight components and exactly seven CLI commands. If a fact isn't in PRD.md,
   it isn't a fact.
 - **DESIGN.md holds committed creative decisions.** Anything decided during the build that isn't
   already specified there goes into its "Assumptions" section, clearly marked as an assumption.

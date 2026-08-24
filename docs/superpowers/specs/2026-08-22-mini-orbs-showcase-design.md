@@ -62,17 +62,25 @@ is the lower-effort correct call here).
 **Dependencies:** `react`, `react-dom`, `motion` (needed by five of the seven
 components), `vite`, `@vitejs/plugin-react`, `typescript`. No router — one route.
 
-## Palette & type
+## Palette & type — REVISED (monochrome, matches the reference exactly)
 
-Reused, not reinvented — the same tokens as `site/`'s committed dark palette:
+First pass carried over `site/`'s dark + Signal-orange palette (see B-superseded below).
+Seeing it live against a bento grid built to mirror `orbs.jakubantalik.com` read as
+off — the reference is pure grayscale-on-black, and the orange fought that rather than
+sitting inside it. Dropped; this site now runs fully monochrome, no accent color at all:
 
 - Paper `#0F0E0D` · Ink `#F4F1EA` · Recess `#1A1815` / `#211E1A` · Rule `#2A2723` ·
-  Signal `#FF4D00`
+  "Live" neutral `#E7E3D8` (a warm off-white, not gray-desaturated-white — keeps it from
+  reading as clinical/blue-gray against the warm Paper/Ink pair)
 - Headings/UI: Archivo 500/700. Numbers/code/labels: JetBrains Mono.
-- `--z-accent: #FF4D00` on `:root` is the one line that ties every component's live/active
-  bits to Signal orange; everything else (`--z-line`, `--z-muted`, `--z-fill`) maps to
-  Rule/Ink-at-reduced-opacity so components read correctly against the dark background
-  without per-component overrides.
+- `--z-accent: #E7E3D8` on `:root` is the one line every component reads for its
+  live/active bits — same mechanism as before, just pointed at the neutral instead of
+  Signal orange. `--z-line`/`--z-muted`/`--z-fill` are untouched (Rule/Ink at reduced
+  opacity), so this is a one-variable change, not a per-component restyle.
+
+**Superseded:** Signal `#FF4D00` as the accent (this was `site/`'s own token, reused here
+under the assumption that "on-brand" beat "faithful to the reference" — see B3-superseded
+below). User-directed reversal after reviewing a live mockup, not a hedge kept for later.
 
 ## Page structure (single route)
 

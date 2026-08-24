@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Z-UI — Micro-animations you own</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --card:#141414;
+    --card-line:rgba(255,255,255,.045);
+    --pill:#1e1e1e;
+    --pill-line:rgba(255,255,255,.06);
+    --pill-active:#2e2c2a;
+    --text:#ededea;
+    --muted:#8a857e;
+    --dim:#5c5852;
+    --code:#111110;
+    --sans:Archivo, -apple-system, system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); font-size:15px;
+    -webkit-font-smoothing:antialiased;
+  }
+  main{max-width:684px; margin:0 auto; padding:18px 16px 0}
+  button{font-family:inherit}
+
+  /* ---------------------------------------------------------- topbar -- */
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px}
+  .backpill{
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--card); border:1px solid var(--card-line); border-radius:999px;
+    padding:7px 14px 7px 11px; font-size:12.5px; color:var(--muted);
+    text-decoration:none; transition:color .18s, border-color .18s;
+  }
+  .backpill:hover{color:var(--text); border-color:rgba(255,255,255,.12)}
+  .backpill svg{opacity:.7}
+  .topicons{display:flex; gap:8px}
+  .topicons a{
+    width:32px; height:32px; border-radius:999px; background:var(--card);
+    border:1px solid var(--card-line); display:flex; align-items:center; justify-content:center;
+    color:var(--muted); text-decoration:none; transition:color .18s, border-color .18s;
+  }
+  .topicons a:hover{color:var(--text); border-color:rgba(255,255,255,.12)}
+
+  /* ------------------------------------------------------------ hero -- */
+  .hero{text-align:center; margin-bottom:38px}
+  .marktile{
+    width:44px; height:44px; margin:0 auto 16px; border-radius:13px;
+    background:var(--card); border:1px solid var(--card-line);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero h1{font-size:21px; font-weight:700; letter-spacing:-.015em; margin:0 0 5px}
+  .hero p{margin:0; font-size:13px; color:var(--muted)}
+
+  /* ------------------------------------------------------------ grid -- */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:56px; align-items:start}
+  .col{display:flex; flex-direction:column; gap:14px}
+  .card{
+    background:var(--card); border:1px solid var(--card-line); border-radius:17px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:20px 16px; position:relative;
+  }
+  .card.tall{min-height:256px}
+  .card.short{min-height:122px}
+  .cardname{
+    margin-top:13px; font-family:var(--mono); font-size:10.5px; color:var(--dim);
+    letter-spacing:.02em; text-align:center;
+  }
+
+  /* the pill is the reference's demo container: a rounded chip holding a
+     live component and its name */
+  .demopill{
+    display:inline-flex; align-items:center; gap:12px;
+    background:var(--pill); border:1px solid var(--pill-line); border-radius:999px;
+    padding:11px 20px 11px 12px; max-width:100%;
+  }
+  .demopill.sm{padding:7px 14px 7px 8px; gap:8px}
+  .demopill .nm{font-family:var(--mono); font-size:15px; color:#b9b4ac; white-space:nowrap}
+  .demopill.sm .nm{font-size:11px}
+
+  /* ------------------------------------------------------------ dial -- */
+  .dial{position:relative; border-radius:50%; cursor:grab; touch-action:none; flex-shrink:0;
+    background:#191817; border:1px solid rgba(255,255,255,.09)}
+  .dial:active{cursor:grabbing}
+  .dial i{
+    position:absolute; left:50%; top:9%; width:2px; height:26%;
+    background:#efeae1; border-radius:2px; margin-left:-1px; display:block;
+  }
+  .dial u{
+    position:absolute; left:50%; top:50%; width:3px; height:3px; margin:-1.5px 0 0 -1.5px;
+    background:#5c5852; border-radius:50%; display:block;
+  }
+
+  /* ----------------------------------------------------------- chase -- */
+  .chase{
+    display:inline-flex; position:relative; background:#171615;
+    border:1px solid var(--pill-line); border-radius:999px; padding:3px;
+    font-family:var(--mono); font-size:11.5px;
+  }
+  .chase button{
+    all:unset; padding:6px 13px; border-radius:999px; color:var(--muted); cursor:pointer;
+    position:relative; z-index:1; transition:color .22s; white-space:nowrap;
+  }
+  .chase button.active{color:#111}
+  .chase-ind{
+    position:absolute; top:3px; bottom:3px; left:3px; border-radius:999px;
+    background:#e7e3d8; z-index:0;
+  }
+  /* quieter variant for the section tab rows */
+  .chase.ghost{background:var(--card); border-color:var(--card-line)}
+  .chase.ghost button.active{color:var(--text)}
+  .chase.ghost .chase-ind{background:var(--pill-active)}
+
+  /* ------------------------------------------------------------ heft -- */
+  .heft{
+    position:relative; width:100%; max-width:250px; height:104px; border-radius:12px;
+    background:#171615; border:1px solid var(--pill-line); overflow:hidden;
+    background-image:
+      linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+    background-size:15px 15px;
+  }
+  .heft-box{
+    position:absolute; width:34px; height:34px; border-radius:7px;
+    background:#242220; border:1px solid rgba(255,255,255,.1); cursor:grab;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:9.5px; color:#a9a49c;
+    user-select:none; touch-action:none; will-change:transform;
+  }
+  .heft-box:active{cursor:grabbing; border-color:rgba(255,255,255,.28)}
+
+  /* ------------------------------------------------------ disclosure -- */
+  .disc{width:100%; max-width:250px}
+  .disc-head{
+    all:unset; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between;
+    width:100%; cursor:pointer; background:var(--pill); border:1px solid var(--pill-line);
+    border-radius:12px; padding:10px 14px; font-family:var(--mono); font-size:11.5px; color:#b9b4ac;
+  }
+  .disc-chev{display:inline-block; color:var(--muted); font-size:9px}
+  .disc-body{height:0; overflow:hidden}
+  .disc-body p{
+    margin:8px 2px 0; font-family:var(--mono); font-size:10px; line-height:1.6; color:var(--dim);
+  }
+
+  /* ------------------------------------------------------- holddrain -- */
+  .hd{
+    all:unset; box-sizing:border-box; position:relative; overflow:hidden; cursor:pointer;
+    background:var(--pill); border:1px solid var(--pill-line); border-radius:999px;
+    padding:11px 22px; font-family:var(--mono); font-size:12.5px; color:#b9b4ac;
+    user-select:none; touch-action:none;
+  }
+  .hd-fill{position:absolute; left:0; top:0; bottom:0; width:0%; background:rgba(231,227,216,.13); z-index:0}
+  .hd span{position:relative; z-index:1}
+
+  /* ----------------------------------------------------- latecritique -- */
+  .lc{width:100%; max-width:236px}
+  .lc input{
+    width:100%; background:var(--pill); border:1px solid var(--pill-line); border-radius:999px;
+    padding:9px 15px; color:var(--text); font-family:var(--mono); font-size:11.5px; outline:none;
+    transition:border-color .18s;
+  }
+  .lc input:focus{border-color:rgba(255,255,255,.22)}
+  .lc input::placeholder{color:var(--dim)}
+  .lc-msg{margin-top:7px; font-family:var(--mono); font-size:9.5px; min-height:12px; text-align:center; color:var(--dim)}
+  .lc-msg.err{color:#c98570}
+  .lc-msg.ok{color:#87ab8b}
+
+  /* ----------------------------------------------------- thinkingorb -- */
+  .orb{display:block; flex-shrink:0}
+
+  /* -------------------------------------------------------- sections -- */
+  section{margin-bottom:34px}
+  .sec-head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-bottom:11px; min-height:30px;
+  }
+  .sec-head h2{font-size:13.5px; font-weight:500; color:var(--text); margin:0}
+  .codeblock{
+    background:var(--code); border:1px solid var(--card-line); border-radius:13px;
+    padding:14px 16px; font-family:var(--mono); font-size:12.5px; line-height:1.9;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    color:#c6c1b8;
+  }
+  /* wrap rather than scroll: the shadcn fallback is a single ~95-char URL, and
+     a scrollbar inside the block hides the end of it, which is the part that
+     names the component. */
+  .codeblock pre{margin:0; font:inherit; white-space:pre-wrap; overflow-wrap:anywhere; flex:1; min-width:0}
+  .codeblock .tok{color:#e7e3d8}
+  .codeblock .str{color:#9a9d8c}
+  .copybtn{
+    all:unset; cursor:pointer; color:var(--dim); flex-shrink:0; padding:2px; line-height:0;
+    transition:color .18s;
+  }
+  .copybtn:hover{color:var(--text)}
+
+  /* ------------------------------------------------------ playground -- */
+  .panel{
+    background:var(--card); border:1px solid var(--card-line); border-radius:13px;
+    padding:14px; margin-bottom:12px;
+  }
+  .ctl{margin-bottom:13px}
+  .ctl:last-child{margin-bottom:0}
+  .ctl-label{font-size:10.5px; color:var(--dim); margin-bottom:7px; letter-spacing:.03em}
+  .ctl-row{display:flex; gap:22px; flex-wrap:wrap; align-items:flex-end}
+  .speedwrap{display:flex; align-items:center; gap:9px; background:var(--pill);
+    border:1px solid var(--pill-line); border-radius:8px; padding:7px 11px}
+  .speedwrap input{
+    -webkit-appearance:none; appearance:none; width:108px; height:2px; background:#3a3733;
+    border-radius:2px; outline:none;
+  }
+  .speedwrap input::-webkit-slider-thumb{
+    -webkit-appearance:none; width:11px; height:11px; border-radius:50%; background:#e7e3d8; cursor:pointer;
+  }
+  .speedwrap input::-moz-range-thumb{
+    width:11px; height:11px; border:0; border-radius:50%; background:#e7e3d8; cursor:pointer;
+  }
+  .speedval{font-family:var(--mono); font-size:11px; color:#b9b4ac; min-width:38px}
+
+  .stage{
+    background:var(--card); border:1px solid var(--card-line); border-radius:13px;
+    min-height:292px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; padding:26px 20px; margin-bottom:12px; position:relative;
+  }
+  .stage-mount{display:flex; align-items:center; justify-content:center; width:100%}
+  .readout{
+    position:absolute; left:16px; top:14px;
+    font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.02em;
+  }
+  .playbtn{
+    all:unset; width:30px; height:30px; border-radius:50%; background:var(--pill);
+    border:1px solid var(--pill-line); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--muted); transition:color .18s, border-color .18s;
+  }
+  .playbtn:hover{color:var(--text); border-color:rgba(255,255,255,.18)}
+
+  footer{
+    text-align:center; padding:26px 0 46px; font-size:11.5px; color:var(--dim);
+  }
+  footer a{color:var(--muted); text-decoration:none}
+  footer a:hover{color:var(--text)}
+
+  @media (max-width:620px){
+    .grid{grid-template-columns:1fr}
+    .sec-head{flex-direction:column; align-items:flex-start; gap:9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <div class="topbar">
+    <a class="backpill" href="https://github.com/Abenor-Labs">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg>
+      Abenor&nbsp;Labs
+    </a>
+    <div class="topicons">
+      <a href="https://github.com/Abenor-Labs/z-ui" title="GitHub" aria-label="GitHub">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38l-.01-1.49c-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+      <a href="https://www.npmjs.com/package/@abenor/z-ui" title="npm" aria-label="npm">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M0 3.5h16v9H8v-1.5H5.5V12.5H0v-9Zm1.5 1.5v6H3V6.5h1.5V11H6V5H1.5Zm6 0v6H9V6.5h1.5V11H12V5H7.5Zm6 0V11H15V5h-1.5Z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="marktile">
+      <div class="dial" id="mark-dial" style="width:24px;height:24px"><i></i><u></u></div>
+    </div>
+    <h1>Z-UI</h1>
+    <p>Micro-animations you own.</p>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+
+      <div class="card tall">
+        <div class="demopill">
+          <div class="dial" id="card-dial" style="width:46px;height:46px"><i></i><u></u></div>
+          <span class="nm">flick me</span>
+        </div>
+        <p class="cardname">dial</p>
+      </div>
+
+      <div class="card short">
+        <div class="chase" id="card-chase"><div class="chase-ind"></div></div>
+        <p class="cardname">chase</p>
+      </div>
+
+      <div class="card tall">
+        <div class="heft" id="card-heft"></div>
+        <p class="cardname">heft</p>
+      </div>
+
+      <div class="card short">
+        <div class="demopill sm">
+          <span class="nm" id="card-scramble">hover to decode</span>
+        </div>
+        <p class="cardname">scramble-reveal</p>
+      </div>
+
+    </div>
+    <div class="col">
+
+      <div class="card tall">
+        <div class="demopill">
+          <canvas class="orb" id="card-orb" width="52" height="52"></canvas>
+          <span class="nm">listening</span>
+        </div>
+        <p class="cardname">thinking-orb</p>
+      </div>
+
+      <div class="card tall">
+        <button class="hd" id="card-hd">
+          <span class="hd-fill"></span>
+          <span class="lbl">hold to confirm</span>
+        </button>
+        <p class="cardname">hold-drain</p>
+      </div>
+
+      <div class="card short">
+        <div class="disc" id="card-disc">
+          <button class="disc-head">
+            <span>press to expand</span>
+            <span class="disc-chev">▼</span>
+          </button>
+          <div class="disc-body"><p>Height is an interruptible spring. Press again mid-open and it reverses from wherever it is, carrying the velocity it already had.</p></div>
+        </div>
+        <p class="cardname">disclosure</p>
+      </div>
+
+      <div class="card short">
+        <div class="lc" id="card-lc">
+          <input type="text" placeholder="you@domain.com" spellcheck="false">
+          <div class="lc-msg"></div>
+        </div>
+        <p class="cardname">late-critique</p>
+      </div>
+
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Installation</h2>
+      <div class="chase ghost" id="transport-tabs"><div class="chase-ind"></div></div>
+    </div>
+    <div class="codeblock">
+      <pre id="install-code"></pre>
+      <button class="copybtn" data-copy="#install-code" aria-label="Copy">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 5.5v-2a1.6 1.6 0 0 0-1.6-1.6H3.5a1.6 1.6 0 0 0-1.6 1.6v5.4a1.6 1.6 0 0 0 1.6 1.6h2"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Usage</h2></div>
+    <div class="codeblock">
+      <pre id="usage-code"></pre>
+      <button class="copybtn" data-copy="#usage-code" aria-label="Copy">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 5.5v-2a1.6 1.6 0 0 0-1.6-1.6H3.5a1.6 1.6 0 0 0-1.6 1.6v5.4a1.6 1.6 0 0 0 1.6 1.6h2"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Playground</h2></div>
+
+    <div class="panel">
+      <div class="ctl">
+        <div class="ctl-label">Component</div>
+        <div class="chase ghost" id="pg-tabs"><div class="chase-ind"></div></div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-row">
+          <div>
+            <div class="ctl-label">Size</div>
+            <div class="chase ghost" id="size-tabs"><div class="chase-ind"></div></div>
+          </div>
+          <div>
+            <div class="ctl-label">Speed</div>
+            <div class="speedwrap">
+              <input type="range" id="speed" min="0.15" max="2" step="0.05" value="1">
+              <span class="speedval" id="speedval">1.00×</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="readout" id="pg-readout"></div>
+      <div class="stage-mount" id="pg-mount"></div>
+      <button class="playbtn" id="pg-play" aria-label="Trigger">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2.5 1.3v7.4L8.4 5 2.5 1.3Z"/></svg>
+      </button>
+    </div>
+
+    <div class="codeblock">
+      <pre id="pg-code"></pre>
+      <button class="copybtn" data-copy="#pg-code" aria-label="Copy">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 5.5v-2a1.6 1.6 0 0 0-1.6-1.6H3.5a1.6 1.6 0 0 0-1.6 1.6v5.4a1.6 1.6 0 0 0 1.6 1.6h2"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <footer>
+    MIT © <a href="https://github.com/Abenor-Labs">Abenor Labs</a> ·
+    <a href="https://github.com/Abenor-Labs/z-ui">source</a>
+  </footer>
+
+</main>
+
+<script>
+'use strict';
+/* ==================================================================
+   Every constant below is the real one, read out of the component it
+   belongs to in registry/components/*.tsx. Nothing here is a CSS
+   transition standing in for physics: springs are integrated with
+   semi-implicit Euler, the flywheel decays through exponential
+   friction, and the boxes fall under the registry's own gravity.
+   The one honest simplification is heft's contact solver — see below.
+================================================================== */
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Semi-implicit (symplectic) Euler — the integrator a spring wants:
+   velocity updates first, position follows it. Explicit Euler adds
+   energy every step and a 1300-stiffness spring diverges on it. */
+function springStep(pos, vel, target, k, c, m, dt){
+  const acc = (-k * (pos - target) - c * vel) / m;
+  const nvel = vel + acc * dt;
+  return [pos + nvel * dt, nvel];
+}
+
+/* Substepped so a slow frame can't tunnel a stiff spring. dt is
+   scaled by `speed`, which is a true time-scale: scaling dt is exactly
+   equivalent to scaling k by s² and c by s, without touching either. */
+function makeLoop(step){
+  let raf = null, last = 0;
+  function frame(now){
+    const elapsed = Math.min((now - last) / 1000, 1 / 20);
+    last = now;
+    const n = Math.max(1, Math.ceil(elapsed / (1 / 120)));
+    const h = elapsed / n;
+    let alive = false;
+    for(let i = 0; i < n; i++) alive = step(h) || alive;
+    raf = alive ? requestAnimationFrame(frame) : null;
+  }
+  return {
+    kick(){ if(raf === null){ last = performance.now(); raf = requestAnimationFrame(frame); } },
+    stop(){ if(raf !== null){ cancelAnimationFrame(raf); raf = null; } },
+    get running(){ return raf !== null; },
+  };
+}
+
+/* ------------------------------------------------------------ dial --
+   registry/components/dial/dial.tsx: catch spring 1300/46 (under the
+   critical 2√1300 ≈ 72, which is where the ring on arrival comes from),
+   friction 3.2/s, capture speed 150°/s, 12 detents. Two regimes, one
+   loop: coast while fast, spring once the nearest detent has a claim.
+   Grabbing mid-spin is not a special case — the drag simply overwrites
+   the velocity that was already there. -------------------------------- */
+function makeDial(el, opts){
+  opts = opts || {};
+  const K = 1300, C = 46, M = 1, FRICTION = 3.2, CAPTURE = 150, DETENTS = 12;
+  const STEP = 360 / DETENTS;
+  const needle = el.querySelector('i');
+  let angle = 4 * STEP, vel = 0, mode = 'idle', target = angle;
+  let center = {x:0, y:0}, lastAng = 0, lastT = 0;
+  const speed = opts.speed || {value:1};
+  const detent = () => ((Math.round(angle / STEP) % DETENTS) + DETENTS) % DETENTS;
+
+  function paint(){
+    needle.style.transform = `rotate(${angle}deg)`;
+    if(opts.onReadout) opts.onReadout(
+      mode === 'idle'
+        ? `detent ${detent()} / ${DETENTS} · at rest`
+        : `detent ${detent()} / ${DETENTS} · ${Math.abs(vel).toFixed(0)}°/s · ${mode}`
+    );
+  }
+  const loop = makeLoop(dt => {
+    dt *= speed.value;
+    if(mode === 'coasting'){
+      angle += vel * dt;
+      vel *= Math.exp(-FRICTION * dt);
+      if(Math.abs(vel) < CAPTURE){ mode = 'catching'; target = Math.round(angle / STEP) * STEP; }
+    } else if(mode === 'catching'){
+      [angle, vel] = springStep(angle, vel, target, K, C, M, dt);
+      if(Math.abs(angle - target) < .04 && Math.abs(vel) < .8){
+        angle = target; vel = 0; mode = 'idle'; paint(); return false;
+      }
+    } else return false;
+    paint();
+    return true;
+  });
+
+  const ang = (x,y) => Math.atan2(y - center.y, x - center.x) * 180 / Math.PI;
+
+  function down(e){
+    if(REDUCED){ angle += STEP; target = angle; paint(); return; }
+    loop.stop();
+    const r = el.getBoundingClientRect();
+    center = {x: r.left + r.width/2, y: r.top + r.height/2};
+    lastAng = ang(e.clientX, e.clientY); lastT = performance.now();
+    vel = 0; mode = 'dragging';
+    try{ el.setPointerCapture(e.pointerId); }catch{}
+    paint();
+  }
+  function move(e){
+    if(mode !== 'dragging') return;
+    const now = performance.now();
+    const a = ang(e.clientX, e.clientY);
+    let d = a - lastAng;
+    if(d > 180) d -= 360; if(d < -180) d += 360;
+    const dt = Math.max(4, now - lastT) / 1000;
+    angle += d;
+    vel = vel * .55 + (d / dt) * .45;   // smoothed, so one jittery sample can't define the flick
+    lastAng = a; lastT = now;
+    paint();
+  }
+  function up(){
+    if(mode !== 'dragging') return;
+    if(Math.abs(vel) > CAPTURE) mode = 'coasting';
+    else { mode = 'catching'; target = Math.round(angle / STEP) * STEP; }
+    loop.kick();
+  }
+  el.addEventListener('pointerdown', down);
+  el.addEventListener('pointermove', move);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+
+  paint();
+  return {
+    trigger(){
+      if(REDUCED){ angle += STEP; target = angle; paint(); return; }
+      vel = 900 + Math.random() * 700; mode = 'coasting'; loop.kick();
+    },
+    destroy(){ loop.stop(); },
+  };
+}
+
+/* ----------------------------------------------------------- chase --
+   registry/components/chase/chase.tsx: lead 950/62, trail 380/34. The
+   two edges are independent springs; the width between them is never
+   written by anything — the stretch is what falls out of the gap in
+   their stiffnesses, which is the component's entire claim. --------- */
+const LEAD = {k:950, c:62}, TRAIL = {k:380, c:34};
+
+function makeChase(container, labels, opts){
+  opts = opts || {};
+  container.innerHTML = '';
+  const ind = document.createElement('div');
+  ind.className = 'chase-ind';
+  container.appendChild(ind);
+
+  let active = opts.initial || 0, right = true;
+  let L = 0, LV = 0, R = 0, RV = 0;
+  const speed = opts.speed || {value:1};
+
+  const btns = labels.map((label, i) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.type = 'button';
+    if(i === active) b.classList.add('active');
+    b.addEventListener('click', () => select(i));
+    container.appendChild(b);
+    return b;
+  });
+
+  const edges = i => ({l: btns[i].offsetLeft, r: btns[i].offsetLeft + btns[i].offsetWidth});
+  function draw(){ ind.style.left = L + 'px'; ind.style.width = Math.max(4, R - L) + 'px'; }
+  function snap(){ const e = edges(active); L = e.l; R = e.r; LV = RV = 0; draw(); }
+
+  const loop = makeLoop(dt => {
+    dt *= speed.value;
+    const e = edges(active);
+    const ls = right ? TRAIL : LEAD;   // the edge behind trails soft
+    const rs = right ? LEAD : TRAIL;   // the edge facing the target leads stiff
+    [L, LV] = springStep(L, LV, e.l, ls.k, ls.c, 1, dt);
+    [R, RV] = springStep(R, RV, e.r, rs.k, rs.c, 1, dt);
+    const done = Math.abs(L - e.l) < .25 && Math.abs(R - e.r) < .25 && Math.abs(LV) < 1 && Math.abs(RV) < 1;
+    if(done){ L = e.l; R = e.r; LV = RV = 0; }
+    draw();
+    /* width vs. the segment's resting width IS the stretch — printed
+       rather than styled, because nothing in this loop writes it. */
+    if(opts.onReadout){
+      const rest = e.r - e.l, now = R - L;
+      opts.onReadout(`width ${now.toFixed(0)}px / rest ${rest.toFixed(0)}px · stretch ${((now / rest - 1) * 100).toFixed(0)}%`);
+    }
+    return !done;
+  });
+
+  function select(i, silent){
+    if(i === active && !silent) return;
+    const e = edges(i);
+    right = (e.l + e.r) / 2 >= (L + R) / 2;
+    active = i;
+    btns.forEach((b, j) => b.classList.toggle('active', j === i));
+    if(REDUCED) snap(); else loop.kick();
+    if(!silent && opts.onSelect) opts.onSelect(i);
+  }
+
+  snap();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(snap);
+  const ro = new ResizeObserver(() => { if(!loop.running) snap(); });
+  ro.observe(container);
+
+  return {
+    select,
+    get active(){ return active; },
+    trigger(){ select((active + 1) % labels.length); },
+    destroy(){ loop.stop(); ro.disconnect(); },
+  };
+}
+
+/* ------------------------------------------------------------ heft --
+   registry/components/heft/heft.tsx: G = 1800 px/s², Coulomb friction
+   0.5, 0.5px slop. HONEST DIFFERENCE: the registry runs 8 velocity and
+   3 position passes per substep with warm-started impulses. This is a
+   3-pass positional solver — right for three boxes on one page, not a
+   claim to be that engine. Everything else (gravity, restitution-free
+   landings, the slop that keeps a resting contact in the manifold) is
+   the same. Boxes start resting, so nothing moves before first touch. */
+function makeHeft(stage, opts){
+  opts = opts || {};
+  const G = 1800, MU = .5, SLOP = .5, S = 34, N = 3;
+  const speed = opts.speed || {value:1};
+  stage.innerHTML = '';
+  let W = 0, H = 0;
+
+  const bodies = Array.from({length: N}, (_, i) => {
+    const el = document.createElement('div');
+    el.className = 'heft-box';
+    el.textContent = String(i + 1).padStart(2, '0');
+    stage.appendChild(el);
+    return {el, x: 0, y: 0, vx: 0, vy: 0, drag: false};
+  });
+
+  function measure(){
+    const r = stage.getBoundingClientRect();
+    W = r.width; H = r.height;
+  }
+  function place(){
+    measure();
+    bodies.forEach((b, i) => {
+      b.x = Math.max(6, W / 2 - (N * (S + 8)) / 2 + i * (S + 8));
+      b.y = H - S - 1; b.vx = b.vy = 0;
+      paint(b);
+    });
+  }
+  const paint = b => { b.el.style.transform = `translate(${b.x}px, ${b.y}px)`; };
+
+  function pairs(a, b){
+    const ox = Math.min(a.x + S, b.x + S) - Math.max(a.x, b.x);
+    const oy = Math.min(a.y + S, b.y + S) - Math.max(a.y, b.y);
+    if(ox <= SLOP || oy <= SLOP) return false;
+    if(ox < oy){
+      const d = (a.x < b.x ? -1 : 1) * (ox - SLOP) * .8;
+      if(a.drag) b.x -= d * 2; else if(b.drag) a.x += d * 2;
+      else { a.x += d; b.x -= d; }
+    } else {
+      const d = (a.y < b.y ? -1 : 1) * (oy - SLOP) * .8;
+      if(a.drag){ b.y -= d * 2; if(d < 0) b.vy = 0; }
+      else if(b.drag){ a.y += d * 2; if(d > 0) a.vy = 0; }
+      else { a.y += d; b.y -= d; if(d > 0) a.vy = 0; else b.vy = 0; }
+    }
+    return true;
+  }
+
+  const loop = makeLoop(dt => {
+    dt *= speed.value;
+    let moving = false;
+    for(const b of bodies){
+      if(b.drag){ moving = true; continue; }
+      b.vy += G * dt;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if(b.y > H - S){ b.y = H - S; b.vy = 0; b.vx *= Math.max(0, 1 - MU * 6 * dt); }
+      if(b.x < 0){ b.x = 0; b.vx = 0; }
+      if(b.x > W - S){ b.x = W - S; b.vx = 0; }
+      if(Math.abs(b.vx) > 1 || b.y < H - S - .5) moving = true;
+    }
+    for(let pass = 0; pass < 3; pass++)
+      for(let i = 0; i < bodies.length; i++)
+        for(let j = i + 1; j < bodies.length; j++) pairs(bodies[i], bodies[j]);
+    bodies.forEach(paint);
+    if(opts.onReadout) opts.onReadout(`${N} objects · g ${G} px/s²`);
+    return moving;
+  });
+
+  bodies.forEach(b => {
+    let ox = 0, oy = 0, lx = 0, ly = 0, lt = 0;
+    b.el.addEventListener('pointerdown', e => {
+      const r = stage.getBoundingClientRect();
+      b.drag = true; ox = e.clientX - r.left - b.x; oy = e.clientY - r.top - b.y;
+      lx = e.clientX; ly = e.clientY; lt = performance.now();
+      try{ b.el.setPointerCapture(e.pointerId); }catch{}
+      loop.kick();
+    });
+    b.el.addEventListener('pointermove', e => {
+      if(!b.drag) return;
+      const r = stage.getBoundingClientRect(), now = performance.now();
+      const dt = Math.max(6, now - lt) / 1000;
+      b.vx = (e.clientX - lx) / dt; b.vy = (e.clientY - ly) / dt;
+      lx = e.clientX; ly = e.clientY; lt = now;
+      b.x = Math.max(0, Math.min(W - S, e.clientX - r.left - ox));
+      b.y = Math.max(0, Math.min(H - S, e.clientY - r.top - oy));
+      paint(b);
+    });
+    const rel = () => { if(b.drag){ b.drag = false; loop.kick(); } };
+    b.el.addEventListener('pointerup', rel);
+    b.el.addEventListener('pointercancel', rel);
+  });
+
+  place();
+  const ro = new ResizeObserver(() => { measure(); });
+  ro.observe(stage);
+
+  return {
+    trigger(){
+      const b = bodies[Math.floor(Math.random() * N)];
+      b.y = 4; b.x = 6 + Math.random() * Math.max(1, W - S - 12); b.vy = 0; b.vx = 0;
+      loop.kick();
+    },
+    destroy(){ loop.stop(); ro.disconnect(); },
+  };
+}
+
+/* ------------------------------------------------------ disclosure --
+   registry/components/disclosure/disclosure.tsx: 520/46, a hair above
+   critical (2√520 ≈ 45.6) on purpose. Toggling mid-flight retargets
+   only — height and velocity are never reset, so it reverses from
+   wherever it actually is and keeps the speed it had. ---------------- */
+function makeDisclosure(root, opts){
+  opts = opts || {};
+  const K = 520, C = 46;
+  const head = root.querySelector('.disc-head');
+  const body = root.querySelector('.disc-body');
+  const chev = root.querySelector('.disc-chev');
+  const speed = opts.speed || {value:1};
+  let h = 0, v = 0, target = 0, open = false, full = 0;
+
+  const measure = () => { full = body.scrollHeight; };
+  const loop = makeLoop(dt => {
+    dt *= speed.value;
+    [h, v] = springStep(h, v, target, K, C, 1, dt);
+    const done = Math.abs(h - target) < .25 && Math.abs(v) < 1;
+    if(done){ h = target; v = 0; }
+    body.style.height = Math.max(0, h) + 'px';
+    chev.style.transform = `rotate(${(h / Math.max(full, 1)) * 180}deg)`;
+    if(opts.onReadout) opts.onReadout(`height ${h.toFixed(0)}px · ${done ? (open ? 'open' : 'closed') : (open ? 'opening' : 'closing')}`);
+    return !done;
+  });
+
+  function toggle(){
+    open = !open;
+    measure();
+    target = open ? full : 0;
+    if(REDUCED){ h = target; v = 0; body.style.height = h + 'px'; chev.style.transform = `rotate(${open ? 180 : 0}deg)`; }
+    else loop.kick();
+  }
+  head.addEventListener('click', toggle);
+  measure();
+  return {trigger: toggle, destroy(){ loop.stop(); }};
+}
+
+/* ------------------------------------------------------- holddrain --
+   Linear on purpose, and this one is not a spring for a reason the
+   component states itself: a spring's rate depends on the distance
+   remaining, so an abort at 90% would drain faster than one at 10% and
+   the symmetry the component exists to show would be the first thing
+   to go. Climb 60%/s, drain 60%/s. ---------------------------------- */
+function makeHoldDrain(btn, opts){
+  opts = opts || {};
+  const RATE = 60;
+  const fill = btn.querySelector('.hd-fill');
+  const label = btn.querySelector('.lbl');
+  const speed = opts.speed || {value:1};
+  let pct = 0, dir = 0, state = 'idle', pending = null;
+
+  const loop = makeLoop(dt => {
+    dt *= speed.value;
+    pct = Math.max(0, Math.min(100, pct + dir * RATE * dt));
+    fill.style.width = pct + '%';
+    if(dir > 0 && pct >= 100){ state = 'committed'; label.textContent = 'confirmed'; dir = 0; report(); return false; }
+    if(dir < 0 && pct <= 0){ state = 'idle'; label.textContent = 'hold to confirm'; dir = 0; report(); return false; }
+    report();
+    return dir !== 0;
+  });
+  function report(){
+    if(opts.onReadout) opts.onReadout(`fill ${pct.toFixed(0)}% · ${RATE}%/s · ${state}`);
+  }
+
+  function press(){
+    if(state === 'committed'){ pct = 0; fill.style.width = '0%'; }
+    state = 'filling'; label.textContent = 'holding…'; dir = 1; loop.kick();
+  }
+  function release(){
+    if(state !== 'filling') return;
+    state = 'draining'; label.textContent = 'draining…'; dir = -1; loop.kick();
+  }
+  btn.addEventListener('pointerdown', press);
+  btn.addEventListener('pointerup', release);
+  btn.addEventListener('pointerleave', release);
+  btn.addEventListener('pointercancel', release);
+  report();
+  return {
+    // fires the component's own input path, then lets go — not a scripted fill
+    trigger(){ press(); clearTimeout(pending); pending = setTimeout(release, 700); },
+    destroy(){ loop.stop(); clearTimeout(pending); },
+  };
+}
+
+/* ----------------------------------------------------- latecritique --
+   No verdict lands while the user is still typing a first attempt: the
+   error waits out a 700ms idle window. Forgiveness is not symmetric —
+   the first keystroke that makes the value valid clears the error on
+   that same input event, no timer involved. ------------------------- */
+function makeLateCritique(root, opts){
+  opts = opts || {};
+  const IDLE = 700;
+  const input = root.querySelector('input');
+  const msg = root.querySelector('.lc-msg');
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let timer = null, typing = null, dead = false;
+
+  function report(state){ if(opts.onReadout) opts.onReadout(`${state} · idle window ${IDLE}ms`); }
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    if(ok.test(input.value)){
+      msg.textContent = 'valid'; msg.className = 'lc-msg ok'; report('valid'); return;
+    }
+    if(msg.classList.contains('err')){ msg.textContent = ''; msg.className = 'lc-msg'; }
+    report('typing');
+    timer = setTimeout(() => {
+      if(!input.value){ msg.textContent = ''; msg.className = 'lc-msg'; report('empty'); return; }
+      msg.textContent = 'not an address yet'; msg.className = 'lc-msg err'; report('invalid');
+    }, IDLE);
+  });
+  input.addEventListener('blur', () => {
+    clearTimeout(timer);
+    if(input.value && !ok.test(input.value)){ msg.textContent = 'not an address yet'; msg.className = 'lc-msg err'; }
+  });
+  report('idle');
+  return {
+    trigger(){
+      input.focus(); input.value = '';
+      const text = 'not-an-address';
+      let i = 0;
+      const type = () => {
+        if(dead || i >= text.length) return;
+        input.value += text[i++];
+        input.dispatchEvent(new Event('input'));   // the component's own handler, not a shortcut
+        typing = setTimeout(type, 55);
+      };
+      clearTimeout(typing); type();
+    },
+    destroy(){ dead = true; clearTimeout(timer); clearTimeout(typing); },
+  };
+}
+
+/* -------------------------------------------------- scramblereveal --
+   The registry's own glyph set — instrument noise, not matrix rain.
+   Characters lock left to right, once per trigger, never looping. --- */
+function makeScramble(el, opts){
+  opts = opts || {};
+  const GLYPHS = '#/\\<>[]{}=+*%—0123456789';
+  const text = opts.text || el.textContent;
+  const speed = opts.speed || {value:1};
+  let raf = null, running = false;
+  el.textContent = text;
+
+  function run(){
+    if(REDUCED){ el.textContent = text; return; }
+    if(running) return;
+    running = true;
+    const dur = 620;
+    const start = performance.now();
+    (function frame(now){
+      const t = Math.min(1, ((now - start) * speed.value) / dur);
+      let out = '';
+      for(let i = 0; i < text.length; i++){
+        if(text[i] === ' '){ out += ' '; continue; }
+        out += t > (i + 1) / text.length ? text[i] : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      }
+      el.textContent = out;
+      if(opts.onReadout) opts.onReadout(`${Math.round(t * 100)}% decoded · ${text.length} chars`);
+      if(t < 1) raf = requestAnimationFrame(frame);
+      else { el.textContent = text; running = false; raf = null; }
+    })(start);
+  }
+  el.addEventListener('mouseenter', run);
+  return {trigger: run, destroy(){ if(raf) cancelAnimationFrame(raf); }};
+}
+
+/* ---------------------------------------------------- thinking-orb --
+   registry/components/thinking-orb/thinking-orb.tsx, ported straight:
+   makeProj (yaw/tilt orthographic), radiusScale (sub-linear, tuned for
+   a 300pt frame), the z-sort, and the depth-shaded painter whose ink
+   value is mirrored on dark substrates so near dots read bright.
+
+   The mode drawn here is `frameWave` — the component's "listening":
+   lat/lon rings whose radius is displaced by two summed sines, so the
+   waveform rolls through the sphere rather than the sphere spinning.
+   The shipped component carries nine such modes; this file ports one.
+   It is the only component here that animates unprompted, because it
+   is the only one with no driving gesture — its state is set by the
+   consumer, so there is no press to wait for. -------------------- */
+function makeThinkingOrb(canvas, opts){
+  opts = opts || {};
+  const speed = opts.speed || {value:1};
+  const size = opts.size || 52;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = size * dpr; canvas.height = size * dpr;
+  canvas.style.width = canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const makeProj = (yaw, tilt, cx, cy, scale) => {
+    const st = Math.sin(tilt), ct = Math.cos(tilt), sy = Math.sin(yaw), cyw = Math.cos(yaw);
+    return (x, y, z) => {
+      const x1 = x * cyw + z * sy, z1 = -x * sy + z * cyw;
+      const y1 = y * ct - z1 * st, z2 = y * st + z1 * ct;
+      return [cx + x1 * scale, cy - y1 * scale, z2];
+    };
+  };
+  const radiusScale = (s, pow) => Math.pow(s / 300, pow);
+
+  function frameWave(s, t){
+    const cx = s / 2, cy = s / 2, R = (s / 2) * 0.874;
+    const pt = makeProj(t * 0.18, 0.38, cx, cy, 1);
+    const rs = radiusScale(s, 0.6);
+    const dots = [];
+    const rings = 15, lonDensity = 40;
+    for(let ri = 0; ri <= rings; ri++){
+      const lat = -Math.PI / 2 + (ri / rings) * Math.PI;
+      const cosLat = Math.cos(lat), sinLat = Math.sin(lat);
+      const w = 0.62 * Math.sin(t * 2.1 - ri * 0.52) + 0.38 * Math.sin(t * 1.27 + ri * 0.83);
+      const rr = R * (0.88 + 0.105 * w);
+      const lonCount = Math.max(1, Math.round(Math.abs(cosLat) * lonDensity));
+      for(let lj = 0; lj < lonCount; lj++){
+        const lon = (lj / lonCount) * 2 * Math.PI;
+        const p = pt(cosLat * Math.cos(lon) * rr, sinLat * rr, cosLat * Math.sin(lon) * rr);
+        const depth = (p[2] / R + 1) / 2;
+        const crest = Math.max(0, w);
+        dots.push({
+          x: p[0], y: p[1], z: p[2],
+          r: Math.max(.3, (0.6 + 1.7 * depth) * (1 + 0.4 * crest) * rs),
+          white: 0.66 - 0.56 * depth - 0.1 * crest,
+        });
+      }
+    }
+    dots.sort((a, b) => a.z - b.z);   // far -> near, so near dots land on top
+    return dots;
+  }
+
+  function paint(t){
+    ctx.clearRect(0, 0, size, size);
+    for(const d of frameWave(size, t)){
+      const w = Math.min(1, Math.max(0, d.white));
+      const g = Math.round((1 - w) * 255);   // dark substrate: ink mirrored
+      ctx.fillStyle = `rgb(${g},${g},${g})`;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  let t = 0;
+  const loop = makeLoop(dt => { t += dt * speed.value; paint(t); return true; });
+  if(REDUCED) paint(0.6); else loop.kick();
+  if(opts.onReadout) opts.onReadout('state listening · 16 rings · no gesture');
+  return {
+    trigger(){ t += 1.4; paint(t); },
+    destroy(){ loop.stop(); },
+  };
+}
+
+/* ============================================================ cards == */
+makeDial(document.getElementById('mark-dial'), {});
+makeDial(document.getElementById('card-dial'), {});
+makeChase(document.getElementById('card-chase'), ['idle', 'moving', 'settled'], {});
+makeHeft(document.getElementById('card-heft'), {});
+makeDisclosure(document.getElementById('card-disc'), {});
+makeHoldDrain(document.getElementById('card-hd'), {});
+makeLateCritique(document.getElementById('card-lc'), {});
+makeScramble(document.getElementById('card-scramble'), {});
+makeThinkingOrb(document.getElementById('card-orb'), {size: 52});
+
+/* ================================================ install / playground */
+(function(){
+  const NAMES = ['dial', 'chase', 'heft', 'disclosure', 'hold-drain', 'late-critique', 'scramble-reveal', 'thinking-orb'];
+  const NEEDS = {
+    'dial': 'motion', 'chase': 'motion', 'heft': 'motion', 'disclosure': 'motion',
+    'hold-drain': 'motion', 'late-critique': 'react only', 'scramble-reveal': 'react only',
+    'thinking-orb': 'react only',
+  };
+  const USAGE = {
+    'dial': ["import { Dial } from '@/components/dial'", "<Dial defaultValue={4} min={0} max={12} />"],
+    'chase': ["import { Chase } from '@/components/chase'", "<Chase options={options} value={value} onValueChange={setValue} />"],
+    'heft': ["import { Heft } from '@/components/heft'", "<Heft bodies={bodies} />"],
+    'disclosure': ["import { Disclosure } from '@/components/disclosure'", "<Disclosure defaultOpen={false}>{content}</Disclosure>"],
+    'hold-drain': ["import { HoldDrain } from '@/components/hold-drain'", "<HoldDrain onConfirm={ship} />"],
+    'late-critique': ["import { LateCritique } from '@/components/late-critique'", "<LateCritique type=\"email\" />"],
+    'scramble-reveal': ["import { ScrambleReveal } from '@/components/scramble-reveal'", "<ScrambleReveal text=\"Ship it\" trigger=\"hover\" />"],
+    'thinking-orb': ["import { ThinkingOrb } from '@/components/thinking-orb'", "<ThinkingOrb state=\"listening\" size={64} />"],
+  };
+  const SIZES = {
+    'dial': [['64px', 64], ['96px', 96], ['140px', 140]],
+    'heft': [['compact', 140], ['tall', 210]],
+    'scramble-reveal': [['15px', 15], ['26px', 26]],
+    /* the shipped component's OrbSize type is exactly 64 | 20 */
+    'thinking-orb': [['20px', 20], ['64px', 64]],
+  };
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const speed = {value: 1};
+  const installEl = document.getElementById('install-code');
+  const usageEl = document.getElementById('usage-code');
+  const pgCode = document.getElementById('pg-code');
+  const mount = document.getElementById('pg-mount');
+  const readout = document.getElementById('pg-readout');
+  const sizeHost = document.getElementById('size-tabs');
+
+  let name = NAMES[0], transport = 0, size = null, live = null, sizeChase = null;
+
+  /* A generation token, not a courtesy: a component that is torn down
+     mid-animation can still have a pending timer or a queued frame, and
+     without this its last word lands in the readout of whatever
+     replaced it. Bumping the token makes the stale writer a no-op. */
+  let gen = 0;
+  const readoutFor = g => t => { if(g === gen) readout.textContent = t; };
+
+  function writeCode(){
+    installEl.innerHTML = transport === 0
+      ? `npx <span class="tok">@abenor/z-ui@latest</span> add ${name}`
+      : `npx <span class="tok">shadcn@latest</span> add <span class="str">https://raw.githubusercontent.com/Abenor-Labs/z-ui/main/web/public/r/${name}.json</span>`;
+    const u = USAGE[name];
+    usageEl.innerHTML = `${esc(u[0])}\n\n${esc(u[1])}`;
+    pgCode.innerHTML = `${esc(u[1])}\n\n<span class="str">// needs: ${NEEDS[name]}</span>`;
+  }
+
+  /* The stage renders the real component, built by the same factory the
+     cards use — there is no second implementation to drift. */
+  function build(){
+    if(live){ live.destroy(); live = null; }
+    gen++;
+    mount.innerHTML = '';
+    readout.textContent = '';
+    const o = {speed, onReadout: readoutFor(gen)};
+
+    if(name === 'dial'){
+      const el = document.createElement('div');
+      el.className = 'dial';
+      el.style.width = el.style.height = (size || 96) + 'px';
+      el.innerHTML = '<i></i><u></u>';
+      mount.appendChild(el);
+      live = makeDial(el, o);
+    } else if(name === 'chase'){
+      const el = document.createElement('div');
+      el.className = 'chase';
+      mount.appendChild(el);
+      live = makeChase(el, ['idle', 'moving', 'settled'], o);
+    } else if(name === 'heft'){
+      const el = document.createElement('div');
+      el.className = 'heft';
+      el.style.maxWidth = '380px';
+      el.style.height = (size || 140) + 'px';
+      mount.appendChild(el);
+      live = makeHeft(el, o);
+    } else if(name === 'disclosure'){
+      const el = document.createElement('div');
+      el.className = 'disc';
+      el.innerHTML = '<button class="disc-head"><span>disclosure</span><span class="disc-chev">▼</span></button>'
+        + '<div class="disc-body"><p>Press again mid-open and it reverses from wherever it is, carrying the velocity it already had. Nothing snaps back to a default curve.</p></div>';
+      mount.appendChild(el);
+      live = makeDisclosure(el, o);
+    } else if(name === 'hold-drain'){
+      const el = document.createElement('button');
+      el.className = 'hd';
+      el.innerHTML = '<span class="hd-fill"></span><span class="lbl">hold to confirm</span>';
+      mount.appendChild(el);
+      live = makeHoldDrain(el, o);
+    } else if(name === 'late-critique'){
+      const el = document.createElement('div');
+      el.className = 'lc';
+      el.innerHTML = '<input type="text" placeholder="you@domain.com" spellcheck="false"><div class="lc-msg"></div>';
+      mount.appendChild(el);
+      live = makeLateCritique(el, o);
+    } else if(name === 'scramble-reveal'){
+      const el = document.createElement('span');
+      el.className = 'nm';
+      el.style.fontFamily = 'var(--mono)';
+      el.style.fontSize = (size || 26) + 'px';
+      el.style.color = '#c6c1b8';
+      el.textContent = 'decodes on hover';
+      mount.appendChild(el);
+      live = makeScramble(el, o);
+    } else {
+      const el = document.createElement('canvas');
+      el.className = 'orb';
+      mount.appendChild(el);
+      live = makeThinkingOrb(el, Object.assign({size: size || 64}, o));
+    }
+  }
+
+  function buildSizes(){
+    const set = SIZES[name];
+    if(!set){
+      sizeHost.style.display = 'none';
+      if(sizeChase){ sizeChase.destroy(); sizeChase = null; }
+      size = null;
+      return;
+    }
+    sizeHost.style.display = '';
+    if(sizeChase) sizeChase.destroy();
+    const idx = set.length > 2 ? 1 : 0;
+    size = set[idx][1];
+    sizeChase = makeChase(sizeHost, set.map(s => s[0]), {
+      initial: idx, speed,
+      onSelect(i){ size = set[i][1]; build(); },
+    });
+  }
+
+  function pick(i){
+    name = NAMES[i];
+    writeCode();
+    buildSizes();
+    build();
+  }
+
+  makeChase(document.getElementById('transport-tabs'), ['CLI', 'shadcn'], {
+    speed, onSelect(i){ transport = i; writeCode(); },
+  });
+  makeChase(document.getElementById('pg-tabs'), NAMES.map(n => n.replace('-', '‑')), {
+    speed, onSelect: pick,
+  });
+
+  const slider = document.getElementById('speed');
+  const sval = document.getElementById('speedval');
+  slider.addEventListener('input', () => {
+    speed.value = parseFloat(slider.value);
+    sval.textContent = speed.value.toFixed(2) + '×';
+  });
+
+  document.getElementById('pg-play').addEventListener('click', () => { if(live) live.trigger(); });
+
+  pick(0);
+})();
+
+/* ------------------------------------------------------------ copy -- */
+document.querySelectorAll('[data-copy]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const el = document.querySelector(btn.dataset.copy);
+    try{ await navigator.clipboard.writeText(el.textContent); }catch{}
+    btn.style.color = '#e7e3d8';
+    setTimeout(() => { btn.style.color = ''; }, 800);
+  });
+});
+</script>
+</body>
+</html>

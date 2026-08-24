@@ -3,4 +3,5 @@ packages:
   - registry
   - packages/*
   - site
+  - site-orbs
   - web

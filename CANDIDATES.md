@@ -1,6 +1,6 @@
 # CANDIDATES — component ideas under evaluation
 
-**Status: PROPOSAL. Not product facts.** PRD.md PRODUCT FACTS still says seven components.
+**Status: PROPOSAL. Not product facts.** PRD.md PRODUCT FACTS still says eight components.
 Nothing here is real until it ships in the registry AND PRODUCT FACTS is updated to match.
 Nothing here is copied from another library — each entry names the mechanic it learned from
 and what it refuses to inherit.
@@ -169,6 +169,6 @@ Refuses: a countdown that runs independently of the visible motion.
 
 ## Open decision
 
-Registry expansion changes PRODUCT FACTS ("Seven components in the registry"). Options recorded, not
-chosen: expand the registry and update PRD.md; keep seven and ship these as site-only demos; or build
+Registry expansion changes PRODUCT FACTS ("Eight components in the registry"). Options recorded, not
+chosen: expand the registry and update PRD.md; keep eight and ship these as site-only demos; or build
 them in the z-ui registry repo instead of here.

@@ -83,7 +83,7 @@ export function Candidates() {
           <span>no CLI command</span>
         </div>
         <p className="detail-principle">
-          The registry ships seven components and still ships seven. These four are on the bench:
+          The registry ships eight components and still ships eight. These four are on the bench:
           each one takes a mechanic that exists elsewhere as decoration, strips it back to the rule
           underneath, and has to prove that rule is worth a file. Nothing here has an install command,
           because nothing here has earned one yet.

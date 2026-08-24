@@ -6,6 +6,7 @@ import { Disclosure } from '../zui/Disclosure';
 import { HoldDrain } from '../zui/HoldDrain';
 import { LateCritique } from '../zui/LateCritique';
 import { ScrambleReveal } from '../zui/ScrambleReveal';
+import { ThinkingOrb } from '@z-ui/registry/thinking-orb/thinking-orb';
 
 /**
  * Compact live instances of each registry component — shared by the
@@ -64,6 +65,8 @@ export function Preview({ name }: { name: string }) {
           <ScrambleReveal trigger="hover" text="text that decodes out of random glyphs." />
         </span>
       );
+    case 'thinking-orb':
+      return <ThinkingOrb state="working" size={64} theme="dark" />;
     default:
       return null;
   }

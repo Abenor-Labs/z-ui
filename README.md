@@ -10,7 +10,7 @@ A copy-paste registry of React micro-interactions — installed as source into y
 npx @abenor/z-ui@latest add dial
 ```
 
-> **Status: v0.1, early.** The CLI is published and installs working files. Seven components are in the registry. The showcase site is live at [z-ui-eight.vercel.app](https://z-ui-eight.vercel.app); the registry itself is still served from raw GitHub. Component names and props may still move before v1.
+> **Status: v0.1, early.** The CLI is published and installs working files. Eight components are in the registry. The showcase site is live at [z-ui-eight.vercel.app](https://z-ui-eight.vercel.app); the registry itself is still served from raw GitHub. Component names and props may still move before v1.
 
 ---
 
@@ -41,6 +41,7 @@ A design system. A layout kit. A replacement for shadcn/ui. Z-UI sits *on top of
 | [`hold-drain`](registry/components/hold-drain)           | tactile-feedback | A hold-to-confirm whose abort costs what the hold earned. Let go at seventy per cent and the fill is paid back at the rate it climbed.                                    | `motion` |
 | [`late-critique`](registry/components/late-critique)     | input-utility    | A field whose criticism is late and whose forgiveness is instant. No verdict lands mid-word; the first keystroke that fixes the value clears the error on the same frame. | react only |
 | [`scramble-reveal`](registry/components/scramble-reveal) | state-morphing   | Text that decodes out of random glyphs on hover, on mount, or when it first enters view.                                                                                  | react only |
+| [`thinking-orb`](registry/components/thinking-orb)       | state-morphing   | A dotted, honestly-3D status indicator: nine hand-tuned canvas animations for nine agent states, z-sorted and depth-shaded, no WebGL. No driving gesture — the state is set by the consumer. | react only |
 
 Each component is a single self-contained `.tsx` file. There is no shared `lib/` to install first and no internal import to resolve — a component that needed a primitive would ship the primitive.
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, useImperativeHandle, type Ref
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { Readout } from '../components/Readout';
 import { fixed } from '../lib/format';
+import { useReducedMotion } from '../lib/useReducedMotion';
 
 /**
  * Faithful site reimplementation of the registry's `hold-drain`:
@@ -35,9 +36,20 @@ export function HoldDrain({
   const [confirmed, setConfirmed] = useState(false);
   const holding = useRef(false);
   const raf = useRef(0);
+  const stepper = useRef(0);
   const running = useRef(false);
   const onConfirmRef = useRef(onConfirm);
   onConfirmRef.current = onConfirm;
+  // mirrored so the loop and handlers never read a stale closure if the
+  // preference flips mid-hold
+  const reducedRef = useRef(false);
+  reducedRef.current = useReducedMotion();
+
+  const haltAll = () => {
+    cancelAnimationFrame(raf.current);
+    window.clearInterval(stepper.current);
+    running.current = false;
+  };
 
   const scaleX = useTransform(fill, (f) => f / 100);
   const fillText = useTransform(fill, (f) => fixed(f, 1, 5));
@@ -46,6 +58,30 @@ export function HoldDrain({
   const loop = useCallback(() => {
     if (running.current) return;
     running.current = true;
+
+    // Under prefers-reduced-motion the hold survives — it is a safety
+    // mechanic, not decoration — but the continuous travel does not: the fill
+    // advances in quarters over the real duration, and releasing snaps to
+    // zero at once because the drain has no non-animated form.
+    if (reducedRef.current) {
+      const from = fill.get();
+      const steps = 4;
+      const stepPct = 100 / steps;
+      const interval = Math.max(1, (((100 - from) / rate) * 1000) / steps);
+      stepper.current = window.setInterval(() => {
+        const next = Math.min(100, fill.get() + stepPct);
+        fill.jump(next);
+        rateMV.jump(next >= 100 ? 0 : rate);
+        if (next >= 100) {
+          window.clearInterval(stepper.current);
+          running.current = false;
+          setConfirmed(true);
+          onConfirmRef.current?.();
+        }
+      }, interval);
+      return;
+    }
+
     let last = performance.now();
     const frame = (now: number) => {
       // rAF timestamps can precede the performance.now() captured above — never integrate backwards
@@ -80,6 +116,13 @@ export function HoldDrain({
   };
   const end = () => {
     holding.current = false;
+    if (reducedRef.current && !confirmed) {
+      // the drain is pure motion; aborting under reduced returns to zero at once
+      haltAll();
+      fill.jump(0);
+      rateMV.jump(0);
+      return;
+    }
     // no stop: the drain runs on the same loop, same rate, sign flipped
   };
 
@@ -107,6 +150,7 @@ export function HoldDrain({
   useEffect(
     () => () => {
       cancelAnimationFrame(raf.current);
+      window.clearInterval(stepper.current);
       window.clearTimeout(holdTimer.current);
     },
     [],

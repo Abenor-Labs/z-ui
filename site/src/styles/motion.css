@@ -1,7 +1,7 @@
 /* transitions.dev motion tokens — installed 2026-08-18 via the transitions-dev skill.
  *
  * SCOPE, on purpose: these drive CHROME only — hover states, tab pills, the
- * source-panel skeleton, links, buttons. The seven registry components and the
+ * source-panel skeleton, links, buttons. The eight registry components and the
  * four candidates keep their springs; a duration cannot carry velocity through
  * an interrupt, and that is the product's whole claim.
  *

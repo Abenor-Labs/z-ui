@@ -65,7 +65,7 @@ export function Docs() {
           <Section index="01" label="COMPONENTS" id="components">
             <div style={{ maxWidth: 720 }}>
               <p className="playground-caption">
-                Seven, no more, no fewer. Each one is a single self-contained .tsx file.
+                Eight, no more, no fewer. Each one is a single self-contained .tsx file.
               </p>
               <table className="cmd-table">
                 <tbody>
@@ -169,7 +169,7 @@ export function Docs() {
             <div style={{ maxWidth: 720 }}>
               <Disclosure title="add can't find the component I want">
                 <p className="playground-caption">
-                  The registry publishes all seven components. If <code>add</code> can't find
+                  The registry publishes all eight components. If <code>add</code> can't find
                   one, it's a typo — run <code>list</code> to see the real names.
                 </p>
               </Disclosure>

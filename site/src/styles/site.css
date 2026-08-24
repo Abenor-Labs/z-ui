@@ -85,33 +85,56 @@
 }
 
 .footer-inner {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr;
-  gap: var(--u4);
-  padding-top: var(--u3);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--u6) var(--u8);
+  padding-top: var(--u4);
   padding-bottom: var(--u4);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .footer-col {
   display: flex;
   flex-direction: column;
-  gap: var(--u1, 8px);
+  gap: var(--u);
   align-items: flex-start;
+}
+
+.footer-brand {
+  gap: 6px;
+  max-width: 40ch;
+}
+
+.footer-mark {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.02em;
 }
 
 .footer-note {
   opacity: 0.6;
   max-width: 42ch;
+  line-height: 1.55;
 }
 
 .footer-links {
-  gap: 4px;
+  gap: 6px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+  color: var(--signal);
 }
 
 .footer-license {
-  justify-self: end;
-  text-align: right;
+  opacity: 0.55;
 }
 
 /* ——— sections ——— */
@@ -1070,6 +1093,28 @@
   display: flex;
   gap: var(--u2);
   flex-wrap: wrap;
+}
+
+/* ——— thinking-orb: all-nine display grid ——— */
+
+.orb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--u2);
+}
+
+.orb-cell {
+  border: 1px solid var(--rule);
+  padding: var(--u3) var(--u2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--u2);
+}
+
+.orb-cell-label {
+  font-size: 10px;
+  opacity: 0.65;
 }
 
 /* ——— reel ——— */

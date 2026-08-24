@@ -1,0 +1,1274 @@
+/* ——— lab: site-only demos, not in the registry ——— */
+
+/* ——— index ——— */
+
+.lab-index-list {
+  list-style: none;
+  max-width: 640px;
+}
+
+.lab-index-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--u3);
+  padding: var(--u2) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.lab-index-link {
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.lab-index-link:hover {
+  color: var(--signal);
+}
+
+.lab-index-link-unbuilt {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lab-index-meta {
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* ——— category page shell (sidebar + focused demo + sibling grid) ——— */
+
+.lab-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u6);
+  min-width: 0;
+}
+
+.lab-side-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lab-side-link {
+  display: flex;
+  align-items: baseline;
+  gap: var(--u2);
+  width: 100%;
+  padding: var(--u) var(--u2);
+  text-align: left;
+  border-radius: 8px;
+  opacity: 0.6;
+}
+
+.lab-side-link:hover {
+  background: var(--recess);
+  opacity: 1;
+}
+
+.lab-side-active {
+  background: var(--recess);
+  opacity: 1;
+  border-left: 2px solid var(--signal);
+  padding-left: calc(var(--u2) - 2px);
+}
+
+.lab-side-index {
+  flex: none;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.lab-side-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.lab-side-name {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lab-side-trigger {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+/* ——— sibling grid ——— */
+
+.lab-more {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u3);
+  padding-top: var(--u4);
+  border-top: 1px solid var(--rule);
+}
+
+.lab-more-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--u3);
+}
+
+.lab-more-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--rule);
+  text-align: left;
+}
+
+.lab-more-card:hover {
+  border-color: var(--ink);
+}
+
+.lab-more-preview {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--recess);
+  pointer-events: none;
+}
+
+.lab-mini-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.lab-mini-preview-scale {
+  flex: none;
+}
+
+.lab-more-card-foot {
+  display: flex;
+  align-items: baseline;
+  gap: var(--u2);
+  padding: var(--u2);
+}
+
+.lab-more-index {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.lab-more-name {
+  font-size: 12px;
+}
+
+/* ——— playground system (LabPlayground) ——— */
+
+.lab-pg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u3);
+  min-width: 0;
+}
+
+.lab-hero-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--u3);
+  flex-wrap: wrap;
+}
+
+.lab-hero-index {
+  font-size: 13px;
+  color: var(--signal);
+}
+
+.lab-hero-name {
+  font-size: clamp(22px, 3vw, 32px);
+  letter-spacing: -0.02em;
+}
+
+.lab-status-pill {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  opacity: 0.75;
+}
+
+.lab-pg-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--u3);
+}
+
+.lab-instruction {
+  font-size: 12px;
+  opacity: 0.85;
+  transition: opacity 0.4s ease;
+}
+
+.lab-instruction-soft {
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-instruction {
+    transition: none;
+  }
+}
+
+.lab-fullscreen-btn {
+  flex: none;
+  font-size: 11px;
+  padding: 6px var(--u2);
+  border: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.lab-fullscreen-btn:hover {
+  border-color: var(--ink);
+  color: var(--signal);
+}
+
+/* the stage always carries .pg-stage too — this class exists for lab-only
+   overrides so the product's own stage styling is never edited to fit it */
+.lab-stage {
+  position: relative;
+}
+
+/* ——— compact metadata row ——— */
+
+.lab-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--u4);
+  padding: var(--u2) 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.lab-meta-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+}
+
+.lab-meta-cell .mono-label {
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+/* ——— presets ——— */
+
+.lab-presets {
+  display: flex;
+  align-items: center;
+  gap: var(--u3);
+  flex-wrap: wrap;
+}
+
+.lab-presets-row {
+  display: flex;
+  gap: var(--u);
+  flex-wrap: wrap;
+}
+
+.lab-preset-btn {
+  font-size: 11px;
+  padding: 6px var(--u2);
+  border: 1px solid var(--rule);
+}
+
+.lab-preset-btn:hover {
+  border-color: var(--ink);
+}
+
+.lab-preset-btn-active {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+/* ——— controls ——— */
+
+.lab-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--u3) var(--u4);
+  padding: var(--u3);
+  min-width: 0;
+  border: 1px solid var(--rule);
+  background: var(--recess);
+}
+
+.lab-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u);
+  /* a grid item's default min-width is its content's min-content, which lets
+     a wide child (a six-option chase) blow out the whole grid track instead
+     of wrapping or clipping — this puts the grid's own sizing back in charge */
+  min-width: 0;
+}
+
+/* segmented controls carry their full option row on one line (the chase
+   indicator's math assumes a single row) — give them the whole grid width
+   instead of squeezing into one 200px track, with overflow-x as the backstop
+   for whenever a future control still has more options than that fits */
+.lab-control-wide {
+  grid-column: 1 / -1;
+  overflow-x: auto;
+}
+
+.lab-control-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--u2);
+}
+
+.lab-control-label {
+  font-size: 10px;
+}
+
+.lab-control-readout {
+  font-size: 11px;
+  color: var(--signal);
+  font-variant-numeric: tabular-nums;
+}
+
+.lab-control-desc {
+  font-size: 10px;
+  opacity: 0.55;
+  line-height: 1.4;
+}
+
+.lab-range {
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--rule);
+  outline: none;
+}
+
+.lab-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: var(--ink);
+  cursor: pointer;
+}
+
+.lab-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 0;
+  background: var(--ink);
+  cursor: pointer;
+}
+
+.lab-range:hover::-webkit-slider-thumb,
+.lab-range:focus-visible::-webkit-slider-thumb {
+  background: var(--signal);
+}
+
+.lab-range:hover::-moz-range-thumb,
+.lab-range:focus-visible::-moz-range-thumb {
+  background: var(--signal);
+}
+
+.lab-number {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  width: 100%;
+  padding: 6px var(--u);
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.lab-number:focus-visible {
+  border-color: var(--ink);
+}
+
+.lab-select {
+  font-size: 12px;
+  width: 100%;
+  padding: 6px var(--u);
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.lab-toggle {
+  width: fit-content;
+  font-size: 11px;
+  padding: 6px var(--u2);
+  border: 1px solid var(--rule);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lab-toggle-on {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+/* ——— footer ——— */
+
+.lab-pg-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--u3);
+  flex-wrap: wrap;
+}
+
+/* ——— fullscreen ——— */
+
+.lab-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--u4);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+
+.lab-fullscreen-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u3);
+  width: min(1000px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--u4);
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.lab-fullscreen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lab-fullscreen-close {
+  font-size: 11px;
+  padding: 6px var(--u2);
+  border: 1px solid var(--rule);
+}
+
+.lab-fullscreen-close:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.lab-stage-fullscreen {
+  min-height: 360px;
+}
+
+.lab-controls-fullscreen {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+/* ——— navigation ——— */
+
+.pg-stage-nav {
+  min-height: 260px;
+}
+
+/* 01 — magnetic nav links */
+
+.lab-magnetic-field {
+  display: flex;
+  gap: var(--u6);
+  flex-wrap: wrap;
+  padding: var(--u6) var(--u4);
+}
+
+.lab-magnetic-link {
+  font-size: 15px;
+  padding: var(--u) var(--u2);
+}
+
+.lab-magnetic-link:hover {
+  color: var(--signal);
+}
+
+/* 02 — underline follows cursor */
+
+.lab-underline-nav {
+  position: relative;
+  display: flex;
+  gap: var(--u4);
+  padding-bottom: var(--u2);
+}
+
+.lab-underline-link {
+  font-size: 14px;
+  padding: var(--u) 2px;
+  opacity: 0.6;
+}
+
+.lab-underline-link:hover,
+.lab-underline-link:focus-visible {
+  opacity: 1;
+}
+
+.lab-underline-link-active {
+  opacity: 1;
+}
+
+.lab-underline-bar {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background: var(--signal);
+  pointer-events: none;
+}
+
+/* 03 — active pill indicator */
+
+.lab-pill-nav {
+  position: relative;
+  display: flex;
+  gap: var(--u);
+  padding: 4px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  width: fit-content;
+}
+
+.lab-pill-link {
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
+  padding: 8px var(--u3);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+.lab-pill-link-active {
+  opacity: 1;
+  color: var(--paper);
+}
+
+.lab-pill-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  pointer-events: none;
+}
+
+/* 04 — morphing navigation */
+
+.lab-morph-nav {
+  display: flex;
+  gap: var(--u);
+  padding: var(--u);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  background: var(--recess);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lab-morph-nav:hover {
+  border-color: var(--ink);
+}
+
+.lab-morph-nav-expanded {
+  flex-direction: column;
+  background: var(--recess-2);
+  width: 260px;
+}
+
+.lab-morph-item {
+  display: flex;
+  align-items: center;
+  gap: var(--u2);
+  padding: var(--u);
+  border-radius: var(--r-pill);
+}
+
+.lab-morph-nav-expanded .lab-morph-item {
+  border-radius: var(--u);
+  padding: var(--u2);
+  flex-wrap: wrap;
+}
+
+.lab-morph-mono {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  font-size: 12px;
+}
+
+.lab-morph-label {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.lab-morph-nav-expanded .lab-morph-label {
+  max-width: 160px;
+}
+
+.lab-morph-note {
+  flex-basis: 100%;
+  font-size: 11px;
+  opacity: 0.65;
+  padding-left: 36px;
+}
+
+/* 05 — dock navigation */
+
+.lab-dock {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--u2);
+  padding: var(--u6) var(--u4) var(--u6);
+}
+
+.lab-dock-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lab-dock-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: var(--u);
+  background: var(--recess);
+  font-size: 14px;
+}
+
+/* sibling of the scaling icon, not a child — a tooltip nested inside a
+   transformed element inherits that transform (position, apparent size). */
+.lab-dock-tooltip {
+  position: absolute;
+  bottom: calc(100% + var(--u2));
+  left: 50%;
+  translate: -50% 0;
+  font-size: 10px;
+  padding: 3px 6px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* 06 — expanding menu */
+
+.lab-expand-wrap {
+  display: flex;
+}
+
+.lab-expand-panel {
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  background: var(--recess);
+}
+
+.lab-expand-trigger {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 52px;
+  height: 52px;
+}
+
+.lab-expand-bar {
+  width: 18px;
+  height: 2px;
+  background: var(--ink);
+}
+
+.lab-expand-list {
+  list-style: none;
+  padding: 0 var(--u3) var(--u3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lab-expand-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  padding: var(--u) var(--u);
+}
+
+.lab-expand-item:hover {
+  color: var(--signal);
+}
+
+/* 07 — circular menu */
+
+.lab-circular-stage {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.lab-circular-hub,
+.lab-radial-hub {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  font-size: 16px;
+}
+
+.lab-circular-item {
+  position: absolute;
+  bottom: 26px;
+  left: calc(50% - 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--recess-2);
+  font-size: 12px;
+}
+
+.lab-circular-item:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+/* 08 — radial navigation */
+
+.lab-radial-stage {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-radial-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lab-radial-ring .lab-radial-item {
+  pointer-events: auto;
+}
+
+.lab-radial-item {
+  position: absolute;
+  top: calc(50% - 20px);
+  left: calc(50% - 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--recess-2);
+  font-size: 11px;
+}
+
+.lab-radial-item-active {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-magnetic-link,
+  .lab-dock-icon,
+  .lab-circular-item,
+  .lab-radial-item {
+    transition: none;
+  }
+}
+
+/* ——— buttons ——— */
+
+.lab-btn-field {
+  padding: var(--u6) var(--u8);
+  display: flex;
+  justify-content: center;
+}
+
+.lab-btn-base,
+.lab-btn-magnetic,
+.lab-btn-liquid,
+.lab-btn-follow,
+.lab-btn-arrow,
+.lab-btn-split,
+.lab-btn-expand-circle,
+.lab-btn-border-draw,
+.lab-btn-pixel,
+.lab-btn-elastic,
+.lab-btn-ripple,
+.lab-btn-glow,
+.lab-btn-shutter,
+.lab-btn-tilt,
+.lab-btn-spotlight,
+.lab-btn-gooey {
+  font-size: 13px;
+  padding: 12px var(--u4);
+  border: 1px solid var(--ink);
+}
+
+/* 01 — magnetic button */
+
+.lab-btn-magnetic span {
+  display: inline-block;
+}
+
+/* 02 — liquid fill button */
+
+.lab-btn-liquid {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--ink);
+}
+
+.lab-btn-liquid-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform-origin: bottom;
+  pointer-events: none;
+}
+
+.lab-btn-liquid-label {
+  position: relative;
+  z-index: 1;
+}
+
+.lab-btn-liquid-label-a {
+  color: var(--ink);
+}
+
+.lab-btn-liquid-label-b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--paper);
+  overflow: hidden;
+}
+
+/* 03 — cursor-follow button */
+
+.lab-btn-follow {
+  position: relative;
+  overflow: hidden;
+}
+
+.lab-btn-follow-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--signal);
+  pointer-events: none;
+}
+
+.lab-btn-follow-label {
+  position: relative;
+  z-index: 1;
+}
+
+/* 04 — arrow-slide button */
+
+.lab-btn-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--u2);
+}
+
+.lab-btn-arrow-track {
+  position: relative;
+  width: 18px;
+  height: 16px;
+  overflow: hidden;
+}
+
+.lab-btn-arrow-glyph {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 05 — split text button */
+
+.lab-btn-split {
+  position: relative;
+  overflow: hidden;
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.lab-btn-split-row {
+  display: flex;
+}
+
+.lab-btn-split-row-b {
+  position: absolute;
+  left: var(--u4);
+  color: var(--signal);
+}
+
+.lab-btn-split-ch {
+  display: inline-block;
+}
+
+/* 06 — expanding circle button */
+
+.lab-btn-expand-circle {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--rule);
+}
+
+.lab-btn-expand-circle-fill {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 50%;
+  background: var(--ink);
+  pointer-events: none;
+}
+
+.lab-btn-expand-circle-label {
+  position: relative;
+  z-index: 1;
+  mix-blend-mode: difference;
+}
+
+/* 07 — border-draw button */
+
+.lab-btn-border-draw {
+  position: relative;
+  border-color: var(--rule);
+}
+
+.lab-btn-border-draw-svg {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.lab-btn-border-draw-svg rect {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 1;
+}
+
+/* 08 — pixel reveal button */
+
+.lab-btn-pixel {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--rule);
+}
+
+.lab-btn-pixel-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+
+.lab-btn-pixel-tile {
+  background: var(--ink);
+  transform-origin: left;
+}
+
+.lab-btn-pixel-label {
+  position: relative;
+  z-index: 1;
+  mix-blend-mode: difference;
+}
+
+/* 09 — elastic press button */
+
+.lab-btn-elastic {
+  border-color: var(--ink);
+}
+
+/* 10 — ripple button */
+
+.lab-btn-ripple {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--rule);
+}
+
+.lab-btn-ripple-ring {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  border: 1px solid var(--signal);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.lab-btn-ripple-label {
+  position: relative;
+  z-index: 1;
+}
+
+/* 11 — glow-follow button */
+
+.lab-btn-glow {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--rule);
+}
+
+.lab-btn-glow-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--signal);
+  pointer-events: none;
+}
+
+/* 12 — shutter button */
+
+.lab-btn-shutter {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--rule);
+}
+
+.lab-btn-shutter-slats {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.lab-btn-shutter-slat {
+  background: var(--ink);
+  transform-origin: top;
+}
+
+.lab-btn-shutter-label {
+  position: relative;
+  z-index: 1;
+  mix-blend-mode: difference;
+}
+
+/* 13 — 3D tilt button */
+
+.lab-btn-tilt-stage {
+  padding: var(--u8);
+  display: flex;
+  justify-content: center;
+}
+
+.lab-btn-tilt {
+  border-color: var(--ink);
+}
+
+/* 14 — spotlight button */
+
+.lab-btn-spotlight {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--ink);
+}
+
+.lab-btn-spotlight-label {
+  position: relative;
+}
+
+.lab-btn-spotlight-label-a {
+  z-index: 1;
+}
+
+.lab-btn-spotlight-mask {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  pointer-events: none;
+}
+
+.lab-btn-spotlight-label-b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--paper);
+}
+
+/* 15 — gooey button */
+
+.lab-btn-gooey-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.lab-btn-gooey-goo {
+  position: absolute;
+  inset: 0;
+}
+
+.lab-btn-gooey-pill {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  border-radius: 999px;
+}
+
+.lab-btn-gooey-blob {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 26px;
+  height: 26px;
+  margin-top: -13px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.lab-btn-gooey {
+  position: relative;
+  z-index: 1;
+  background: none;
+  border-color: transparent;
+  color: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-btn-magnetic,
+  .lab-btn-follow-dot,
+  .lab-btn-glow-mark,
+  .lab-btn-tilt {
+    transition: none;
+  }
+}
+
+/* text — 01 odometer counter */
+
+.lab-odo-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.lab-odo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.lab-odo-wheels {
+  display: flex;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--recess);
+  overflow: hidden;
+}
+
+.lab-odo-wheel {
+  width: 48px;
+  height: 56px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lab-odo-wheel + .lab-odo-wheel {
+  border-left: 1px solid var(--rule);
+}
+
+.lab-odo-strip {
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-odo-strip span {
+  height: 56px;
+  line-height: 56px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--signal);
+}
+
+.lab-odo-readouts {
+  display: flex;
+  gap: 32px;
+}
+
+.lab-odo-targets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.lab-odo-target-active {
+  border-color: var(--signal);
+  color: var(--signal);
+}

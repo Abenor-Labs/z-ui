@@ -1,0 +1,1349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Z-UI — broadsheet concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #0F0E0D;
+    --ink: #F4F1EA;
+    --ink-70: rgba(244, 241, 234, 0.7);
+    --ink-50: rgba(244, 241, 234, 0.5);
+    --ink-30: rgba(244, 241, 234, 0.3);
+    --recess: #1A1815;
+    --rule: #2A2723;
+    --signal: #FF4D00;
+    --overshoot: cubic-bezier(0.2, 0.9, 0.3, 1.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Archivo, "Segoe UI", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--signal); color: var(--paper); }
+  :focus-visible { outline: 1px solid var(--ink); outline-offset: 2px; }
+
+  .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+  a { color: inherit; }
+
+  .sheet { max-width: 1280px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); position: relative; }
+
+  /* faint full-page column rules under everything */
+  .cols { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .cols i { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rule); opacity: 0.45; }
+  .cols i:nth-child(1) { left: 33.3%; }
+  .cols i:nth-child(2) { left: 66.6%; }
+
+  /* scroll ruler: the one fixed element, a measured beam */
+  .ruler { position: fixed; top: 0; left: 0; right: 0; height: 14px; z-index: 20; }
+  .ruler .tick { position: absolute; top: 0; height: 6px; width: 1px; background: var(--rule); }
+  .ruler .beam { position: absolute; top: 0; height: 2px; background: var(--signal); width: 0; }
+
+  /* ---- masthead: newspaper, not navbar ---- */
+
+  .masthead { padding-top: 34px; }
+  .mast-row {
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    font-size: 10px; letter-spacing: 0.18em; color: var(--ink-50);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 8px;
+  }
+  .brandline { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+  .brandline svg { display: block; }
+  .mast-title {
+    font-weight: 700; letter-spacing: -0.02em;
+    font-size: clamp(40px, 6vw, 74px); line-height: 1;
+    padding: 26px 0 22px;
+    border-bottom: 3px solid var(--ink);
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+  }
+  .mast-title .live-vel { text-align: right; }
+  .live-vel .cap { font-size: 10px; letter-spacing: 0.18em; color: var(--ink-50); display: block; margin-bottom: 6px; font-weight: 400; }
+  .live-vel .val { font-family: "JetBrains Mono", monospace; font-size: clamp(28px, 4vw, 52px); color: var(--signal); font-weight: 500; line-height: 1; }
+
+  /* ---- the headline: full-bleed type, dial overlapping it ---- */
+
+  .splash { position: relative; padding: 56px 0 30px; }
+  .splash h1 {
+    position: relative; z-index: 1;
+    font-weight: 700; text-transform: uppercase;
+    font-size: clamp(58px, 11vw, 168px);
+    line-height: 0.9; letter-spacing: -0.04em;
+  }
+  .splash h1 .ghost { color: transparent; -webkit-text-stroke: 1.5px var(--ink-30); }
+
+  .splash-dial {
+    position: absolute; z-index: 2;
+    right: clamp(0px, 3vw, 48px); top: -14px;
+    width: clamp(190px, 22vw, 300px); height: clamp(190px, 22vw, 300px);
+    cursor: grab; touch-action: none;
+  }
+  .splash-dial:active { cursor: grabbing; }
+  .splash-dial svg { width: 100%; height: 100%; display: block; }
+
+  .leader {
+    font-size: 9.5px; letter-spacing: 0.16em; color: var(--ink-50);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .leader::before { content: ""; width: 34px; height: 1px; background: var(--rule); }
+  .dial-leader { position: absolute; z-index: 2; }
+  .dial-leader.l1 { right: clamp(0px, 3vw, 48px); top: calc(clamp(190px, 22vw, 300px) - 8px); }
+  .dial-leader.l2 { right: calc(clamp(190px, 22vw, 300px) + clamp(0px, 3vw, 48px) + 10px); top: 40%; }
+
+  .standfirst {
+    display: grid; grid-template-columns: minmax(0, 62ch) 1fr; gap: 40px;
+    padding: 26px 0 30px; border-top: 1px solid var(--rule);
+  }
+  .standfirst p { color: var(--ink-70); font-size: 16.5px; max-width: 62ch; }
+  .standfirst .install-line { justify-self: end; text-align: right; }
+
+  .install-chip {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 12.5px; color: var(--ink-70);
+    border-bottom: 1px solid var(--rule); padding: 6px 2px 10px;
+    background: none;
+  }
+  .install-chip .p { color: var(--ink-30); }
+  .copy-btn {
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.1em;
+    background: none; border: 1px solid var(--rule); border-radius: 999px;
+    color: var(--ink-70); padding: 4px 12px; cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--ink-50); color: var(--ink); }
+  .copy-btn.copied { border-color: var(--signal); color: var(--signal); }
+
+  /* ---- contents: a ruled index, not cards ---- */
+
+  .contents { border-top: 2px solid var(--ink); padding-top: 14px; margin-bottom: 8px; }
+  .sec-cap { font-size: 10px; letter-spacing: 0.22em; color: var(--ink-50); margin-bottom: 18px; }
+  .index-row {
+    display: grid; grid-template-columns: 64px 200px 1fr auto; gap: 20px;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding: 12px 0; text-decoration: none;
+  }
+  .index-row:hover .idx-name { color: var(--signal); }
+  .idx-no { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-30); }
+  .idx-name { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+  .idx-mech { font-size: 13px; color: var(--ink-50); }
+  .idx-fig { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-30); }
+
+  /* ---- specimen bands: no boxes, figures on ruled paper ---- */
+
+  .band {
+    border-top: 1px solid var(--rule);
+    padding: 44px 0 48px;
+    display: grid; grid-template-columns: minmax(280px, 5fr) 7fr; gap: clamp(24px, 4vw, 72px);
+  }
+  .band.flip { grid-template-columns: 7fr minmax(280px, 5fr); }
+  .band.flip .band-copy { order: 2; }
+  .band.flip .band-fig { order: 1; }
+
+  .band-no {
+    font-family: "JetBrains Mono", monospace;
+    font-size: clamp(54px, 7vw, 96px); line-height: 1; font-weight: 400;
+    color: transparent; -webkit-text-stroke: 1px var(--ink-30);
+  }
+  .band-name { font-weight: 700; font-size: clamp(28px, 3.4vw, 44px); letter-spacing: -0.025em; margin-top: 14px; }
+  .band-mech { color: var(--ink-70); font-size: 15px; margin-top: 12px; max-width: 42ch; }
+  .band-install { margin-top: 22px; }
+
+  .band-fig { position: relative; border-bottom: 1px solid var(--rule); padding-bottom: 34px; }
+  .fig-cap {
+    position: absolute; bottom: 10px; left: 0;
+    font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-30);
+  }
+  .fig-live { color: var(--signal); }
+
+  /* figures sit directly on the paper; only inputs get a hairline */
+
+  .demo-row { display: flex; align-items: center; gap: 18px; min-height: 120px; }
+  .read {
+    font-size: 10px; letter-spacing: 0.14em; color: var(--ink-50);
+  }
+  .read b { color: var(--signal); font-weight: 500; font-size: 12px; }
+
+  .act {
+    font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.14em;
+    background: none; border: 1px solid var(--rule); border-radius: 999px;
+    color: var(--ink-70); padding: 6px 14px; cursor: pointer; white-space: nowrap;
+  }
+  .act:hover { border-color: var(--ink-50); color: var(--ink); }
+
+  /* fig 01 — dial signature: your own trace, drawn from the masthead dial */
+  .trace-wrap svg { display: block; width: 100%; height: 150px; }
+
+  /* fig 02 — chase */
+  .chase-strip { position: relative; width: 100%; }
+  .chase-ind { position: absolute; top: -6px; height: calc(100% + 12px); border: 1px solid var(--signal); border-radius: 999px; pointer-events: none; }
+  .chase-row { position: relative; display: flex; z-index: 1; }
+  .chase-row button {
+    flex: 1; font-family: "JetBrains Mono", monospace; font-size: 13px;
+    background: none; border: none; color: var(--ink-70); padding: 12px 0; cursor: pointer;
+  }
+  .chase-row button.on { color: var(--ink); }
+
+  /* fig 03 — heft, full width band */
+  .heft-band { display: block; }
+  .heft-field { position: relative; height: 230px; border-bottom: 1px solid var(--rule); }
+  .heft-box { position: absolute; border: 1px solid var(--ink); background: var(--paper); }
+  .fig-ctl { position: absolute; top: 8px; right: 0; display: flex; gap: 14px; align-items: center; }
+
+  /* fig 04 — disclosure */
+  .disc-btn {
+    display: flex; width: 100%; justify-content: space-between;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.12em;
+    background: none; border: 1px solid var(--rule); color: var(--ink);
+    padding: 12px 14px; cursor: pointer; border-radius: 8px;
+  }
+  .disc-btn:hover { border-color: var(--ink-50); }
+  .disc-btn .chev { transition: transform 0.2s var(--overshoot); color: var(--signal); }
+  .disc.open .chev { transform: rotate(90deg); }
+  .disc-body { height: 0; overflow: hidden; }
+  .disc-body p { padding: 16px 2px 0; color: var(--ink-70); font-size: 14px; }
+
+  /* fig 05 — hold-drain */
+  .hold-btn {
+    font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: 0.14em;
+    background: none; border: 1px solid var(--rule); border-radius: 999px;
+    color: var(--ink); padding: 12px 20px; cursor: pointer;
+    touch-action: none; user-select: none;
+  }
+  .hold-btn.done { border-color: var(--signal); color: var(--signal); }
+  .hold-track { flex: 1; height: 5px; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+  .hold-fill { height: 100%; width: 0%; background: var(--signal); }
+
+  /* fig 06 — late-critique */
+  .late-input {
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    background: none; border: none; border-bottom: 1px solid var(--rule);
+    border-radius: 0; color: var(--ink); padding: 10px 2px; width: 100%;
+  }
+  .late-input:focus { outline: none; border-bottom-color: var(--ink); }
+  .late-input.bad { border-bottom-color: var(--signal); }
+  .late-log { margin-top: 14px; display: flex; flex-direction: column; gap: 5px; }
+  .late-log div { font-size: 10.5px; color: var(--ink-50); }
+  .late-log .err { color: var(--signal); }
+  .late-log .ok { color: var(--ink); }
+
+  /* fig 07 — scramble: the figure is a live line of text */
+  .scramble-line { font-family: "JetBrains Mono", monospace; font-size: 15px; cursor: default; }
+
+  /* ---- the bench: a ruled table, not cards ---- */
+
+  .bench-table { width: 100%; border-collapse: collapse; }
+  .bench-table th {
+    font-family: "JetBrains Mono", monospace; font-weight: 400;
+    font-size: 9.5px; letter-spacing: 0.2em; color: var(--ink-30);
+    text-align: left; padding: 10px 14px 10px 0; border-bottom: 2px solid var(--ink);
+  }
+  .bench-table td {
+    border-bottom: 1px solid var(--rule); padding: 16px 14px 16px 0;
+    vertical-align: middle;
+  }
+  .bench-table .b-no { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-30); width: 40px; }
+  .bench-table .b-name { font-weight: 700; font-size: 17px; width: 110px; }
+  .bench-table .b-mech { font-size: 12.5px; color: var(--ink-50); width: 26%; }
+  .bench-table .b-demo { min-width: 220px; }
+  .bench-table .b-status {
+    font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: 0.18em;
+    color: var(--ink-30); text-align: right; white-space: nowrap;
+  }
+
+  /* small inline demos for table cells */
+  .mini-stage { position: relative; height: 56px; width: 220px; }
+  .reel-digits { position: absolute; inset: 0; display: flex; gap: 2px; align-items: center; }
+  .reel-col { height: 30px; overflow: hidden; width: 19px; }
+  .reel-col .strip { display: flex; flex-direction: column; }
+  .reel-col span { height: 30px; line-height: 30px; text-align: center; font-family: "JetBrains Mono", monospace; font-size: 20px; color: var(--ink-70); }
+  .origin-panel {
+    position: absolute; inset: 4px 0 4px 40px; background: var(--recess);
+    border: 1px solid var(--rule); padding: 8px 10px; display: none;
+  }
+  .origin-panel p { font-size: 10px; color: var(--ink-50); }
+  .grip-chip, .intent-target {
+    position: absolute; left: 20px; top: 50%; transform: translate(0, -50%);
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.1em;
+    border: 1px solid var(--ink-50); color: var(--ink-70);
+    padding: 7px 12px; background: none; touch-action: none; user-select: none; cursor: grab;
+  }
+  .grip-chip.broken { border-color: var(--signal); color: var(--ink); }
+  .intent-target.hit { border-color: var(--signal); color: var(--signal); }
+
+  /* ---- refusals: full-bleed strike ---- */
+
+  .refusal { display: flex; align-items: baseline; gap: 22px; margin: 24px 0; }
+  .refusal .not { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--ink-50); }
+  .refusal .str {
+    position: relative; font-weight: 700; text-transform: uppercase;
+    font-size: clamp(28px, 5.4vw, 64px); letter-spacing: -0.03em;
+  }
+  .refusal .str::after {
+    content: ""; position: absolute; left: -1%; right: -1%; top: 55%;
+    height: 2px; background: var(--signal);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.5s var(--overshoot);
+  }
+  .refusal.struck .str::after { transform: scaleX(1); }
+
+  .facts { margin-top: 48px; columns: 2; column-gap: 56px; }
+  .facts li {
+    list-style: none; border-bottom: 1px solid var(--rule);
+    padding: 13px 0; font-family: "JetBrains Mono", monospace;
+    font-size: 12px; line-height: 1.7; color: var(--ink-70);
+    break-inside: avoid;
+  }
+  .facts code { color: var(--ink); }
+
+  /* ---- colophon: the session strip ---- */
+
+  .colophon { margin-top: 90px; border-top: 2px solid var(--ink); padding: 26px 0 60px; }
+  .session-strip { display: block; width: 100%; height: 56px; }
+  .session-nums {
+    display: flex; gap: clamp(28px, 6vw, 90px); flex-wrap: wrap; align-items: flex-end;
+    margin-top: 22px;
+  }
+  .session-nums .cap { font-family: "JetBrains Mono", monospace; font-size: 9.5px; letter-spacing: 0.2em; color: var(--ink-50); display: block; }
+  .session-nums .num { font-family: "JetBrains Mono", monospace; font-size: 34px; color: var(--signal); line-height: 1.2; }
+  .session-nums .num small { font-size: 12px; color: var(--ink-50); }
+  .colo-row {
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-30);
+  }
+
+  @media (max-width: 900px) {
+    .band, .band.flip { grid-template-columns: 1fr; }
+    .band.flip .band-copy { order: 1; }
+    .band.flip .band-fig { order: 2; }
+    .standfirst { grid-template-columns: 1fr; }
+    .standfirst .install-line { justify-self: start; text-align: left; }
+    .splash-dial { position: relative; right: auto; top: auto; margin: 30px auto 10px; display: block; }
+    .dial-leader { display: none; }
+    .index-row { grid-template-columns: 44px 1fr; }
+    .index-row .idx-mech, .index-row .idx-fig { display: none; }
+    .facts { columns: 1; }
+    .cols { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .refusal .str::after { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cols" aria-hidden="true"><i></i><i></i></div>
+<div class="ruler" aria-hidden="true">
+  <div class="beam" id="beam"></div>
+  <div class="tick" style="left:10%"></div><div class="tick" style="left:20%"></div>
+  <div class="tick" style="left:30%"></div><div class="tick" style="left:40%"></div>
+  <div class="tick" style="left:50%"></div><div class="tick" style="left:60%"></div>
+  <div class="tick" style="left:70%"></div><div class="tick" style="left:80%"></div>
+  <div class="tick" style="left:90%"></div>
+</div>
+
+<main class="sheet">
+
+  <!-- MASTHEAD -->
+  <header class="masthead" id="top">
+    <div class="mast-row mono">
+      <span class="brandline">
+        <svg viewBox="-12 -12 24 24" width="18" height="18" aria-hidden="true">
+          <circle r="9" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <line x1="0" y1="-9" x2="0" y2="-3" stroke="var(--signal)" stroke-width="2.5" />
+          <circle r="1.6" fill="currentColor" />
+        </svg>
+        Z-UI REGISTRY · SHEET 001
+      </span>
+      <span>MICRO-ANIMATIONS · SOURCE-IN · NO RUNTIME</span>
+      <span>V0.1 · REACT · <span id="mastLive">READY</span></span>
+    </div>
+    <div class="mast-title">
+      <span>The sheet.</span>
+      <span class="live-vel">
+        <span class="cap mono">DIAL VELOCITY — LIVE</span>
+        <span class="val"><span id="bigVel">0.0</span><small style="font-size:0.4em;color:var(--ink-50)"> rad/s</small></span>
+      </span>
+    </div>
+  </header>
+
+  <!-- SPLASH: type overlapped by the dial -->
+  <section class="splash">
+    <h1>Micro-<br />anima­tions<br /><span class="ghost">you own.</span></h1>
+
+    <div class="splash-dial" id="dialHit" role="img" aria-label="flick the dial">
+      <svg viewBox="-110 -110 220 220" id="dialSvg">
+        <line x1="-110" y1="0" x2="110" y2="0" stroke="var(--rule)" stroke-width="1" />
+        <line x1="0" y1="-110" x2="0" y2="110" stroke="var(--rule)" stroke-width="1" />
+        <circle r="100" fill="none" stroke="var(--ink-30)" stroke-width="1.5" />
+        <circle r="64" fill="none" stroke="var(--rule)" stroke-width="1" />
+        <g id="dialTicks"></g>
+        <g id="dialNeedle">
+          <line x1="0" y1="14" x2="0" y2="-88" stroke="var(--signal)" stroke-width="2.5" stroke-linecap="round" />
+        </g>
+        <circle r="3.5" fill="var(--ink)" />
+      </svg>
+    </div>
+    <span class="leader mono dial-leader l1">FLICK IT — IT FREESPINS, THEN CATCHES</span>
+    <span class="leader mono dial-leader l2">k 1300 · c 46 · 12 DETENTS</span>
+  </section>
+
+  <div class="standfirst">
+    <p>
+      Installed as source into your project — your files, your constants, no runtime
+      dependency. Everything on this sheet is the real component, live. Each numbered
+      figure below can be taken over with your own hands; the numbers in orange are
+      measured while you do it.
+    </p>
+    <div class="install-line">
+      <code class="install-chip mono">
+        <span class="p">$</span> npx @abenor/z-ui@latest add dial
+        <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add dial">⧉ copy</button>
+      </code>
+    </div>
+  </div>
+
+  <!-- CONTENTS -->
+  <nav class="contents" aria-label="Contents">
+    <div class="sec-cap mono">CONTENTS — SEVEN IN THE REGISTRY · FOUR ON THE BENCH</div>
+    <a class="index-row" href="#f01">
+      <span class="idx-no">01</span><span class="idx-name">Dial</span>
+      <span class="idx-mech">Interrupt + velocity carry-over, detents, spring catch</span>
+      <span class="idx-fig">FIG. 01 — TRACE</span>
+    </a>
+    <a class="index-row" href="#f02">
+      <span class="idx-no">02</span><span class="idx-name">Chase</span>
+      <span class="idx-mech">Two springs disagree — the stretch is the speed</span>
+      <span class="idx-fig">FIG. 02</span>
+    </a>
+    <a class="index-row" href="#f03">
+      <span class="idx-no">03</span><span class="idx-name">Heft</span>
+      <span class="idx-mech">Gravity, contacts and friction, no choreography</span>
+      <span class="idx-fig">FIG. 03</span>
+    </a>
+    <a class="index-row" href="#f04">
+      <span class="idx-no">04</span><span class="idx-name">Disclosure</span>
+      <span class="idx-mech">Height is a spring that reverses mid-flight</span>
+      <span class="idx-fig">FIG. 04</span>
+    </a>
+    <a class="index-row" href="#f05">
+      <span class="idx-no">05</span><span class="idx-name">Hold-drain</span>
+      <span class="idx-mech">Abort drains at the rate the hold climbed</span>
+      <span class="idx-fig">FIG. 05</span>
+    </a>
+    <a class="index-row" href="#f06">
+      <span class="idx-no">06</span><span class="idx-name">Late-critique</span>
+      <span class="idx-mech">No verdict mid-word, forgiveness same frame</span>
+      <span class="idx-fig">FIG. 06</span>
+    </a>
+    <a class="index-row" href="#f07">
+      <span class="idx-no">07</span><span class="idx-name">Scramble-reveal</span>
+      <span class="idx-mech">Glyphs lock left to right, once per trigger</span>
+      <span class="idx-fig">FIG. 07</span>
+    </a>
+  </nav>
+
+  <!-- FIG 01 — dial's signature: the trace of YOUR session at the top of the sheet -->
+  <section class="band" id="f01">
+    <div class="band-copy">
+      <div class="band-no">01</div>
+      <div class="band-name">Dial</div>
+      <p class="band-mech">The dial is at the top of the sheet — this figure is its signature:
+        the last three seconds of your own velocity, drawn as it happens. Grab it mid-spin
+        and the reversal shows up here in the same frame.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add dial
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add dial">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+    <div class="band-fig trace-wrap">
+      <svg viewBox="0 0 600 150" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="0" y1="120" x2="600" y2="120" stroke="var(--rule)" />
+        <line x1="0" y1="62" x2="600" y2="62" stroke="var(--rule)" stroke-dasharray="2 6" />
+        <polyline id="traceLine" fill="none" stroke="var(--signal)" stroke-width="1.5" points="" />
+      </svg>
+      <span class="fig-cap mono">FIG. 01 — VELOCITY, LAST 3S · <span class="fig-live">LIVE</span></span>
+    </div>
+  </section>
+
+  <!-- FIG 02 — chase -->
+  <section class="band flip" id="f02">
+    <div class="band-copy">
+      <div class="band-no">02</div>
+      <div class="band-name">Chase</div>
+      <p class="band-mech">A segmented control whose indicator is two springs: a stiff leading
+        edge, a soft trailing one. The stretch between them is emergent — nobody drew it.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add chase
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add chase">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+    <div class="band-fig">
+      <div class="demo-row" style="display:block">
+        <div class="chase-strip">
+          <div class="chase-ind" id="chaseInd"></div>
+          <div class="chase-row" id="chaseRow">
+            <button type="button" class="on">one</button>
+            <button type="button">two</button>
+            <button type="button">three</button>
+          </div>
+        </div>
+        <div class="read mono" style="margin-top:16px">STRETCH <b id="chaseAnno">+0.0</b>px — EMERGENT, NOT TWEENED</div>
+      </div>
+      <span class="fig-cap mono">FIG. 02 — CLICK THE LABELS</span>
+    </div>
+  </section>
+
+  <!-- FIG 03 — heft, full width -->
+  <section class="band heft-band" id="f03">
+    <div class="band-fig" style="padding-bottom:0;border-bottom:none">
+      <div class="heft-field" id="heftStage">
+        <div class="fig-ctl mono">
+          <span class="read">CONTACTS <b id="heftContacts">3</b></span>
+          <button class="act" type="button" id="heftSpawn">spawn object</button>
+        </div>
+      </div>
+      <span class="fig-cap mono" style="bottom:-26px">FIG. 03 — REAL GRAVITY, REAL CONTACTS · <span class="fig-live">LIVE COUNTER</span></span>
+    </div>
+    <div class="band-copy" style="margin-top:34px">
+      <div class="band-no">03</div>
+      <div class="band-name">Heft</div>
+      <p class="band-mech">Boxes with mass. Spawn them and they fall, stack and settle —
+        no choreography anywhere, just an integrator arguing with gravity.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add heft
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add heft">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIG 04 — disclosure -->
+  <section class="band" id="f04">
+    <div class="band-copy">
+      <div class="band-no">04</div>
+      <div class="band-name">Disclosure</div>
+      <p class="band-mech">An accordion whose height runs on a spring. Press it again
+        mid-open — it turns around carrying the velocity it already had.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add disclosure
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add disclosure">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+    <div class="band-fig">
+      <div class="disc" id="disc">
+        <button class="disc-btn" type="button" id="discBtn">
+          <span>SPECIFICATIONS</span><span class="chev">▸</span>
+        </button>
+        <div class="disc-body" id="discBody">
+          <p>The content above is a real disclosure instance. Interrupt it while it opens:
+            the same spring, re-aimed, keeps its velocity. CSS keyframes cannot do this —
+            that inability is the reason this registry exists.</p>
+        </div>
+      </div>
+      <span class="fig-cap mono">FIG. 04 — TOGGLE MID-FLIGHT</span>
+    </div>
+  </section>
+
+  <!-- FIG 05 — hold-drain -->
+  <section class="band flip" id="f05">
+    <div class="band-copy">
+      <div class="band-no">05</div>
+      <div class="band-name">Hold-drain</div>
+      <p class="band-mech">Press and hold to confirm. Let go early and the fill drains at
+        exactly the rate it climbed — quitting has an honest, visible cost.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add hold-drain
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add hold-drain">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+    <div class="band-fig">
+      <div class="demo-row">
+        <button class="hold-btn" type="button" id="holdBtn">HOLD TO CONFIRM</button>
+        <div class="hold-track"><div class="hold-fill" id="holdFill"></div></div>
+        <span class="read mono"><b id="holdPct">0</b>%</span>
+      </div>
+      <span class="fig-cap mono">FIG. 05 — CLIMB 60%/S · DRAIN SYMMETRIC</span>
+    </div>
+  </section>
+
+  <!-- FIG 06 — late-critique -->
+  <section class="band" id="f06">
+    <div class="band-copy">
+      <div class="band-no">06</div>
+      <div class="band-name">Late-critique</div>
+      <p class="band-mech">Type a bad address. Nothing judges you mid-word; the verdict
+        lands after 700ms of silence, and correcting it is forgiven in the same frame.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add late-critique
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add late-critique">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+    <div class="band-fig">
+      <input class="late-input" id="lateInput" type="text" placeholder="type an email — try something wrong…" autocomplete="off" spellcheck="false" />
+      <div class="late-log mono" id="lateLog">
+        <div>— waiting for input</div>
+      </div>
+      <span class="fig-cap mono">FIG. 06 — THE LOG IS THE EVIDENCE</span>
+    </div>
+  </section>
+
+  <!-- FIG 07 — scramble -->
+  <section class="band flip" id="f07">
+    <div class="band-copy">
+      <div class="band-no">07</div>
+      <div class="band-name">Scramble-reveal</div>
+      <p class="band-mech">Text that decodes out of instrument noise — glyphs lock left to
+        right, once per trigger, never looping. This figure is the component.</p>
+      <div class="band-install">
+        <code class="install-chip mono"><span class="p">$</span> npx @abenor/z-ui@latest add scramble-reveal
+          <button class="copy-btn" type="button" data-copy="npx @abenor/z-ui@latest add scramble-reveal">⧉ copy</button>
+        </code>
+      </div>
+    </div>
+    <div class="band-fig">
+      <div class="demo-row">
+        <span class="scramble-line" id="scrambleLine">hover this line and it decodes once, left to right</span>
+      </div>
+      <span class="fig-cap mono">FIG. 07 — HOVER THE LINE</span>
+    </div>
+  </section>
+
+  <!-- THE BENCH — a table -->
+  <section style="border-top:2px solid var(--ink); margin-top:8px; padding-top:14px">
+    <div class="sec-cap mono">THE BENCH — CANDIDATES, NOT IN THE REGISTRY</div>
+    <table class="bench-table">
+      <thead>
+        <tr>
+          <th>NO.</th><th>NAME</th><th>MECHANISM</th><th>DEMO</th><th style="text-align:right">STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="b-no">B1</td>
+          <td class="b-name">Reel</td>
+          <td class="b-mech">Impulse sized so friction lands it on the digit.</td>
+          <td class="b-demo">
+            <div class="mini-stage">
+              <div class="reel-digits" id="reelDigits"></div>
+              <button class="act" type="button" id="reelBtn" style="position:absolute;right:0;top:14px">+148</button>
+            </div>
+          </td>
+          <td class="b-status">BENCH — NO INSTALL</td>
+        </tr>
+        <tr>
+          <td class="b-no">B2</td>
+          <td class="b-name">Origin</td>
+          <td class="b-mech">Clip anchored to the press, closing toward you.</td>
+          <td class="b-demo">
+            <div class="mini-stage">
+              <button class="act" type="button" id="originBtn" style="position:absolute;left:0;top:14px">press to open</button>
+              <div class="origin-panel" id="originPanel"><p>Anchored to your press.</p></div>
+            </div>
+          </td>
+          <td class="b-status">BENCH — NO INSTALL</td>
+        </tr>
+        <tr>
+          <td class="b-no">B3</td>
+          <td class="b-name">Grip</td>
+          <td class="b-mech">Static friction holds until the pull breaks it.</td>
+          <td class="b-demo">
+            <div class="mini-stage" id="gripStage">
+              <div class="grip-chip" id="gripChip">drag me</div>
+            </div>
+          </td>
+          <td class="b-status">BENCH — NO INSTALL</td>
+        </tr>
+        <tr>
+          <td class="b-no">B4</td>
+          <td class="b-name">Intent</td>
+          <td class="b-mech">Heading and speed decide — no open timer.</td>
+          <td class="b-demo">
+            <div class="mini-stage" id="intentStage">
+              <div class="intent-target" id="intentTarget">aim here</div>
+            </div>
+          </td>
+          <td class="b-status">BENCH — NO INSTALL</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- REFUSALS -->
+  <section style="border-top:1px solid var(--rule); margin-top:64px; padding-top:34px" id="refusals">
+    <div class="sec-cap mono">WHAT THIS IS NOT</div>
+    <div id="refusalList">
+      <div class="refusal"><span class="not">NOT</span><span class="str">a design system</span></div>
+      <div class="refusal"><span class="not">NOT</span><span class="str">a layout kit</span></div>
+      <div class="refusal"><span class="not">NOT</span><span class="str">a shadcn replacement</span></div>
+      <div class="refusal"><span class="not">NOT</span><span class="str">anything that isn't a micro-animation</span></div>
+    </div>
+    <ul class="facts">
+      <li><code>add</code> writes the source into your tree. Your file now — edit the constants, delete what you don't want.</li>
+      <li>No runtime dependency on Z-UI. Nothing to update, nothing to break you.</li>
+      <li>Seven components in the registry. The four rows above are bench-only, maybe forever.</li>
+      <li>CSS keyframes cannot reverse mid-flight — mid-flight reversal is the product.</li>
+    </ul>
+  </section>
+
+  <!-- COLOPHON — the session, measured -->
+  <footer class="colophon">
+    <svg class="session-strip" id="sessionStrip" viewBox="0 0 1000 56" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="50" x2="1000" y2="50" stroke="var(--rule)" />
+      <polyline id="sessionLine" fill="none" stroke="var(--signal)" stroke-width="1.5" points="" />
+    </svg>
+    <div class="session-nums">
+      <div><span class="cap">THIS VISIT — FLICKS</span><span class="num" id="statFlicks">0</span></div>
+      <div><span class="cap">PEAK</span><span class="num" id="statPeak">0.0 <small>rad/s</small></span></div>
+      <div><span class="cap">INTERRUPTS</span><span class="num" id="statInt">0</span></div>
+      <div style="margin-left:auto;text-align:right">
+        <span class="cap">THE STRIP ABOVE IS YOUR WHOLE VISIT</span>
+        <div style="margin-top:8px">
+          <a class="mono" href="https://github.com/Abenor-Labs/z-ui" style="font-size:11px;letter-spacing:0.1em;color:var(--ink-70);text-decoration:none">GITHUB ↗</a>
+          &nbsp;&nbsp;
+          <a class="mono" href="https://www.npmjs.com/package/@abenor/z-ui" style="font-size:11px;letter-spacing:0.1em;color:var(--ink-70);text-decoration:none">NPM ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="colo-row">
+      <span>Z-UI · INSTRUMENT, NOT BROCHURE</span>
+      <span>STATIC CONCEPT — BROADSHEET CUT · NO BUILD</span>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---- one master rAF ticker ---- */
+
+  var tickers = new Set();
+  var last = performance.now();
+  function loop(t) {
+    var dt = Math.min(0.032, (t - last) / 1000);
+    last = t;
+    if (!document.hidden) tickers.forEach(function (fn) { fn(dt); });
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  function makeSpring(x, k, c) {
+    return {
+      x: x, v: 0, k: k, c: c, target: x,
+      tick: function (dt) {
+        var a = this.k * (this.target - this.x) - this.c * this.v;
+        this.v += a * dt;
+        this.x += this.v * dt;
+        return this.x;
+      },
+      settled: function () { return Math.abs(this.target - this.x) < 0.4 && Math.abs(this.v) < 0.4; },
+      jump: function (t) { this.x = t; this.v = 0; this.target = t; }
+    };
+  }
+
+  /* ---- copy buttons ---- */
+
+  $$('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy') || '';
+      if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function () {});
+      btn.classList.add('copied');
+      btn.textContent = 'copied ✓';
+      setTimeout(function () { btn.classList.remove('copied'); btn.textContent = '⧉ copy'; }, 1300);
+    });
+  });
+
+  /* ---- scroll beam ruler ---- */
+
+  (function beam() {
+    var el = $('#beam');
+    if (!el) return;
+    var fn = function () {
+      var h = document.documentElement;
+      var max = Math.max(1, h.scrollHeight - h.clientHeight);
+      el.style.width = (h.scrollTop / max * 100).toFixed(2) + '%';
+    };
+    window.addEventListener('scroll', fn, { passive: true });
+    fn();
+  })();
+
+  /* ---- the dial: shared session feeds the big number, fig.01 and the colophon ---- */
+
+  var session = { flicks: 0, peak: 0, interrupts: 0, trace: [], strip: [] };
+
+  (function dial() {
+    var hit = $('#dialHit');
+    var svg = $('#dialSvg');
+    var needle = $('#dialNeedle');
+    var ticks = $('#dialTicks');
+    if (!svg) return;
+
+    var html = '';
+    for (var i = 0; i < 12; i++) {
+      var a = (i * 30 - 90) * Math.PI / 180;
+      html += '<line x1="' + (86 * Math.cos(a)).toFixed(1) + '" y1="' + (86 * Math.sin(a)).toFixed(1) +
+        '" x2="' + (96 * Math.cos(a)).toFixed(1) + '" y2="' + (96 * Math.sin(a)).toFixed(1) +
+        '" stroke="var(--ink)" stroke-width="1.4" opacity="0.5" />';
+    }
+    ticks.innerHTML = html;
+
+    var angle = 0, vel = 0, dragging = false, samples = [];
+    var bigVel = $('#bigVel');
+    var mastLive = $('#mastLive');
+    var traceLine = $('#traceLine');
+    var sessionLine = $('#sessionLine');
+    var statF = $('#statFlicks'), statP = $('#statPeak'), statI = $('#statInt');
+
+    function setNeedle() { needle.setAttribute('transform', 'rotate(' + (angle % 360).toFixed(2) + ')'); }
+    function angFromEvent(e) {
+      var r = svg.getBoundingClientRect();
+      return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI + 90;
+    }
+
+    hit.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      hit.setPointerCapture(e.pointerId);
+      dragging = true;
+      samples = [{ t: performance.now(), a: angle }];
+      if (Math.abs(vel) > 180) { session.interrupts++; statI.textContent = session.interrupts; }
+      vel = 0;
+    });
+    hit.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var a = angFromEvent(e);
+      var d = a - (angle % 360);
+      while (d > 180) d -= 360;
+      while (d < -180) d += 360;
+      angle += d;
+      samples.push({ t: performance.now(), a: angle });
+      if (samples.length > 24) samples.shift();
+      setNeedle();
+    });
+    function release() {
+      if (!dragging) return;
+      dragging = false;
+      if (samples.length > 1) {
+        var f = samples[0], l = samples[samples.length - 1];
+        var dt = (l.t - f.t) / 1000;
+        if (dt > 0.016) vel = (l.a - f.a) / dt;
+      }
+      if (Math.abs(vel) > 200) { session.flicks++; statF.textContent = session.flicks; }
+    }
+    hit.addEventListener('pointerup', release);
+    hit.addEventListener('pointercancel', release);
+
+    if (RM) {
+      hit.addEventListener('click', function () {
+        angle = (Math.round(angle / 30) + 1) * 30;
+        setNeedle();
+        bigVel.textContent = '0.0';
+      });
+      return;
+    }
+
+    var fn = function (dt) {
+      if (!dragging) {
+        if (Math.abs(vel) > 180) {
+          vel *= Math.exp(-1.9 * dt);
+          angle += vel * dt;
+        } else {
+          var target = Math.round(angle / 30) * 30;
+          vel += (900 * (target - angle) - 38 * vel) * dt;
+          angle += vel * dt;
+        }
+        setNeedle();
+      }
+      var v = dragging ? 0 : Math.abs(vel) / 57.2958;
+      bigVel.textContent = v.toFixed(1);
+      if (v > session.peak) {
+        session.peak = v;
+        statP.innerHTML = session.peak.toFixed(1) + ' <small>rad/s</small>';
+      }
+      mastLive.textContent = v > 0.5 ? 'LIVE' : 'READY';
+
+      var now = performance.now();
+      session.trace.push({ t: now, v: v });
+      while (session.trace.length && session.trace[0].t < now - 3000) session.trace.shift();
+
+      // fig.01 — 3s window
+      var vmax = 8;
+      for (var j = 0; j < session.trace.length; j++) if (session.trace[j].v > vmax) vmax = session.trace[j].v;
+      var pts = [];
+      var stride = Math.max(1, Math.floor(session.trace.length / 120));
+      for (var j2 = 0; j2 < session.trace.length; j2 += stride) {
+        var p = session.trace[j2];
+        pts.push(((p.t - (now - 3000)) / 3000 * 600).toFixed(1) + ',' + (120 - Math.min(1, p.v / vmax) * 100).toFixed(1));
+      }
+      traceLine.setAttribute('points', pts.join(' '));
+
+      // colophon strip — whole visit, sparse
+      if (session.trace.length % 10 === 0) session.strip.push({ t: now, v: v });
+      var age = now - perf0;
+      var spts = [];
+      for (var k = 0; k < session.strip.length; k++) {
+        var s = session.strip[k];
+        spts.push(((s.t - perf0) / Math.max(age, 1) * 1000).toFixed(1) + ',' + (50 - Math.min(1, s.v / 12) * 42).toFixed(1));
+      }
+      sessionLine.setAttribute('points', spts.join(' '));
+    };
+    var perf0 = performance.now();
+    tickers.add(fn);
+  })();
+
+  /* ---- chase ---- */
+
+  (function chase() {
+    var ind = $('#chaseInd');
+    var row = $('#chaseRow');
+    var anno = $('#chaseAnno');
+    if (!ind) return;
+    var btns = $$('button', row);
+    var L = makeSpring(0, 1300, 46), R = makeSpring(0, 1300, 46);
+    var placed = false;
+
+    function render() {
+      var l = Math.min(L.x, R.x);
+      ind.style.left = l.toFixed(1) + 'px';
+      ind.style.width = Math.max(2, Math.abs(R.x - L.x)).toFixed(1) + 'px';
+    }
+    function place() {
+      var r0 = row.getBoundingClientRect();
+      var b0 = btns[0].getBoundingClientRect();
+      L.jump(b0.left - r0.left - 10); R.jump(b0.right - r0.left + 10);
+      placed = true; render();
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        btns.forEach(function (b) { b.classList.toggle('on', b === btn); });
+        var r0 = row.getBoundingClientRect();
+        var b0 = btn.getBoundingClientRect();
+        var tl = b0.left - r0.left - 10, tr = b0.right - r0.left + 10;
+        if (!placed) place();
+        if (RM) { L.jump(tl); R.jump(tr); render(); return; }
+        if (tl < L.target) { L.k = 1300; L.c = 46; R.k = 300; R.c = 30; }
+        else { R.k = 1300; R.c = 46; L.k = 300; L.c = 30; }
+        L.target = tl; R.target = tr;
+      });
+    });
+
+    var fn = function () {
+      if (!placed) return;
+      L.tick(1 / 60); R.tick(1 / 60);
+      render();
+      var base = btns.reduce(function (m, b) { return Math.max(m, b.offsetWidth + 20); }, 0);
+      anno.textContent = '+' + Math.max(0, Math.abs(R.x - L.x) - base).toFixed(1);
+    };
+    tickers.add(fn);
+    requestAnimationFrame(place);
+  })();
+
+  /* ---- heft ---- */
+
+  (function heft() {
+    var stage = $('#heftStage');
+    var contactsEl = $('#heftContacts');
+    if (!stage) return;
+    var boxes = [];
+    var active = false;
+
+    function makeBox(x, w, h) {
+      var el = document.createElement('div');
+      el.className = 'heft-box';
+      el.style.width = w + 'px';
+      el.style.height = h + 'px';
+      stage.appendChild(el);
+      var b = { x: x, y: -h - 10, w: w, h: h, vy: 0, vx: 0, resting: false, el: el };
+      boxes.push(b);
+      if (boxes.length > 24) boxes.shift().el.remove();
+      return b;
+    }
+    function layout() {
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        b.el.style.transform = 'translate(' + b.x.toFixed(1) + 'px,' + b.y.toFixed(1) + 'px)';
+      }
+    }
+    function countContacts() {
+      var c = 0;
+      for (var k = 0; k < boxes.length; k++) {
+        var bb = boxes[k];
+        if (!bb.resting) continue;
+        if (bb.y + bb.h >= stage.clientHeight - 1) { c++; continue; }
+        for (var m = 0; m < boxes.length; m++) {
+          if (m === k) continue;
+          var oo = boxes[m];
+          if (oo.resting && Math.abs(oo.y - (bb.y + bb.h)) < 2 &&
+              Math.min(bb.x + bb.w, oo.x + oo.w) - Math.max(bb.x, oo.x) > 8) { c++; break; }
+        }
+      }
+      return c;
+    }
+    function restAll() {
+      var floor = stage.clientHeight;
+      var cols = [[], [], []];
+      boxes.forEach(function (b, i) { cols[i % 3].push(b); });
+      cols.forEach(function (col) {
+        var y = floor;
+        col.forEach(function (b) { y -= b.h + 1; b.y = y; b.vy = 0; b.vx = 0; b.resting = true; });
+      });
+      layout();
+      contactsEl.textContent = countContacts();
+    }
+
+    var fn = function (dt) {
+      if (!active) return;
+      var floor = stage.clientHeight, W = stage.clientWidth, moving = false;
+      var sorted = boxes.slice().sort(function (a, b) { return b.y - a.y; });
+      for (var i = 0; i < sorted.length; i++) {
+        var b = sorted[i];
+        if (b.resting) continue;
+        b.vy += 2200 * dt;
+        b.y += b.vy * dt;
+        b.x += b.vx * dt;
+        if (b.x < 2) { b.x = 2; b.vx *= -0.5; }
+        if (b.x + b.w > W - 2) { b.x = W - 2 - b.w; b.vx *= -0.5; }
+        if (b.y + b.h >= floor - 0.5) { b.y = floor - b.h; b.vy = 0; b.vx = 0; b.resting = true; continue; }
+        for (var j = 0; j < sorted.length; j++) {
+          var o = sorted[j];
+          if (o === b || !o.resting) continue;
+          if (Math.min(b.x + b.w, o.x + o.w) - Math.max(b.x, o.x) > 8 &&
+              b.vy > 0 && b.y + b.h >= o.y - 2 && b.y + b.h <= o.y + o.h * 0.6) {
+            b.y = o.y - b.h; b.vy = 0; b.vx = 0; b.resting = true; break;
+          }
+        }
+        if (!b.resting) moving = true;
+      }
+      layout();
+      contactsEl.textContent = countContacts();
+      if (!moving) active = false;
+    };
+    tickers.add(fn);
+
+    $('#heftSpawn').addEventListener('click', function () {
+      var W = stage.clientWidth;
+      var b = makeBox(16 + Math.random() * (W - 100), 36 + Math.random() * 32, 26 + Math.random() * 24);
+      if (RM) { restAll(); return; }
+      b.vx = (Math.random() - 0.5) * 80;
+      active = true;
+    });
+
+    requestAnimationFrame(function () {
+      var W = stage.clientWidth;
+      [[24, 58, 36], [W - 110, 70, 30], [W / 2 - 26, 48, 44]].forEach(function (d) {
+        boxes.push({ x: d[0], y: 0, w: d[1], h: d[2], vy: 0, vx: 0, resting: false, el: (function () {
+          var el = document.createElement('div');
+          el.className = 'heft-box';
+          el.style.width = d[1] + 'px'; el.style.height = d[2] + 'px';
+          stage.appendChild(el); return el;
+        })() });
+      });
+      restAll();
+    });
+  })();
+
+  /* ---- disclosure ---- */
+
+  (function disclosure() {
+    var btn = $('#discBtn');
+    var body = $('#discBody');
+    var wrap = $('#disc');
+    if (!btn) return;
+    var open = false;
+    var h = makeSpring(0, 1300, 46);
+    btn.addEventListener('click', function () {
+      open = !open;
+      wrap.classList.toggle('open', open);
+      if (RM) { h.jump(open ? body.scrollHeight : 0); body.style.height = h.x + 'px'; return; }
+      h.target = open ? body.scrollHeight : 0;
+      h.k = open ? 1300 : 300;
+      h.c = open ? 46 : 30;
+    });
+    var fn = function () {
+      if (RM && h.settled()) return;
+      h.tick(1 / 60);
+      body.style.height = Math.max(0, h.x).toFixed(1) + 'px';
+    };
+    tickers.add(fn);
+  })();
+
+  /* ---- hold-drain ---- */
+
+  (function holdDrain() {
+    var btn = $('#holdBtn');
+    var fill = $('#holdFill');
+    var pctEl = $('#holdPct');
+    if (!btn) return;
+    var pct = 0, holding = false, doneAt = 0;
+    function finish() {
+      pct = 100; holding = false;
+      btn.classList.add('done'); btn.textContent = 'CONFIRMED';
+      doneAt = performance.now();
+    }
+    btn.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      if (pct >= 100) return;
+      if (RM) { finish(); return; }
+      holding = true;
+    });
+    function up() { holding = false; }
+    btn.addEventListener('pointerup', up);
+    btn.addEventListener('pointercancel', up);
+    btn.addEventListener('pointerleave', up);
+    var fn = function (dt) {
+      if (doneAt && performance.now() - doneAt > 1600) {
+        doneAt = 0; pct = 0;
+        btn.classList.remove('done'); btn.textContent = 'HOLD TO CONFIRM';
+      }
+      if (doneAt) { fill.style.width = '100%'; pctEl.textContent = '100'; return; }
+      if (holding) pct += 60 * dt;
+      else if (pct > 0) pct = Math.max(0, pct - 60 * dt);
+      if (pct >= 100) finish();
+      fill.style.width = pct.toFixed(1) + '%';
+      pctEl.textContent = pct.toFixed(0);
+    };
+    tickers.add(fn);
+  })();
+
+  /* ---- late-critique ---- */
+
+  (function lateCritique() {
+    var input = $('#lateInput');
+    var log = $('#lateLog');
+    if (!input) return;
+    var timer = 0, lastVerdict = '';
+    var t0 = performance.now();
+    function line(cls, msg) {
+      var d = document.createElement('div');
+      if (cls) d.className = cls;
+      d.textContent = ((performance.now() - t0) / 1000).toFixed(2) + 's  ' + msg;
+      log.insertBefore(d, log.firstChild);
+      while (log.children.length > 5) log.removeChild(log.lastChild);
+    }
+    function valid(v) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v); }
+    input.addEventListener('input', function () {
+      var v = input.value;
+      clearTimeout(timer);
+      if (lastVerdict === 'err' && valid(v)) {
+        line('ok', 'ERR → forgiven (same frame)');
+        lastVerdict = '';
+        input.classList.remove('bad');
+      }
+      if (!v) { input.classList.remove('bad'); lastVerdict = ''; return; }
+      timer = setTimeout(function () {
+        if (valid(v)) { line('ok', 'OK — accepted after 700ms of silence'); lastVerdict = 'ok'; input.classList.remove('bad'); }
+        else { line('err', 'ERR — not an address (after idle, never mid-word)'); lastVerdict = 'err'; input.classList.add('bad'); }
+      }, 700);
+    });
+  })();
+
+  /* ---- scramble-reveal: hover, once per hover ---- */
+
+  (function scramble() {
+    var el = $('#scrambleLine');
+    if (!el) return;
+    var GLYPHS = '#/\\<>[]{}=+*%—0123456789';
+    var final = el.textContent;
+    var running = false;
+    el.addEventListener('mouseenter', function () {
+      if (running) return;
+      if (RM) { el.textContent = final; return; }
+      running = true;
+      var start = performance.now();
+      var fn = function () {
+        var t = (performance.now() - start) / 560;
+        if (t >= 1) { el.textContent = final; running = false; tickers.delete(fn); return; }
+        var lock = Math.floor(final.length * t);
+        var out = final.slice(0, lock);
+        for (var j = lock; j < final.length; j++) {
+          out += final[j] === ' ' ? ' ' : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+        }
+        el.textContent = out;
+      };
+      tickers.add(fn);
+    });
+  })();
+
+  /* ---- bench: reel ---- */
+
+  (function reel() {
+    var holder = $('#reelDigits');
+    var btn = $('#reelBtn');
+    if (!holder) return;
+    var value = 0, H = 30, cols = [];
+    var html = '';
+    for (var i = 0; i < 4; i++) {
+      html += '<div class="reel-col"><div class="strip">';
+      for (var d = 0; d <= 10; d++) html += '<span>' + (d % 10) + '</span>';
+      html += '</div></div>';
+    }
+    holder.innerHTML = html;
+    var strips = $$('.strip', holder);
+    strips.forEach(function () { cols.push(makeSpring(0, 1300, 46)); });
+    function setValue(v) {
+      value = Math.max(0, Math.min(9999, v));
+      for (var i = 0; i < 4; i++) {
+        var digit = Math.floor(value / Math.pow(10, 3 - i)) % 10;
+        cols[i].target = -digit * H;
+        if (RM) cols[i].jump(-digit * H);
+      }
+    }
+    setValue(0);
+    btn.addEventListener('click', function () { setValue(value + 148); });
+    var fn = function () {
+      for (var i = 0; i < 4; i++) strips[i].style.transform = 'translateY(' + cols[i].tick(1 / 60).toFixed(1) + 'px)';
+    };
+    tickers.add(fn);
+  })();
+
+  /* ---- bench: origin ---- */
+
+  (function origin() {
+    var btn = $('#originBtn');
+    var panel = $('#originPanel');
+    if (!btn) return;
+    var s = makeSpring(0, 1300, 46), open = false;
+    btn.addEventListener('click', function (e) {
+      open = !open;
+      var r = btn.parentElement.getBoundingClientRect();
+      panel.style.transformOrigin = ((e.clientX - r.left) / r.width * 100).toFixed(0) + '% ' +
+        ((e.clientY - r.top) / r.height * 100).toFixed(0) + '%';
+      if (open) panel.style.display = 'block';
+      if (RM) {
+        s.jump(open ? 1 : 0);
+        panel.style.transform = 'scale(' + s.x + ')';
+        if (!open) panel.style.display = 'none';
+        return;
+      }
+      s.target = open ? 1 : 0;
+      btn.textContent = open ? 'close' : 'press to open';
+    });
+    var fn = function () {
+      if (!open && s.settled()) { panel.style.display = 'none'; return; }
+      s.tick(1 / 60);
+      panel.style.transform = 'scale(' + Math.max(0.001, s.x).toFixed(3) + ')';
+    };
+    tickers.add(fn);
+  })();
+
+  /* ---- bench: grip ---- */
+
+  (function grip() {
+    var stage = $('#gripStage');
+    var chip = $('#gripChip');
+    if (!stage) return;
+    var dragging = false, startX = 0, x = 0, broken = false;
+    var s = makeSpring(0, 1300, 46);
+    chip.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      chip.setPointerCapture(e.pointerId);
+      dragging = true;
+      startX = e.clientX - x;
+    });
+    chip.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var pull = e.clientX - startX;
+      if (!broken && Math.abs(pull) >= 22) broken = true;
+      x = broken ? pull - 8 * Math.sign(pull) : pull * 0.35;
+      s.jump(x);
+      chip.classList.toggle('broken', broken);
+      chip.textContent = broken ? 'free' : 'static';
+    });
+    function up() {
+      if (!dragging) return;
+      dragging = false; broken = false;
+      chip.classList.remove('broken');
+      chip.textContent = 'drag me';
+      if (RM) { s.jump(0); x = 0; apply(); return; }
+      s.target = 0;
+    }
+    chip.addEventListener('pointerup', up);
+    chip.addEventListener('pointercancel', up);
+    function apply() {
+      chip.style.transform = 'translate(' + x.toFixed(1) + 'px, -50%)';
+    }
+    var fn = function () {
+      if (!dragging) { s.tick(1 / 60); x = s.x; }
+      apply();
+    };
+    tickers.add(fn);
+  })();
+
+  /* ---- bench: intent ---- */
+
+  (function intent() {
+    var stage = $('#intentStage');
+    var target = $('#intentTarget');
+    if (!stage) return;
+    var aim = 0, lastT = 0, lastX = 0, lastY = 0;
+    stage.addEventListener('pointermove', function (e) {
+      var now = performance.now(), speed = 0;
+      if (lastT) {
+        var dt = (now - lastT) / 1000;
+        speed = Math.hypot(e.clientX - lastX, e.clientY - lastY) / Math.max(dt, 0.001) / 1000;
+      }
+      lastT = now; lastX = e.clientX; lastY = e.clientY;
+      var r = target.getBoundingClientRect();
+      var dist = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+      if (dist < 60 && speed < 0.6) aim += 1 / 60; else aim = 0;
+      if (aim > 0.18) { target.classList.add('hit'); target.textContent = 'committed'; }
+      else if (!target.classList.contains('hit')) target.textContent = 'aim here';
+    });
+    stage.addEventListener('pointerleave', function () {
+      aim = 0;
+      target.classList.remove('hit');
+      target.textContent = 'aim here';
+      lastT = 0;
+    });
+  })();
+
+  /* ---- refusals strike, once on scroll-in ---- */
+
+  (function refusals() {
+    var list = $('#refusalList');
+    if (!list) return;
+    var items = $$('.refusal', list);
+    if (RM || !('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('struck'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.disconnect();
+        items.forEach(function (el, i) {
+          setTimeout(function () { el.classList.add('struck'); }, i * 110);
+        });
+      });
+    }, { threshold: 0.4 });
+    io.observe(list);
+  })();
+
+})();
+</script>
+</body>
+</html>

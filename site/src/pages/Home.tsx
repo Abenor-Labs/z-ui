@@ -291,7 +291,7 @@ export function Home() {
           </li>
           <li>No runtime dependency on Z-UI. Nothing to update, nothing to break you.</li>
           <li>
-            Seven components in the registry. The four marked <em>candidate</em> are on the{' '}
+            Eight components in the registry. The four marked <em>candidate</em> are on the{' '}
             <Link to="/candidates">bench</Link> — no install command, and maybe never one.
           </li>
           <li>

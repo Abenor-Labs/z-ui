@@ -6,11 +6,11 @@ Name: Z-UI
 Tagline: "Micro-animations you own."
 Positioning: A copy-paste registry of React micro-interactions, installed as source into a project — not pulled in as a runtime dependency. Not a design system, not a layout kit, not a shadcn/ui replacement. Sits on top of whatever the developer already uses.
 Core install command: npx @abenor/z-ui@latest add dial
-Status: v0.1, early. CLI published, working. Seven components in the registry. Showcase site is live at https://z-ui-eight.vercel.app — registry served from raw GitHub. Names/props may still change before v1.
+Status: v0.1, early. CLI published, working. Eight components in the registry. Showcase site is live at https://z-ui-eight.vercel.app — registry served from raw GitHub. Names/props may still change before v1.
 
 What it refuses to be: a design system, a layout kit, a shadcn/ui replacement, anything that isn't a micro-animation.
 
-THE SEVEN REAL COMPONENTS (showcase exactly these — no more, no fewer, no invented ones):
+THE EIGHT REAL COMPONENTS (showcase exactly these — no more, no fewer, no invented ones):
 
 1. dial — category: tactile-feedback. A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again (interrupt + velocity carry-over). Needs: motion. The site additionally renders this component in a `mode="rotary"` display — a ten-digit rotary phone face, governed constant-speed return instead of friction decay, same catch spring — as a site-only presentation flag; the shipped default and the CLI install remain the flywheel described above.
 
@@ -25,6 +25,8 @@ THE SEVEN REAL COMPONENTS (showcase exactly these — no more, no fewer, no inve
 6. late-critique — category: input-utility. A form field whose criticism is late and forgiveness is instant. No error verdict lands mid-word (while the user is still typing a first attempt); the very first keystroke that fixes the value clears the error on the same frame it's typed. Needs: react only (no motion dependency).
 
 7. scramble-reveal — category: state-morphing. Text that decodes out of random glyphs — on hover, on mount, or the first time it scrolls into view. Needs: react only (no motion dependency).
+
+8. thinking-orb — category: state-morphing. A dotted, honestly-3D status indicator: nine hand-tuned canvas animations for nine agent states (working, searching, solving, listening, connecting, weaving, composing, breathing, shaping), z-sorted and depth-shaded, no WebGL. The one component with no driving gesture — its state is set programmatically by the consumer, not by a press, hold, drag, hover, or keystroke on the component itself. Vendored from thinking-orbs (MIT, Jakub Antalik) into one self-contained file. Needs: react only (no motion dependency).
 
 Each component is a single self-contained .tsx file. No shared lib/ required to install first; if a component needs a primitive, that primitive ships inside the component file.
 
@@ -67,7 +69,7 @@ Voice/tone for all copy: precise, dry, technically confident. No marketing fluff
 
 ## Goals
 
-1. Make the seven components' physics *felt*, not described — every preview on the site is the
+1. Make the eight components' physics *felt*, not described — every preview on the site is the
    real interaction, reimplemented faithfully (velocity carry-over, dual springs, gravity/contacts),
    never a video, screenshot, or scripted loop.
 2. Get a developer from landing to `npx @abenor/z-ui@latest add dial` in one screen — the install
@@ -89,7 +91,7 @@ Voice/tone for all copy: precise, dry, technically confident. No marketing fluff
   surface, uniform live-demo grid — so those two bans are lifted. What replaces them: every
   stage on that grid is a real component instance, and every trigger fires the component's own
   input path. See DESIGN.md → "Revision 2026-08-18".)
-- **No invented surface area.** No components beyond the seven, no CLI commands beyond the
+- **No invented surface area.** No components beyond the eight, no CLI commands beyond the
   seven, no architecture claims beyond the four decisions. v0.1 honesty stays visible
   (names/props may change before v1; registry served from raw GitHub).
 - Not the showcase app that lives in the z-ui repo's `web/` — this is an independent
@@ -100,7 +102,7 @@ Voice/tone for all copy: precise, dry, technically confident. No marketing fluff
 
 ```
 /                         Home — positioning, refusals, install command, live dial hero
-/components               Component Library — chase-driven category filter, 7 live cards
+/components               Component Library — chase-driven category filter, 8 live cards
 /components/dial          Detail + playground + velocity-over-time graph
 /components/chase         Detail + playground + stretch annotation
 /components/heft          Detail + full-width sandbox + contact readout + spawn
@@ -108,6 +110,7 @@ Voice/tone for all copy: precise, dry, technically confident. No marketing fluff
 /components/hold-drain    Detail + playground + fill/rate readouts
 /components/late-critique Detail + real form + timestamped decision log
 /components/scramble-reveal Detail + playground (hover / mount / in-view triggers)
+/components/thinking-orb  Detail + playground (nine-state select, no driving gesture)
 /cli                      CLI — 7 commands, flags, install guarantee, --spring refusal, fallback
 /architecture             The four architecture decisions, repo structure
 /docs                     Getting started — accordions are real disclosure instances
@@ -139,7 +142,7 @@ Labs). No invented contact channels.
 - [ ] Dial and disclosure demonstrably carry velocity through interrupts; chase visibly runs
       two independent springs (stretch emerges, is never scripted); heft has real gravity,
       contacts, and friction.
-- [ ] Every one of the 12 routes renders; `npm run build` and `npm run typecheck` are clean.
+- [ ] Every one of the 13 routes renders; `npm run build` and `npm run typecheck` are clean.
 - [ ] All copy passes the voice check: no banned marketing phrases anywhere.
 - [ ] Zero invented components, commands, flags, or architecture claims — auditable against
       PRODUCT FACTS above.

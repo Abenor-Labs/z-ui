@@ -9,6 +9,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/site.css';
 import './styles/motion.css';
+import './styles/lab.css';
 import { App } from './App';
 
 createRoot(document.getElementById('root')!).render(

@@ -50,3 +50,10 @@ playground/
 /z-ui.json
 
 .vercel
+
+# brainstorming companion scratch (superpowers skill)
+.superpowers/
+
+# Skills installer junctions pointing into .agents/skills — the copies under
+# .agents/ are the source of truth and are committed.
+.claude/skills/

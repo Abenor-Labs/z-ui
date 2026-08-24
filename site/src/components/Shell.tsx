@@ -5,6 +5,7 @@ import { REPO_URL, NPM_URL } from '../data/registry';
 const NAV = [
   { to: '/components', label: 'components' },
   { to: '/candidates', label: 'candidates' },
+  { to: '/lab', label: 'lab' },
   { to: '/cli', label: 'cli' },
   { to: '/architecture', label: 'architecture' },
   { to: '/docs', label: 'docs' },
@@ -39,10 +40,11 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <footer className="footer hairline-t">
         <div className="frame footer-inner">
-          <div className="footer-col">
-            <span className="mono-label">Z-UI · micro-animations you own</span>
+          <div className="footer-col footer-brand">
+            <span className="footer-mark">Z-UI</span>
             <span className="mono footer-note">
-              v0.1 — early. Names and props may change before v1. Registry served from raw GitHub.
+              Micro-animations you own. v0.1 — early; names and props may change before v1.
+              Registry served from raw GitHub.
             </span>
           </div>
           <div className="footer-col mono footer-links">

@@ -76,7 +76,7 @@ export function Library() {
         <p className="playground-caption">
           Four more are being built and measured on the{' '}
           <Link to="/candidates">candidate bench</Link> — reel, origin, grip, intent. They are not in
-          the registry, have no install command, and may never get one. Seven is still seven.
+          the registry, have no install command, and may never get one. Eight is still eight.
         </p>
       </Section>
     </Page>

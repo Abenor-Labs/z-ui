@@ -32,7 +32,7 @@ src/
     usePointerAngle.ts  pointer→angle math for the dial
     useInView.ts        one-shot IntersectionObserver (scramble labels)
     format.ts           mono readout formatting (fixed-width numbers)
-  zui/                  faithful reimplementations of the seven registry components
+  zui/                  faithful reimplementations of the registry components
     Dial.tsx            flywheel: friction integrator + Motion spring detent catch
     Chase.tsx           two independent springs per edge (stiff leads, soft trails)
     Heft.tsx            axis-aligned rigid bodies: gravity, impulse contacts, friction

@@ -3,7 +3,7 @@ import type { Category } from './registry';
 /**
  * CANDIDATES — components under evaluation. NOT product facts.
  *
- * PRD.md PRODUCT FACTS says seven components, and it still means seven: nothing
+ * PRD.md PRODUCT FACTS says eight components, and it still means eight: nothing
  * here is in the registry, has a CLI command, or can be installed. This file is
  * the lab bench, kept separate from registry.ts so the two can never be confused.
  * See CANDIDATES.md for the full slate and the source study behind it.

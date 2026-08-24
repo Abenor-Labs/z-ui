@@ -1,5 +1,5 @@
 /**
- * The seven registry components. Mirrors PRD.md PRODUCT FACTS exactly —
+ * The eight registry components. Mirrors PRD.md PRODUCT FACTS exactly —
  * no more, no fewer, no invented ones.
  */
 
@@ -77,6 +77,15 @@ export const REGISTRY: RegistryComponent[] = [
       'Text that decodes out of random glyphs — on hover, on mount, or the first time it scrolls into view.',
     principle:
       'The scramble runs once per trigger, never loops, and locks glyphs in until the real string stands.',
+  },
+  {
+    name: 'thinking-orb',
+    category: 'state-morphing',
+    needs: 'react only',
+    blurb:
+      'A dotted, honestly-3D status indicator — nine hand-tuned canvas animations for nine agent states, no WebGL.',
+    principle:
+      'Not gesture-driven — nothing here waits for a press or a hover. The state is set by whatever the orb is standing in for: an agent, a job, a socket.',
   },
 ];
 
