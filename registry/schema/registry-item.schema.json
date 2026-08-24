@@ -105,9 +105,10 @@
             "drag",
             "hold",
             "hover",
-            "type"
+            "type",
+            "none"
           ],
-          "description": "The input that drives the component's signature motion. `category` says what kind of thing it is; this says what the reader has to do to see it work, which is the axis the catalogue actually filters on."
+          "description": "The input that drives the component's signature motion. `category` says what kind of thing it is; this says what the reader has to do to see it work, which is the axis the catalogue actually filters on. `none` is for a component with no driving gesture at all: its state is set programmatically by the consumer, not by anything the reader does to it."
         },
         "states": {
           "type": "array",

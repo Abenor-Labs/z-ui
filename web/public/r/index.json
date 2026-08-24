@@ -105,6 +105,26 @@
         "idle",
         "moving"
       ]
+    },
+    {
+      "name": "thinking-orb",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/thinking-orb",
+      "title": "Thinking Orb",
+      "description": "A dotted, honestly-3D status indicator: nine hand-tuned canvas animations for nine agent states, z-sorted and depth-shaded, no WebGL. Vendored from thinking-orbs (MIT, Jakub Antalik) into one self-contained file.",
+      "spring": null,
+      "states": [
+        "working",
+        "searching",
+        "solving",
+        "listening",
+        "connecting",
+        "weaving",
+        "composing",
+        "breathing",
+        "shaping"
+      ]
     }
   ]
 }

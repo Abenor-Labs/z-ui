@@ -45,6 +45,12 @@
       "type": "registry:component",
       "category": "state-morphing",
       "path": "components/chase"
+    },
+    {
+      "name": "thinking-orb",
+      "type": "registry:component",
+      "category": "state-morphing",
+      "path": "components/thinking-orb"
     }
   ]
 }

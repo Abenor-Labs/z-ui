@@ -2,8 +2,9 @@
 export type ZFile = { key: string; target: string; sha: string }
 export type ZInstall = { name: string; files: ZFile[] }
 export type ZItemType = 'registry:component' | 'registry:hook' | 'registry:lib'
-/** The input that drives the component's signature motion. */
-export type ZGesture = 'press' | 'drag' | 'hold' | 'hover' | 'type'
+/** The input that drives the component's signature motion. `none` is for a
+ *  component with no driving gesture: its state is set programmatically. */
+export type ZGesture = 'press' | 'drag' | 'hold' | 'hover' | 'type' | 'none'
 
 export type ZPreset = 'snap' | 'bounce' | 'settle' | 'fling'
 

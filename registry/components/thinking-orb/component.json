@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "thinking-orb",
+  "type": "registry:component",
+  "title": "Thinking Orb",
+  "description": "A dotted, honestly-3D status indicator: nine hand-tuned canvas animations for nine agent states, z-sorted and depth-shaded, no WebGL. Vendored from thinking-orbs (MIT, Jakub Antalik) into one self-contained file.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [{ "path": "thinking-orb.tsx", "type": "registry:component" }],
+  "meta": {
+    "category": "state-morphing",
+    "gesture": "none",
+    "states": [
+      "working",
+      "searching",
+      "solving",
+      "listening",
+      "connecting",
+      "weaving",
+      "composing",
+      "breathing",
+      "shaping"
+    ]
+  }
+}

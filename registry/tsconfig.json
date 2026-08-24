@@ -20,7 +20,8 @@
       "@/components/z-ui/hold-drain": ["./components/hold-drain/hold-drain.tsx"],
       "@/components/z-ui/heft": ["./components/heft/heft.tsx"],
       "@/components/z-ui/late-critique": ["./components/late-critique/late-critique.tsx"],
-      "@/components/z-ui/scramble-reveal": ["./components/scramble-reveal/scramble-reveal.tsx"]
+      "@/components/z-ui/scramble-reveal": ["./components/scramble-reveal/scramble-reveal.tsx"],
+      "@/components/z-ui/thinking-orb": ["./components/thinking-orb/thinking-orb.tsx"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

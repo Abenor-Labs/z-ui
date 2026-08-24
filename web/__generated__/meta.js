@@ -339,6 +339,55 @@ export const items = [
         ]
       }
     ]
+  },
+  {
+    "name": "thinking-orb",
+    "type": "registry:component",
+    "title": "Thinking Orb",
+    "description": "A dotted, honestly-3D status indicator: nine hand-tuned canvas animations for nine agent states, z-sorted and depth-shaded, no WebGL. Vendored from thinking-orbs (MIT, Jakub Antalik) into one self-contained file.",
+    "category": "state-morphing",
+    "gesture": "none",
+    "states": [
+      "working",
+      "searching",
+      "solving",
+      "listening",
+      "connecting",
+      "weaving",
+      "composing",
+      "breathing",
+      "shaping"
+    ],
+    "spring": null,
+    "motion": {
+      "states": [
+        "working",
+        "searching",
+        "solving",
+        "listening",
+        "connecting",
+        "weaving",
+        "composing",
+        "breathing",
+        "shaping"
+      ],
+      "springs": [],
+      "durations": [],
+      "reducedMotion": "branch"
+    },
+    "dependencies": [],
+    "installs": [
+      {
+        "name": "thinking-orb",
+        "files": [
+          {
+            "key": "thinking-orb/thinking-orb.tsx",
+            "target": "components/z-ui/thinking-orb.tsx",
+            "sha": "fd3a00f35710"
+          }
+        ]
+      }
+    ]
   }
 ]
 export const byName = Object.fromEntries(items.map((i) => [i.name, i]))
