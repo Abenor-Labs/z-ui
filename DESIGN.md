@@ -450,3 +450,23 @@ implementation choices, NOT product facts.
   The eight names, the version string, and the install command are read from PRODUCT FACTS, not
   from the supplied design, which had listed seven components that do not exist (`button`, `toggle`,
   `badge`, `input`, `card`, `progress`, `tooltip`) and a version of `v1.4.0`.
+
+- **A22 — the registry promotion, and `dial` settles as the knob** (2026-08-24). Five of the six
+  diverging components were promoted heft-style: chase, scramble-reveal, late-critique, disclosure,
+  and hold-drain now ship their own stylesheet beside the component (Tailwind utility classes were
+  themselves a de-share failure — this site does not run Tailwind, and the files' own headers
+  promised "react, motion. Nothing else"), and the site renders the registry files through
+  `@z-ui/registry` with the demo chrome — decision logs, readouts, annotations, telemetry — living
+  in pages and thin wrappers that are visibly not the product. `site-orbs` reads the same five
+  files. What you see is what npx downloads is now true for seven of eight.
+
+  The sixth exposed a product question rather than a mechanical one. The registry's `dial` — the
+  file npx ships — is a 270° hi-fi knob with value semantics. The site was demoing a 360° flywheel
+  and a rotary phone face, neither of which any visitor could install; A17/A18 had deferred exactly
+  this unification. Decided 2026-08-24: **the knob stays `dial`.** The flywheel and the rotary face
+  move to the candidates track (`/candidates`, `data/candidates.ts`), clearly labeled
+  non-installable — the same honesty rule `/components/dial` already applied to RotaryDial in A18.
+  Home's dial card and the library grid preview render the shipped knob; `/components/dial` offers
+  all three faces with the knob first and the other two captioned as candidates. The mechanics are
+  recorded, not deleted: the flywheel's entry lives on the bench like reel's, and the merged-mode
+  implementation survives at `site/src/zui/Dial.tsx`.

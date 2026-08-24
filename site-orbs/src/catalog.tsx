@@ -13,7 +13,7 @@ import { LateCritiqueDemo } from '@site/components/LateCritiqueDemo';
 import { HoldDrainDemo } from '@site/components/HoldDrainDemo';
 
 /* ---- still on site tracks, pending the dial decision ---------------------- */
-import { Dial } from '@site/zui/Dial';
+import { Dial } from '@z-ui/registry/dial/dial';
 
 /* ---- the two that were already honest, read straight from registry/ ------- */
 import { Heft } from '@z-ui/registry/heft/heft';
@@ -60,8 +60,8 @@ export const CATALOG: Entry[] = [
     name: 'dial',
     span: 2,
     tall: true,
-    note: 'A rotary face you drag to a stop and let go. It returns under its own governor at 300°/s, tripping one pulse every 30° on the way back.',
-    render: () => <Dial mode="rotary" size={168} />,
+    note: 'A knob with a flywheel in it. Flick it and friction spins it down until the nearest detent catches it on a spring.',
+    render: () => <Dial label="level" min={0} max={10} size={168} />,
   },
   {
     name: 'heft',
@@ -139,3 +139,4 @@ export const CATALOG: Entry[] = [
     render: () => <ThinkingOrb state="working" size={64} theme="dark" />,
   },
 ];
+

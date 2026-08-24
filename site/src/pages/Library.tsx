@@ -107,9 +107,9 @@ export function Library() {
 
       <Section index="03" label="BENCH">
         <p className="playground-caption">
-          Four more are being built and measured on the{' '}
-          <Link to="/candidates">candidate bench</Link> — reel, origin, grip, intent. They are not in
-          the registry, have no install command, and may never get one. Eight is still eight.
+          Five more are on the <Link to="/candidates">candidate bench</Link> — flywheel, reel, origin,
+          grip, intent. They are not in the registry, have no install command, and may never get one.
+          Eight is still eight.
         </p>
       </Section>
     </Page>

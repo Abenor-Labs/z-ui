@@ -25,6 +25,16 @@ export interface CandidateComponent {
 
 export const CANDIDATES: CandidateComponent[] = [
   {
+    name: 'flywheel',
+    category: 'tactile-feedback',
+    needs: 'motion',
+    principle: 'A flick keeps whatever velocity your hand left in it.',
+    mechanic:
+      'Two regimes, one loop. While fast, the wheel coasts: angular velocity decays through real exponential friction and detents are terrain it passes over. Below the capture speed the nearest detent takes it on 1300/46, seeded with the velocity that remained. Grabbing it mid-spin hands the wheel back at its actual speed — there is no timeline anywhere in the file.',
+    learnedFrom: 'mechanical detent knobs — hi-fi tuners and camera winders, where spin-down is friction, not easing.',
+    refuses: 'Duration-based spin-down, canned inertia ramps, snap-to-value. The landing detent is a function of angular velocity and starting angle, which is why the same flick lands differently every time.',
+  },
+  {
     name: 'reel',
     category: 'state-morphing',
     needs: 'motion',

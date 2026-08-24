@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Page } from '../components/Page';
 import { Section } from '../components/Section';
 import { CANDIDATES, type CandidateComponent } from '../data/candidates';
+import { Dial as Flywheel } from '../zui/Dial';
 import { Reel } from '../zui/Reel';
 import { Origin } from '../zui/Origin';
 import { Grip } from '../zui/Grip';
@@ -83,19 +84,32 @@ export function Candidates() {
           <span>no CLI command</span>
         </div>
         <p className="detail-principle">
-          The registry ships eight components and still ships eight. These four are on the bench:
+          The registry ships eight components and still ships eight. These five are on the bench:
           each one takes a mechanic that exists elsewhere as decoration, strips it back to the rule
           underneath, and has to prove that rule is worth a file. Nothing here has an install command,
-          because nothing here has earned one yet.
+          because nothing here has earned one yet. The flywheel and the rotary face were demoted here
+          when `dial` in the registry settled as the knob — their mechanics are recorded, not deleted.
         </p>
       </div>
 
-      <Section index="01" label="REEL" id="reel">
+      <Section index="01" label="FLYWHEEL" id="flywheel">
+        <div className="playground graph-bg">
+          <Flywheel size={160} detents={12} />
+          <p className="playground-caption">
+            Flick it hard, then grab it mid-spin — the wheel's velocity is yours the moment you touch
+            it. Below the catch threshold the nearest detent takes it at 1300/46. Where it lands is a
+            function of angular velocity and starting angle, never of a duration.
+          </p>
+        </div>
+        <Notes name="flywheel" />
+      </Section>
+
+      <Section index="02" label="REEL" id="reel">
         <ReelBench />
         <Notes name="reel" />
       </Section>
 
-      <Section index="02" label="ORIGIN" id="origin">
+      <Section index="03" label="ORIGIN" id="origin">
         <div className="playground graph-bg">
           <Origin label="open panel">
             <p className="playground-caption">
@@ -108,7 +122,7 @@ export function Candidates() {
         <Notes name="origin" />
       </Section>
 
-      <Section index="03" label="GRIP" id="grip">
+      <Section index="04" label="GRIP" id="grip">
         <div className="playground">
           <Grip />
           <p className="playground-caption">
@@ -120,7 +134,7 @@ export function Candidates() {
         <Notes name="grip" />
       </Section>
 
-      <Section index="04" label="INTENT" id="intent">
+      <Section index="05" label="INTENT" id="intent">
         <div className="playground graph-bg">
           <Intent label="hover me">
             <span className="mono">no timer decided this</span>
@@ -133,7 +147,7 @@ export function Candidates() {
         <Notes name="intent" />
       </Section>
 
-      <Section index="05" label="STATUS">
+      <Section index="06" label="STATUS">
         <p className="playground-caption">
           Ten more candidates are written up in CANDIDATES.md at the repo root, with the mechanic each
           one came from and what it refuses to inherit. A candidate becomes a component when the CLI
@@ -143,3 +157,5 @@ export function Candidates() {
     </Page>
   );
 }
+
+

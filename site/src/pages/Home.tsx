@@ -4,7 +4,7 @@ import { Page } from '../components/Page';
 import { Section } from '../components/Section';
 import { DemoCard } from '../components/DemoCard';
 import { REGISTRY, installCommand, REPO_URL } from '../data/registry';
-import { RotaryDial, type RotaryDialHandle } from '../zui/RotaryDial';
+import { Dial } from '@z-ui/registry/dial/dial';
 import { Chase } from '@z-ui/registry/chase/chase';
 import { Heft } from '@z-ui/registry/heft/heft';
 import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
@@ -20,7 +20,7 @@ const BLURB = new Map(REGISTRY.map((c) => [c.name, c]));
 
 /** one-line card subtitles — the mechanism, in the product's voice */
 const SUB: Record<string, string> = {
-  dial: 'Pull a hole to the stop — the return crawls home at a fixed speed',
+  dial: 'A knob with a flywheel in it — flick it and friction hands it to the nearest detent',
   chase: 'Two springs disagree — the stretch is the speed',
   heft: 'Gravity, contacts and friction, no choreography',
   disclosure: 'Height is a spring that reverses mid-flight',
@@ -34,7 +34,6 @@ const SUB: Record<string, string> = {
 };
 
 export function Home() {
-  const dial = useRef<RotaryDialHandle>(null);
   const holdDrain = useRef<HoldDrainDemoHandle>(null);
   const critique = useRef<LateCritiqueDemoHandle>(null);
   const origin = useRef<OriginHandle>(null);
@@ -105,12 +104,10 @@ export function Home() {
           name="dial"
           title="Dial"
           subtitle={SUB.dial}
-          action="dial 5"
-          onAction={() => dial.current?.dialDigit(5)}
           copyText={installCommand('dial')}
           href="/components/dial"
         >
-          <RotaryDial ref={dial} size={140} />
+          <Dial label="level" min={0} max={10} size={140} />
         </DemoCard>
 
         <DemoCard
@@ -310,4 +307,5 @@ export function Home() {
     </Page>
   );
 }
+
 

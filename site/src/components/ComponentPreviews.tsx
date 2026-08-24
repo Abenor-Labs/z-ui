@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Chase } from '@z-ui/registry/chase/chase';
-import { Dial } from '../zui/Dial';
+import { Dial } from '@z-ui/registry/dial/dial';
 import { Heft } from '@z-ui/registry/heft/heft';
 import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
 import { HoldDrainDemo } from './HoldDrainDemo';
@@ -32,7 +32,7 @@ function MiniChase() {
 export function Preview({ name }: { name: string }) {
   switch (name) {
     case 'dial':
-      return <Dial mode="rotary" size={96} />;
+      return <Dial label="level" min={0} max={10} size={96} />;
     case 'chase':
       return <MiniChase />;
     case 'heft':
