@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Detail } from '../../components/DetailLayout';
 import { Playground } from '../../components/Playground';
-import { HoldDrain } from '../../zui/HoldDrain';
+import { HoldDrainDemo } from '../../components/HoldDrainDemo';
 
-const RATES = ['30', '60', '120'];
+const DURATIONS = ['800', '1600', '3200'];
 
 export function HoldDrainPage() {
-  const [rate, setRate] = useState('60');
+  const [duration, setDuration] = useState('1600');
 
   return (
     <Detail
@@ -16,16 +16,16 @@ export function HoldDrainPage() {
           stage="graph-bg"
           controls={[
             {
-              label: 'Rate',
-              value: rate,
-              onChange: setRate,
-              options: RATES.map((v) => ({ value: v, label: `${v} %/s` })),
+              label: 'Duration',
+              value: duration,
+              onChange: setDuration,
+              options: DURATIONS.map((v) => ({ value: v, label: `${v}ms` })),
             },
           ]}
-          code={`<HoldDrain rate={${rate}} onConfirm={confirm} />`}
-          caption={`An abort costs what the hold earned: let go and the fill drains at exactly the rate it climbed. At ${rate} %/s a full commit takes ${(100 / Number(rate)).toFixed(2)}s — and so does giving up on one.`}
+          code={`<HoldDrain\n  label="hold to confirm"\n  duration={${duration}}\n  onConfirm={confirm}\n/>`}
+          caption={`An abort costs what the hold earned: let go and the fill drains over exactly the time it took to climb. At ${duration}ms a full commit takes ${(Number(duration) / 1000).toFixed(2)}s — and so does giving up on one. Hold to the end and release while it's armed; that release is what confirms.`}
         >
-          <HoldDrain key={rate} rate={Number(rate)} />
+          <HoldDrainDemo key={duration} duration={Number(duration)} />
         </Playground>
       }
     />

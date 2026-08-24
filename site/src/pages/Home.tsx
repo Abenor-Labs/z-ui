@@ -5,12 +5,12 @@ import { Section } from '../components/Section';
 import { DemoCard } from '../components/DemoCard';
 import { REGISTRY, installCommand, REPO_URL } from '../data/registry';
 import { RotaryDial, type RotaryDialHandle } from '../zui/RotaryDial';
-import { Chase } from '../zui/Chase';
+import { Chase } from '@z-ui/registry/chase/chase';
 import { Heft } from '@z-ui/registry/heft/heft';
-import { Disclosure } from '../zui/Disclosure';
-import { HoldDrain, type HoldDrainHandle } from '../zui/HoldDrain';
-import { LateCritique, type LateCritiqueHandle } from '../zui/LateCritique';
-import { ScrambleReveal } from '../zui/ScrambleReveal';
+import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
+import { HoldDrainDemo, type HoldDrainDemoHandle } from '../components/HoldDrainDemo';
+import { LateCritiqueDemo, type LateCritiqueDemoHandle } from '../components/LateCritiqueDemo';
+import { ScrambleReveal } from '@z-ui/registry/scramble-reveal/scramble-reveal';
 import { Reel } from '../zui/Reel';
 import { Origin, type OriginHandle } from '../zui/Origin';
 import { Grip, type GripHandle } from '../zui/Grip';
@@ -35,8 +35,8 @@ const SUB: Record<string, string> = {
 
 export function Home() {
   const dial = useRef<RotaryDialHandle>(null);
-  const holdDrain = useRef<HoldDrainHandle>(null);
-  const critique = useRef<LateCritiqueHandle>(null);
+  const holdDrain = useRef<HoldDrainDemoHandle>(null);
+  const critique = useRef<LateCritiqueDemoHandle>(null);
   const origin = useRef<OriginHandle>(null);
   const grip = useRef<GripHandle>(null);
   const intentStage = useRef<HTMLDivElement>(null);
@@ -123,13 +123,14 @@ export function Home() {
           href="/components/chase"
         >
           <Chase
+            label="Filter"
             options={[
               { value: 'one', label: 'one' },
               { value: 'two', label: 'two' },
               { value: 'three', label: 'three' },
             ]}
             value={chaseValue}
-            onChange={setChaseValue}
+            onValueChange={setChaseValue}
           />
         </DemoCard>
 
@@ -163,7 +164,7 @@ export function Home() {
           href="/components/disclosure"
         >
           <div style={{ width: '100%' }}>
-            <Disclosure title="specs" open={open} onOpenChange={setOpen}>
+            <Disclosure label="specs" open={open} onOpenChange={setOpen}>
               <p className="demo-body">
                 Press again mid-open and it reverses from where it is, carrying the velocity it
                 already had.
@@ -181,7 +182,7 @@ export function Home() {
           copyText={installCommand('hold-drain')}
           href="/components/hold-drain"
         >
-          <HoldDrain ref={holdDrain} compact readouts />
+          <HoldDrainDemo ref={holdDrain} compact readouts />
         </DemoCard>
 
         <DemoCard
@@ -193,7 +194,7 @@ export function Home() {
           copyText={installCommand('late-critique')}
           href="/components/late-critique"
         >
-          <LateCritique ref={critique} compact showLog={false} />
+          <LateCritiqueDemo ref={critique} compact showLog={false} />
         </DemoCard>
 
         <DemoCard
@@ -309,3 +310,4 @@ export function Home() {
     </Page>
   );
 }
+

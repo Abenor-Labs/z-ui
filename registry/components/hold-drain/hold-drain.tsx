@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import './hold-drain.css'
 
 /**
  * A hold-to-confirm whose abort costs exactly what the hold earned.
@@ -287,7 +288,6 @@ export function HoldDrain({
     release()
   }
 
-  const moving = state === 'filling' || state === 'draining'
   const text =
     state === 'committed'
       ? (committedLabel ?? armedLabel ?? label)
@@ -321,55 +321,28 @@ export function HoldDrain({
         if (held.current) held.current = false
         if (state === 'filling') release()
       }}
-      className={[
-        'group/hd relative isolate inline-flex min-h-11 cursor-pointer items-center justify-center',
-        'overflow-hidden rounded-[var(--hd-radius)] border border-[var(--hd-line)]',
-        'px-4 py-2 text-[0.9375rem] font-medium text-inherit select-none',
-        'bg-transparent',
-        // outline, not a ring: box-shadow is off the table for forced-colors,
-        // and `outline-solid` is required because Tailwind v4's `outline-none`
-        // sets --tw-outline-style to none and outline-2 only sets a width.
-        'outline-none focus-visible:outline-2 focus-visible:outline-solid',
-        'focus-visible:-outline-offset-2 focus-visible:outline-[var(--hd-danger)]',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={['hd', className].filter(Boolean).join(' ')}
       style={{ ...TOKENS, ...style }}
       {...rest}
     >
       {/* The track. Painted under the label, never over it, so the text stays
           at full contrast for the whole hold — a fill that dims the words it
           sits behind trades legibility for a gradient. */}
-      <span
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-[var(--hd-track)] opacity-0 group-data-[state=filling]/hd:opacity-100 group-data-[state=armed]/hd:opacity-100 group-data-[state=draining]/hd:opacity-100"
-      />
-      <motion.span
-        aria-hidden
-        style={{ width }}
-        className="absolute inset-y-0 left-0 -z-10 bg-[var(--hd-danger)] opacity-25 group-data-[state=armed]/hd:opacity-40"
-      />
+      <span aria-hidden className="hd-track" />
+      <motion.span aria-hidden style={{ width }} className="hd-fill" />
 
-      <span className="relative">{text}</span>
+      <span className="hd-label">{text}</span>
 
       {/* A hairline that lights only while the fill is physically moving —
           in either direction. Keyed off the same data-state a consumer would
           use, so this styling is also the proof the attribute tracks reality. */}
-      <span
-        aria-hidden
-        className={[
-          'absolute inset-x-0 bottom-0 h-px',
-          moving ? 'bg-[var(--hd-danger)]' : 'bg-transparent',
-        ].join(' ')}
-      />
+      <span aria-hidden className="hd-hairline" />
 
       {/* Polite, and only for the two moments that change what the control will
           do if released. Announcing every frame would be unusable; announcing
           nothing would leave a screen-reader user holding a button with no way
           to know it had armed. */}
-      <span className="sr-only" aria-live="polite">
+      <span className="hd-sr" aria-live="polite">
         {state === 'armed' ? 'Armed. Release to confirm.' : state === 'committed' ? 'Confirmed.' : ''}
       </span>
     </button>

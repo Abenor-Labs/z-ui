@@ -3,7 +3,7 @@ import { Page } from '../components/Page';
 import { Section } from '../components/Section';
 import { CodeBlock } from '../components/CodeBlock';
 import { CliBanner } from '../components/CliBanner';
-import { Disclosure } from '../zui/Disclosure';
+import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
 import { FALLBACK_URL, REPO_URL, REGISTRY } from '../data/registry';
 
 const TOC = [
@@ -86,7 +86,7 @@ export function Docs() {
 
           <Section index="02" label="SETUP" id="setup">
             <div style={{ maxWidth: 720 }}>
-              <Disclosure title="Install your first component" defaultOpen>
+              <Disclosure label="Install your first component" defaultOpen>
                 <CodeBlock code={'npx @abenor/z-ui@latest add dial'} />
                 <CliBanner subtitle="micro-interactions as source you own" />
                 <p className="playground-caption">
@@ -102,7 +102,7 @@ export function Docs() {
                 </p>
               </Disclosure>
 
-              <Disclosure title="What gets written">
+              <Disclosure label="What gets written">
                 <p className="playground-caption">
                   One self-contained .tsx file per component. If a component needs a primitive,
                   the primitive ships inside the component file — there is no shared lib/ to
@@ -115,7 +115,7 @@ export function Docs() {
                 </p>
               </Disclosure>
 
-              <Disclosure title="See what you have — and what you could">
+              <Disclosure label="See what you have — and what you could">
                 <CodeBlock code={'npx @abenor/z-ui@latest list\nnpx @abenor/z-ui@latest doctor'} />
                 <p className="playground-caption">
                   list shows what the registry offers; doctor checks what's installed and changes
@@ -123,7 +123,7 @@ export function Docs() {
                 </p>
               </Disclosure>
 
-              <Disclosure title="Preview motion before installing it">
+              <Disclosure label="Preview motion before installing it">
                 <CodeBlock
                   code={'npx @abenor/z-ui@latest preview dial\nnpx @abenor/z-ui@latest spring dial'}
                 />
@@ -135,7 +135,7 @@ export function Docs() {
                 </p>
               </Disclosure>
 
-              <Disclosure title="Working from a local clone">
+              <Disclosure label="Working from a local clone">
                 <CodeBlock code={'npx @abenor/z-ui@latest add dial --registry ./registry'} />
                 <p className="playground-caption">
                   The registry is served from raw GitHub for now, which allows about 60
@@ -144,7 +144,7 @@ export function Docs() {
                 </p>
               </Disclosure>
 
-              <Disclosure title="Without the CLI">
+              <Disclosure label="Without the CLI">
                 <CodeBlock code={FALLBACK_URL('dial')} />
                 <p className="playground-caption">
                   Registry items are shadcn-schema-shaped. You still get the file; you lose
@@ -167,26 +167,26 @@ export function Docs() {
 
           <Section index="04" label="TROUBLESHOOTING" id="troubleshooting">
             <div style={{ maxWidth: 720 }}>
-              <Disclosure title="add can't find the component I want">
+              <Disclosure label="add can't find the component I want">
                 <p className="playground-caption">
                   The registry publishes all eight components. If <code>add</code> can't find
                   one, it's a typo — run <code>list</code> to see the real names.
                 </p>
               </Disclosure>
-              <Disclosure title="Reads from the registry are slow or failing">
+              <Disclosure label="Reads from the registry are slow or failing">
                 <p className="playground-caption">
                   Unauthenticated raw GitHub allows roughly 60 requests per hour per IP. Pass{' '}
                   <code>--registry ./registry</code> to install from a local clone instead — it
                   avoids the limit entirely and works offline.
                 </p>
               </Disclosure>
-              <Disclosure title="add won't touch a file I already have">
+              <Disclosure label="add won't touch a file I already have">
                 <p className="playground-caption">
                   That's deliberate — <code>add</code> does not overwrite files that already
                   exist. Pass <code>-o</code>/<code>--overwrite</code> to replace one on purpose.
                 </p>
               </Disclosure>
-              <Disclosure title="Running from a monorepo">
+              <Disclosure label="Running from a monorepo">
                 <p className="playground-caption">
                   Pass <code>-c</code>/<code>--cwd</code> to point the CLI at the workspace that
                   should receive the files, rather than wherever the shell happens to be.
@@ -197,7 +197,7 @@ export function Docs() {
 
           <Section index="05" label="CONTRIBUTING" id="contributing">
             <div style={{ maxWidth: 720 }}>
-              <Disclosure title="Working on z-ui itself">
+              <Disclosure label="Working on z-ui itself">
                 <CodeBlock code={'pnpm install\npnpm dev\npnpm --filter @z-ui/web dev\npnpm verify'} />
                 <p className="playground-caption">
                   verify runs typecheck → registry linter → contrast linter → generated-registry
@@ -223,3 +223,4 @@ export function Docs() {
     </Page>
   );
 }
+

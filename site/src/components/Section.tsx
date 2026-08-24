@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrambleReveal } from '../zui/ScrambleReveal';
+import { ScrambleReveal } from '@z-ui/registry/scramble-reveal/scramble-reveal';
 
 /**
  * Ruled section: hairline divider with a schematic mono annotation
@@ -22,7 +22,7 @@ export function Section({
   return (
     <section className={`section hairline-t${flush ? ' section-flush' : ''}`} id={id}>
       <div className="section-head">
-        <ScrambleReveal text={`${index} / ${label}`} trigger="in-view" className="mono-label" />
+        <ScrambleReveal text={`${index} / ${label}`} trigger="view" className="mono-label" />
       </div>
       <div className="section-body">{children}</div>
     </section>

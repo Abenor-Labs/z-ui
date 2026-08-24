@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Chase } from '../zui/Chase';
+import { Chase } from '@z-ui/registry/chase/chase';
 import { CodeBlock } from './CodeBlock';
 
 /**
@@ -54,7 +54,7 @@ export function Playground({
                 label={c.label}
                 options={c.options}
                 value={c.value}
-                onChange={c.onChange}
+                onValueChange={c.onChange}
               />
             </div>
           ))}

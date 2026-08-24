@@ -6,7 +6,10 @@
   "description": "A field whose criticism is late and whose forgiveness is instant. No verdict lands mid-word — it waits for a pause — and once it is complaining, the first keystroke that fixes the value clears it on the same frame.",
   "dependencies": [],
   "registryDependencies": [],
-  "files": [{ "path": "late-critique.tsx", "type": "registry:component" }],
+  "files": [
+    { "path": "late-critique.tsx", "type": "registry:component" },
+    { "path": "late-critique.css", "type": "registry:style" }
+  ],
   "meta": {
     "category": "input-utility",
     "gesture": "type",

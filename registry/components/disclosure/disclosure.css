@@ -1,0 +1,88 @@
+/* disclosure — stylesheet ships beside the component, heft-style.
+ *
+ * Every value falls back to something that renders standalone; the component
+ * mixes --z-* custom properties into its --dsc-* aliases at runtime (see the
+ * TOKENS map in disclosure.tsx), so a host that defines --z-* re-skins the
+ * component without touching this file.
+ */
+
+.dsc {
+  width: 100%;
+  border: 1px solid var(--dsc-line);
+  border-radius: var(--dsc-radius);
+}
+
+/* min-height 44px is the touch target. The row is usually taller than its
+   text needs to be, and that is the reason. */
+.dsc-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dsc-trigger:hover {
+  background: var(--dsc-hover);
+}
+
+/* Outline, not a ring: box-shadow is off the table here and outlines are the
+   only focus indicator forced-colors mode renders reliably. Inset by 2px so it
+   draws inside the root's border rather than straddling it. */
+.dsc-trigger:focus-visible {
+  outline: 2px solid var(--dsc-accent);
+  outline-offset: -2px;
+}
+
+/* Fixed 16px box so the row's height never depends on the icon. */
+.dsc-chevron {
+  display: grid;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  color: var(--dsc-muted);
+}
+
+.dsc[data-state='opening'] .dsc-chevron,
+.dsc[data-state='closing'] .dsc-chevron {
+  color: var(--dsc-accent);
+}
+
+.dsc-panel {
+  overflow: hidden;
+}
+
+/* Clipping is released only once the panel is at rest and open, so a focus
+   ring or a popover inside the content is not shaved off at the boundary for
+   the rest of the session. */
+.dsc[data-state='open'] .dsc-panel {
+  overflow: visible;
+}
+
+/* `display: flow-root` gives this element its own formatting context, so a
+   child's top margin is contained and therefore measured. Without it a `<p>`
+   inside would collapse its margin out through this box and the measured
+   height would be short by exactly that margin.
+
+   The divider is on the content, not on the panel, so at height 0 it is
+   clipped away with everything else instead of drawing a stray hairline under
+   a closed trigger. */
+.dsc-content {
+  display: flow-root;
+  padding: 12px 14px 16px;
+  border-top: 1px solid var(--dsc-line);
+  color: var(--dsc-muted);
+}

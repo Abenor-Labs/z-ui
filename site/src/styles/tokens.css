@@ -58,4 +58,9 @@
   --z-ink: var(--ink);
   --z-rule: var(--rule);
   --z-mono: var(--font-mono);
+  --z-fill: color-mix(in oklab, var(--ink) 10%, transparent);
+  --z-muted: color-mix(in oklab, var(--ink) 55%, transparent);
+  --z-accent: var(--signal);
+  --z-invalid: var(--signal);
+  --z-radius: var(--r-pill);
 }

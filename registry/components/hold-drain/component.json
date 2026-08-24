@@ -6,7 +6,10 @@
   "description": "A hold-to-confirm whose abort costs what the hold earned. Let go at seventy per cent and the fill is paid back at the rate it climbed, taking exactly as long to undo as it took to earn.",
   "dependencies": ["motion"],
   "registryDependencies": [],
-  "files": [{ "path": "hold-drain.tsx", "type": "registry:component" }],
+  "files": [
+    { "path": "hold-drain.tsx", "type": "registry:component" },
+    { "path": "hold-drain.css", "type": "registry:style" }
+  ],
   "meta": {
     "category": "tactile-feedback",
     "gesture": "hold",

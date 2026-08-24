@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Detail } from '../../components/DetailLayout';
 import { Playground } from '../../components/Playground';
-import { LateCritique } from '../../zui/LateCritique';
+import { LateCritiqueDemo } from '../../components/LateCritiqueDemo';
 
 export function LateCritiquePage() {
   const [log, setLog] = useState('on');
@@ -10,9 +10,14 @@ export function LateCritiquePage() {
   const showLog = log === 'on';
   const compact = density === 'compact';
 
-  const code = ['<LateCritique', `  showLog={${showLog}}`, `  compact={${compact}}`, '/>'].join(
-    '\n',
-  );
+  // the log and density toggles are this demo's chrome; the install itself is
+  // just the field, its validator, and nothing else
+  const code = [
+    '<LateCritique',
+    '  label="email"',
+    '  validate={(v) => (!v.includes("@") ? "missing @" : null)}',
+    '/>',
+  ].join('\n');
 
   return (
     <Detail
@@ -41,9 +46,9 @@ export function LateCritiquePage() {
             },
           ]}
           code={code}
-          caption="Type a wrong email and keep typing — no verdict lands mid-word. Stop, and the criticism arrives. Then fix it: the first keystroke that makes the value valid clears the error on the same frame it's typed. The log prints every decision as it happens, timestamped."
+          caption="Type a wrong email and keep typing — no verdict lands mid-word. Stop, and the criticism arrives. Then fix it: the first keystroke that makes the value valid clears the error on the same frame it's typed. The log — demo chrome, not part of the install — prints every decision as it happens."
         >
-          <LateCritique key={`${log}-${density}`} showLog={showLog} compact={compact} />
+          <LateCritiqueDemo key={`${log}-${density}`} showLog={showLog} compact={compact} />
         </Playground>
       }
     />

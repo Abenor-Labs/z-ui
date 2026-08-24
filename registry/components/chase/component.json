@@ -12,6 +12,10 @@
     {
       "path": "chase.tsx",
       "type": "registry:component"
+    },
+    {
+      "path": "chase.css",
+      "type": "registry:style"
     }
   ],
   "meta": {

@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import './chase.css'
 
 /**
  * A segmented control whose indicator gives chase.
@@ -21,7 +22,9 @@ import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 
  * already have. The stretch through the turn is whatever the physics says it
  * is, which is why it never looks canned.
  *
- * DEPENDENCIES: react, motion. Nothing else. Paste it and own it.
+ * DEPENDENCIES: react, motion. Nothing else. Paste it and own it. Styling
+ * ships beside this file as chase.css — fallback values render standalone,
+ * --z-* custom properties adopt a host palette.
  */
 
 /* ---------------------------------------------------------------- tuning -- */
@@ -207,7 +210,9 @@ export function Chase({
     // The edge facing the travel leads; the other trails. Travel direction is
     // read from the pill's own current position, not from option indices, so
     // an interruption mid-flight assigns the springs correctly for where the
-    // pill actually is rather than where it was last at rest.
+    // pill actually is rather than where it was last at rest. Both springs
+    // start from the velocity they already have — reversing mid-flight keeps
+    // the momentum, which is what makes the reversal read as physical.
     const movingRight = target.left + target.right > leftEdge.get() + rightEdge.get()
     let done = 0
     const arrive = () => {
@@ -222,10 +227,12 @@ export function Chase({
     controls.current = [
       animate(leftEdge, target.left, {
         ...(movingRight ? SPRING_TRAIL : SPRING_LEAD),
+        velocity: leftEdge.getVelocity(),
         onComplete: arrive,
       }),
       animate(rightEdge, target.right, {
         ...(movingRight ? SPRING_LEAD : SPRING_TRAIL),
+        velocity: rightEdge.getVelocity(),
         onComplete: arrive,
       }),
     ]
@@ -288,28 +295,14 @@ export function Chase({
       onKeyDown={key}
       ref={listRef}
       style={{ ...TOKENS, ...style }}
-      className={[
-        'group/chs relative inline-flex select-none items-center gap-1 p-1',
-        'rounded-[var(--chs-radius)] border border-[var(--chs-line)]',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={['chs', className].filter(Boolean).join(' ')}
       {...rest}
     >
       {/* The pill. Behind the labels, drawn entirely from the two edges. Its
           boundary lights while it travels and goes quiet when it lands —
           keyed off the same data-state a consumer's CSS would match, which
           makes this styling the standing proof the attribute tracks reality. */}
-      <motion.span
-        aria-hidden="true"
-        style={{ x: leftEdge, width }}
-        className={[
-          'absolute inset-y-1 left-0 rounded-[calc(var(--chs-radius)-2px)]',
-          'bg-[var(--chs-fill)] border border-transparent will-change-transform',
-          'group-data-[state=moving]/chs:border-[var(--chs-accent)]',
-        ].join(' ')}
-      />
+      <motion.span aria-hidden="true" style={{ x: leftEdge, width }} className="chs-pill" />
 
       {options.map((o) => {
         const isSelected = o.value === selected
@@ -325,15 +318,7 @@ export function Chase({
             aria-checked={isSelected}
             tabIndex={isSelected ? 0 : -1}
             onClick={() => choose(o.value)}
-            className={[
-              // The label is the visible thing; the 44px floor is met by
-              // padding the hit area out with a transparent ::before.
-              'relative z-10 min-h-9 cursor-pointer rounded-[calc(var(--chs-radius)-2px)] px-3.5',
-              "text-sm font-medium transition-colors before:absolute before:inset-x-0 before:-inset-y-2 before:content-['']",
-              'outline-none focus-visible:outline-2 focus-visible:outline-solid',
-              'focus-visible:-outline-offset-1 focus-visible:outline-[var(--chs-accent)]',
-              isSelected ? 'text-inherit' : 'text-[var(--chs-muted)] hover:text-inherit',
-            ].join(' ')}
+            className="chs-option"
           >
             {o.label}
           </button>

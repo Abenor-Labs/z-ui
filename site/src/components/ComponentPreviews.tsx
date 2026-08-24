@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Chase } from '../zui/Chase';
+import { Chase } from '@z-ui/registry/chase/chase';
 import { Dial } from '../zui/Dial';
 import { Heft } from '@z-ui/registry/heft/heft';
-import { Disclosure } from '../zui/Disclosure';
-import { HoldDrain } from '../zui/HoldDrain';
-import { LateCritique } from '../zui/LateCritique';
-import { ScrambleReveal } from '../zui/ScrambleReveal';
+import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
+import { HoldDrainDemo } from './HoldDrainDemo';
+import { LateCritiqueDemo } from './LateCritiqueDemo';
+import { ScrambleReveal } from '@z-ui/registry/scramble-reveal/scramble-reveal';
 import { ThinkingOrb } from '@z-ui/registry/thinking-orb/thinking-orb';
 
 /**
@@ -17,13 +17,14 @@ function MiniChase() {
   const [v, setV] = useState('two');
   return (
     <Chase
+      label="Filter"
       options={[
         { value: 'one', label: 'one' },
         { value: 'two', label: 'two' },
         { value: 'three', label: 'three' },
       ]}
       value={v}
-      onChange={setV}
+      onValueChange={setV}
     />
   );
 }
@@ -48,7 +49,7 @@ export function Preview({ name }: { name: string }) {
     case 'disclosure':
       return (
         <div style={{ width: '100%' }}>
-          <Disclosure title="specs">
+          <Disclosure label="specs">
             <p className="playground-caption">
               Height is a spring. Close me mid-open — I reverse from wherever I am.
             </p>
@@ -56,9 +57,9 @@ export function Preview({ name }: { name: string }) {
         </div>
       );
     case 'hold-drain':
-      return <HoldDrain compact readouts={false} />;
+          return <HoldDrainDemo compact readouts={false} />;
     case 'late-critique':
-      return <LateCritique compact showLog={false} />;
+      return <LateCritiqueDemo compact showLog={false} />;
     case 'scramble-reveal':
       return (
         <span className="mono" style={{ fontSize: 14 }}>
@@ -71,3 +72,4 @@ export function Preview({ name }: { name: string }) {
       return null;
   }
 }
+

@@ -1,17 +1,21 @@
 import { useState, type ReactNode } from 'react';
 
-/* ---- six of the eight, from site/src/zui ---------------------------------
- *
- * The same import set as site/src/components/ComponentPreviews.tsx, so this
- * page and the full site show one build of each component rather than two.  */
-import { Dial } from '@site/zui/Dial';
-import { Chase } from '@site/zui/Chase';
-import { Disclosure } from '@site/zui/Disclosure';
-import { HoldDrain } from '@site/zui/HoldDrain';
-import { LateCritique } from '@site/zui/LateCritique';
-import { ScrambleReveal } from '@site/zui/ScrambleReveal';
+/* ---- five promoted, read straight from registry/ -------------------------
+ * Same bytes the CLI installs. The rule is what you see is what npx downloads;
+ * these five now honor it directly, with their stylesheets shipping beside them.
+ */
+import { Chase } from '@z-ui/registry/chase/chase';
+import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
+import { ScrambleReveal } from '@z-ui/registry/scramble-reveal/scramble-reveal';
 
-/* ---- the two with no site build, read straight from registry/ ------------ */
+/* ---- demo chrome the registry does not ship ------------------------------ */
+import { LateCritiqueDemo } from '@site/components/LateCritiqueDemo';
+import { HoldDrainDemo } from '@site/components/HoldDrainDemo';
+
+/* ---- still on site tracks, pending the dial decision ---------------------- */
+import { Dial } from '@site/zui/Dial';
+
+/* ---- the two that were already honest, read straight from registry/ ------- */
 import { Heft } from '@z-ui/registry/heft/heft';
 import { ThinkingOrb } from '@z-ui/registry/thinking-orb/thinking-orb';
 
@@ -39,8 +43,9 @@ function ChaseDemo() {
   const [v, setV] = useState('moving');
   return (
     <Chase
+      label="Filter"
       value={v}
-      onChange={setV}
+      onValueChange={setV}
       options={[
         { value: 'idle', label: 'idle' },
         { value: 'moving', label: 'moving' },
@@ -87,7 +92,7 @@ export const CATALOG: Entry[] = [
     note: 'A panel whose height is an interruptible spring. Press again mid-open and it reverses from where it is, carrying the velocity it already had.',
     render: () => (
       <div style={{ width: '100%', maxWidth: 460 }}>
-        <Disclosure title="press to expand">
+        <Disclosure label="press to expand">
           <p style={{ fontSize: 12, lineHeight: 1.6 }}>
             Press again mid-open. It reverses from wherever it actually is — nothing snaps back to a
             default curve.
@@ -102,7 +107,7 @@ export const CATALOG: Entry[] = [
     note: 'Criticism is late and forgiveness is instant. No verdict lands mid-word; the first keystroke that fixes the value clears the error on the same frame.',
     render: () => (
       <div style={{ width: '100%', maxWidth: 340 }}>
-        <LateCritique compact showLog={false} />
+        <LateCritiqueDemo compact showLog={false} />
       </div>
     ),
   },
@@ -112,7 +117,7 @@ export const CATALOG: Entry[] = [
     note: 'A hold-to-confirm whose abort costs what the hold earned. Let go at 70% and the fill drains back at the rate it climbed.',
     render: () => (
       <div style={{ width: '100%', maxWidth: 360 }}>
-        <HoldDrain readouts={false} label="hold to confirm" />
+        <HoldDrainDemo readouts={false} label="hold to confirm" />
       </div>
     ),
   },

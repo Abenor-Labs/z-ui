@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { Page } from './Page';
 import { ComponentNav } from './ComponentNav';
 import { CodeBlock } from './CodeBlock';
-import { Chase } from '../zui/Chase';
+import { Chase } from '@z-ui/registry/chase/chase';
 import { useSiteSpring } from '../lib/springs';
 import { useRegistrySource, type SourceState } from '../lib/registrySource';
 import { FALLBACK_URL, installCommand, REGISTRY, type RegistryComponent } from '../data/registry';
@@ -233,7 +233,7 @@ export function Detail({
             label="Component views"
             options={TABS.map((t) => ({ value: t, label: t }))}
             value={tab}
-            onChange={(v) => setTab(v as Tab)}
+            onValueChange={(v) => setTab(v as Tab)}
           />
 
           <div className="tabpanel" role="tabpanel">

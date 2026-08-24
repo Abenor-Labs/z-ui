@@ -6,7 +6,7 @@
   "description": "A panel whose height is an interruptible spring. Press again mid-open and it reverses from wherever it got to, carrying the speed it was already moving at.",
   "dependencies": ["motion"],
   "registryDependencies": [],
-  "files": [{ "path": "disclosure.tsx", "type": "registry:component" }],
+  "files": [{ "path": "disclosure.tsx", "type": "registry:component" }, { "path": "disclosure.css", "type": "registry:style" }],
   "meta": {
     "category": "state-morphing",
     "gesture": "press",

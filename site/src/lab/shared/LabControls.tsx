@@ -1,4 +1,4 @@
-import { Chase } from '../../zui/Chase';
+import { Chase } from '@z-ui/registry/chase/chase';
 import type { LabConfig, LabControl } from './labTypes';
 
 /**
@@ -76,7 +76,7 @@ export function LabControlRow({
           label={control.label}
           options={control.options}
           value={value as string}
-          onChange={(v) => onChange(control.id, v)}
+          onValueChange={(v: string) => onChange(control.id, v)}
         />
       ) : null}
 

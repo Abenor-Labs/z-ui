@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Detail } from '../../components/DetailLayout';
 import { Playground } from '../../components/Playground';
 import { Section } from '../../components/Section';
 import { SpringGraph } from '../../components/SpringGraph';
-import { Disclosure } from '../../zui/Disclosure';
+import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
 import { useLiveSamples } from '../../lib/useLiveSamples';
 
 const SHORT = ["This panel's height is one spring target — nothing more."];
@@ -20,8 +20,24 @@ export function DisclosurePage() {
   const { push, samples } = useLiveSamples(3.2);
   const paragraphs = content === 'short' ? SHORT : LONG;
 
+  // Telemetry is demo chrome: the promoted component exposes no sampling hook.
+  // A ResizeObserver on the shipped panel's own element reports every layout
+  // change the spring makes — same curve the old internal hook saw.
+  const hostRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const panel = host.querySelector('.dsc-panel');
+    if (!panel) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const en of entries) push(performance.now() / 1000, en.contentRect.height);
+    });
+    ro.observe(panel);
+    return () => ro.disconnect();
+  }, [push]);
+
   const code = [
-    `<Disclosure title="${TITLE}">`,
+    `<Disclosure label="${TITLE}">`,
     ...paragraphs.map((p) => `  <p>${p.length > 56 ? `${p.slice(0, 53)}…` : p}</p>`),
     '</Disclosure>',
   ].join('\n');
@@ -46,8 +62,8 @@ export function DisclosurePage() {
           code={code}
           caption="Interrupt it as fast as you can. The graph below records the height — look for the reversals: the curve bends, it never jumps. Switching the content changes the spring's target mid-life; it does not change the spring."
         >
-          <div style={{ maxWidth: 560 }}>
-            <Disclosure title={TITLE} onHeightSample={push}>
+          <div style={{ maxWidth: 560 }} ref={hostRef}>
+            <Disclosure label={TITLE}>
               {paragraphs.map((p) => (
                 <p className="playground-caption" key={p.slice(0, 24)}>
                   {p}

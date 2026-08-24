@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import './late-critique.css'
 
 /**
  * A field whose criticism is late and whose forgiveness is instant.
@@ -287,15 +288,8 @@ export function LateCritique({
   const showing = state === 'invalid'
 
   return (
-    <div
-      data-state={state}
-      className={['group/lc w-full', className].filter(Boolean).join(' ')}
-      style={{ ...TOKENS, ...style }}
-    >
-      <label
-        htmlFor={inputId}
-        className="mb-1.5 block text-[0.8125rem] font-medium text-[var(--lc-muted)]"
-      >
+    <div data-state={state} className={['lc', className].filter(Boolean).join(' ')} style={{ ...TOKENS, ...style }}>
+      <label htmlFor={inputId} className="lc-label">
         {label}
       </label>
 
@@ -308,26 +302,7 @@ export function LateCritique({
         // the input hears why it is wrong rather than only that it is.
         aria-invalid={showing || undefined}
         aria-describedby={showing ? noteId : undefined}
-        className={[
-          // min-h-11 is the 44px target. The row is taller than the text needs
-          // and that is the reason.
-          'min-h-11 w-full rounded-[var(--lc-radius)] border bg-transparent',
-          'px-3 py-2 text-[0.9375rem] text-inherit',
-          'border-[var(--lc-line)]',
-          // The border is the only thing that moves while typing, and it moves
-          // slowly. A field that flashes on every state change is the noise
-          // this component exists to remove.
-          'transition-[border-color,box-shadow] duration-200 motion-reduce:transition-none',
-          'group-data-[state=settling]/lc:border-[var(--lc-muted)]',
-          'group-data-[state=invalid]/lc:border-[var(--lc-invalid)]',
-          'group-data-[state=recovering]/lc:border-[var(--lc-valid)]',
-          'group-data-[state=valid]/lc:border-[var(--lc-valid)]',
-          // outline, not a ring: forced-colors renders outlines reliably and
-          // box-shadow not at all. `outline-solid` is required because Tailwind
-          // v4's `outline-none` sets --tw-outline-style: none.
-          'outline-none focus-visible:outline-2 focus-visible:outline-solid',
-          'focus-visible:-outline-offset-2 focus-visible:outline-[var(--lc-muted)]',
-        ].join(' ')}
+        className="lc-input"
         {...rest}
       />
 
@@ -343,15 +318,8 @@ export function LateCritique({
         message is only written once the pause has elapsed, polite announces it
         exactly once.
       */}
-      <div className="mt-1.5 min-h-[1.125rem]" aria-live="polite">
-        <p
-          id={noteId}
-          className={[
-            'text-[0.8125rem] leading-[1.125rem] text-[var(--lc-invalid)]',
-            'transition-[opacity,transform] duration-150 motion-reduce:transition-none',
-            showing ? 'translate-y-0 opacity-100' : '-translate-y-0.5 opacity-0',
-          ].join(' ')}
-        >
+      <div className="lc-note-row" aria-live="polite">
+        <p id={noteId} className="lc-note">
           {message}
         </p>
       </div>

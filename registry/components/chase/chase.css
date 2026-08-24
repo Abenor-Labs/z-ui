@@ -1,0 +1,75 @@
+/* chase — stylesheet ships beside the component, heft-style.
+ *
+ * Every value falls back to something that renders standalone; the component
+ * mixes --z-* custom properties into its --chs-* aliases at runtime (see the
+ * TOKENS map in chase.tsx), so a host that defines --z-* re-skins the control
+ * without touching this file.
+ */
+
+.chs {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  user-select: none;
+  border: 1px solid var(--chs-line);
+  border-radius: var(--chs-radius);
+}
+
+/* The pill. Positioned entirely by the two edge MotionValues; this file only
+   decides what it looks like between them. */
+.chs-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border: 1px solid transparent;
+  border-radius: calc(var(--chs-radius) - 2px);
+  background: var(--chs-fill);
+  will-change: transform;
+}
+
+/* The accent marks travel, not selection: the boundary lights while the pill
+   is physically moving and goes quiet when it lands. */
+.chs[data-state='moving'] .chs-pill {
+  border-color: var(--chs-accent);
+}
+
+.chs-option {
+  position: relative;
+  z-index: 1;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: calc(var(--chs-radius) - 2px);
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--chs-muted);
+  /* the label is the visible thing; the 44px floor is met by padding the
+     hit area out with a transparent ::before */
+}
+
+.chs-option::before {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
+}
+
+.chs-option:hover {
+  color: inherit;
+}
+
+.chs-option[aria-checked='true'] {
+  color: inherit;
+}
+
+.chs-option:focus-visible {
+  outline: 2px solid var(--chs-accent);
+  outline-offset: -1px;
+}

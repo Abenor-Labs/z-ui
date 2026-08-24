@@ -1,0 +1,90 @@
+/* late-critique — stylesheet ships beside the component, heft-style.
+ *
+ * Every value falls back to something that renders standalone; the component
+ * mixes --z-* custom properties into its --lc-* aliases at runtime (see the
+ * TOKENS map in late-critique.tsx), so a host that defines --z-* re-skins the
+ * field without touching this file.
+ */
+
+.lc {
+  width: 100%;
+}
+
+.lc-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lc-muted);
+}
+
+/* min-height 44px is the touch target. The row is taller than the text needs
+   and that is the reason. */
+.lc-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--lc-line);
+  border-radius: var(--lc-radius);
+  background: transparent;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: inherit;
+  /* The border is the only thing that moves while typing, and it moves
+     slowly. A field that flashes on every state change is the noise this
+     component exists to remove. */
+  transition:
+    border-color 200ms,
+    box-shadow 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lc-input,
+  .lc-note {
+    transition: none;
+  }
+}
+
+.lc[data-state='settling'] .lc-input {
+  border-color: var(--lc-muted);
+}
+
+.lc[data-state='invalid'] .lc-input {
+  border-color: var(--lc-invalid);
+}
+
+.lc[data-state='recovering'] .lc-input,
+.lc[data-state='valid'] .lc-input {
+  border-color: var(--lc-valid);
+}
+
+/* Outline, not a ring: forced-colors renders outlines reliably and
+   box-shadow not at all. */
+.lc-input:focus-visible {
+  outline: 2px solid var(--lc-muted);
+  outline-offset: -2px;
+}
+
+/* The note row is always mounted and always occupies its line, so the arrival
+   of a complaint never pushes the page down. */
+.lc-note-row {
+  margin-top: 6px;
+  min-height: 1.125rem;
+}
+
+.lc-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--lc-invalid);
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    opacity 150ms,
+    transform 150ms;
+}
+
+.lc[data-state='invalid'] .lc-note {
+  opacity: 1;
+  transform: none;
+}

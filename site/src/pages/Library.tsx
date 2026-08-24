@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Page } from '../components/Page';
@@ -6,7 +6,7 @@ import { Section } from '../components/Section';
 import { Preview } from '../components/ComponentPreviews';
 import { useSiteSpring } from '../lib/springs';
 import { REGISTRY, CATEGORIES, type RegistryComponent } from '../data/registry';
-import { Chase } from '../zui/Chase';
+import { Chase } from '@z-ui/registry/chase/chase';
 
 function Card({ c }: { c: RegistryComponent }) {
   return (
@@ -28,8 +28,22 @@ function Card({ c }: { c: RegistryComponent }) {
 
 export function Library() {
   const [cat, setCat] = useState('all');
+  // demo chrome: the annotation that points at the first emergent stretch
+  const [noteShown, setNoteShown] = useState(false);
+  const [noteVisible, setNoteVisible] = useState(false);
+  const noteTimer = useRef(0);
+  useEffect(() => () => window.clearTimeout(noteTimer.current), []);
   const { stiff, reduced } = useSiteSpring();
   const filtered = REGISTRY.filter((c) => cat === 'all' || c.category === cat);
+
+  const onCatChange = (v: string) => {
+    setCat(v);
+    if (noteShown || v === 'all') return;
+    setNoteShown(true);
+    setNoteVisible(true);
+    window.clearTimeout(noteTimer.current);
+    noteTimer.current = window.setTimeout(() => setNoteVisible(false), 3200);
+  };
 
   return (
     <Page title="Components">
@@ -39,15 +53,34 @@ export function Library() {
           leading edge leaves on a stiff spring, the trailing edge follows on a soft one. The
           stretch is not scripted.
         </p>
-        <Chase
-          annotateFirstMove
-          options={[
-            { value: 'all', label: 'all' },
-            ...CATEGORIES.map((c) => ({ value: c, label: c })),
-          ]}
-          value={cat}
-          onChange={setCat}
-        />
+        <div className="chase-wrap">
+          <Chase
+            label="Filter"
+            options={[
+              { value: 'all', label: 'all' },
+              ...CATEGORIES.map((c) => ({ value: c, label: c })),
+            ]}
+            value={cat}
+            onValueChange={onCatChange}
+          />
+          <AnimatePresence>
+            {noteVisible ? (
+              <motion.div
+                className="chase-annotation"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={stiff}
+              >
+                <span className="chase-annotation-line" aria-hidden="true" />
+                <span className="mono chase-annotation-text">
+                  stretch = two springs disagreeing · leading 950/62 · trailing 380/34 · nothing
+                  scripted
+                </span>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
       </Section>
 
       <Section index="02" label="COMPONENTS">

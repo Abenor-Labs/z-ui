@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import './disclosure.css'
 
 /**
  * A disclosure whose height is a spring, and whose spring can be interrupted.
@@ -356,12 +357,7 @@ export function Disclosure({
       data-state={state}
       // The border lives on the root, not the trigger, so the whole thing is
       // one box that grows rather than a button with text falling out below it.
-      className={[
-        'group/dsc w-full rounded-[var(--dsc-radius)] border border-[var(--dsc-line)]',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={['dsc', className].filter(Boolean).join(' ')}
       style={{ ...TOKENS, ...style }}
       {...rest}
     >
@@ -374,38 +370,19 @@ export function Disclosure({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={toggle}
-        className={[
-          // min-h-11 is the 44px target. The row is usually taller than its
-          // text needs to be, and that is the reason.
-          'flex min-h-11 w-full cursor-pointer items-center justify-between gap-3',
-          'rounded-[inherit] border-0 bg-transparent',
-          'px-3.5 py-2 text-left text-[0.9375rem] font-medium text-inherit select-none',
-          'hover:bg-[var(--dsc-hover)]',
-          // outline, not a ring: box-shadow is off the table here and outlines
-          // are the only focus indicator forced-colors mode renders reliably.
-          // Inset by 2px so it draws inside the root's border rather than
-          // straddling it. `outline-solid` is not decoration: Tailwind v4's
-          // `outline-none` sets --tw-outline-style to none, and outline-2 only
-          // sets a width, so without it the ring is 2px of nothing.
-          'outline-none focus-visible:outline-2 focus-visible:outline-solid',
-          'focus-visible:-outline-offset-2 focus-visible:outline-[var(--dsc-accent)]',
-        ].join(' ')}
+        className="dsc-trigger"
       >
         <span>{label}</span>
 
-        {/* Fixed 16px box so the row's height never depends on the icon. */}
+        {/* Fixed 16px box so the row's height never depends on the icon.
+            Accent is on while the panel is physically moving, and off the
+            instant it stops — in either direction. Keyed off the same
+            data-state a consumer would use, so this styling is also the
+            proof that the attribute tracks reality. */}
         <motion.span
           aria-hidden="true"
           style={{ rotate }}
-          className={[
-            'grid size-4 shrink-0 place-items-center text-[var(--dsc-muted)]',
-            // Accent is on while the panel is physically moving, and off the
-            // instant it stops — in either direction. Keyed off the same
-            // data-state a consumer would use, so this styling is also the
-            // proof that the attribute tracks reality.
-            'group-data-[state=opening]/dsc:text-[var(--dsc-accent)]',
-            'group-data-[state=closing]/dsc:text-[var(--dsc-accent)]',
-          ].join(' ')}
+          className="dsc-chevron"
         >
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
             <path
@@ -438,22 +415,21 @@ export function Disclosure({
         // focus ring or a popover inside the content is not shaved off at the
         // boundary for the rest of the session. During any motion it clips,
         // because that is what makes the reveal a reveal.
-        className={state === 'open' ? 'overflow-visible' : 'overflow-hidden'}
+        className="dsc-panel"
       >
         {/*
-          `flow-root` gives this element its own formatting context, so a
-          child's top margin is contained and therefore measured. Without it a
-          `<p>` inside would collapse its margin out through this box and the
-          measured height would be short by exactly that margin — the panel
-          opens to slightly less than its content and clips.
+          The content carries its own formatting context (`display: flow-root`
+          in disclosure.css), so a child's top margin is contained and therefore
+          measured. Without it a `<p>` inside would collapse its margin out
+          through this box and the measured height would be short by exactly
+          that margin — the panel opens to slightly less than its content and
+          clips.
+
+          The divider is on the content, not on the panel, so at height 0 it
+          is clipped away with everything else instead of drawing a stray
+          hairline under a closed trigger.
         */}
-        {/* The divider is on the content, not on the panel, so at height 0 it
-            is clipped away with everything else instead of drawing a stray
-            hairline under a closed trigger. */}
-        <div
-          ref={contentRef}
-          className="flow-root border-t border-[var(--dsc-line)] px-3.5 pt-3 pb-4 text-[var(--dsc-muted)]"
-        >
+        <div ref={contentRef} className="dsc-content">
           {children}
         </div>
       </motion.div>
