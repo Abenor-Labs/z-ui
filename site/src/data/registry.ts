@@ -21,11 +21,11 @@ export const REGISTRY: RegistryComponent[] = [
   {
     name: 'dial',
     category: 'tactile-feedback',
-    needs: 'motion',
+    needs: 'react only',
     blurb:
-      'A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring.',
+      'A pulse-dial telephone dial. The number ring is fixed and the finger wheel turns over it, so the digits stay upright while you dial.',
     principle:
-      'Grab it mid-spin and the spin is yours again — interrupt plus velocity carry-over. The freewheel is real friction, not an easing curve; the catch is a spring seeded with whatever velocity the wheel still had.',
+      'Pulses are emitted on the return, not the pull. A governor drives the wheel back at a constant 300°/s and a cam trips one pulse every 30°, so dialling 0 takes ten times as long as dialling 1. That asymmetry is the whole feel — and it is why this is the one component whose return cannot be grabbed mid-flight.',
   },
   {
     name: 'chase',

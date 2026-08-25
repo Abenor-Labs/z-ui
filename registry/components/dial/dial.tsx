@@ -1,501 +1,493 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { motion, useMotionValue, useReducedMotion } from 'motion/react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type Ref,
+} from 'react';
 
-/**
- * A knob with a flywheel in it.
- *
- * Drag it and it turns under your hand, degree for degree. Flick it and it
- * keeps going — spinning down through real friction, ticking over detents
- * while it is fast, and finally getting caught by the nearest one, which grabs
- * it with a spring and rings it to rest. Grab it mid-spin and the spin is
- * yours again, at the speed it was actually going.
- *
- * There is no timeline here. Where the needle ends up is a function of the
- * angular velocity your hand left in it, and nothing else. The same flick lands
- * on a different detent from a different starting angle, which is the property
- * that makes it feel like a machine part instead of a menu.
- *
- * Two regimes, one loop. While the wheel is fast it coasts: velocity decays
- * exponentially and the detents are terrain it passes over. When it drops below
- * the capture speed the nearest detent takes it: a spring pulls the needle in,
- * slightly underdamped, so it arrives with the small over-rotation and return
- * that a real indexed knob has. The regime switch is a speed threshold, not a
- * timer, so interrupting either phase is just… turning the knob.
- *
- * DEPENDENCIES: react, motion. Nothing else. Paste it and own it.
- */
-
-/* ---------------------------------------------------------------- tuning -- */
+import './dial.css';
 
 /**
- * The detent spring. Engages only below CAPTURE_SPEED, so it is the arrival,
- * not the ride.
+ * dial — a pulse-dial telephone dial.
  *
- * Critical damping for stiffness 1300 is 2*sqrt(1300) ≈ 72; damping 46 is
- * deliberately under it. The overshoot this buys is a couple of degrees of
- * needle — a moving part a few pixels long, in direct response to input,
- * interruptible at any frame, tied to the value landing — which is the one
- * situation DESIGN.md permits overshoot in. Raise damping to ~72 for a knob
- * that noses into its detent without the ring.
+ * The number ring is FIXED. The finger wheel rotates over it, which is why the
+ * digits stay upright and readable while you dial.
+ *
+ * Pulses are emitted on the RETURN, not the pull. A real dial's governor
+ * returns the wheel at constant angular velocity and a cam trips one pulse per
+ * 30 degrees. Digit 1 is one pulse; 0 is ten. Dialling 0 therefore takes ten
+ * times as long as dialling 1, and that asymmetry is the whole feel.
+ *
+ * Geometry: finger stop at 120 deg clockwise from noon. The hole for a digit of
+ * p pulses sits at (120 - 30p) deg, so 1 lands at 3 o'clock and 0 at 6 o'clock,
+ * spanning 270 deg. Matches a standard Bell-pattern dial.
+ *
+ * THE RETURN IS NOT INTERRUPTIBLE, and that is deliberate. Everywhere else in
+ * this registry a gesture can be grabbed mid-flight and reversed; here the
+ * governor owns the wheel from release until it seats, because that is what the
+ * mechanism does — a real dial cannot be caught on its way back, and the pulse
+ * count is only honest if the return runs to completion. Recorded as an
+ * explicit exception in DESIGN.md rather than left as an oversight.
+ *
+ * Sound is off by default. The dial can synthesise its own mechanical click
+ * with no assets, but a component that starts making noise the moment it is
+ * installed is a component nobody asked to be loud; pass `sound` to enable it.
+ *
+ * Technique: no dependencies, no relative imports, no layout animation.
+ * Rotation is a transform; the return loop is one rAF that stops on settle.
  */
-const SPRING = {
-  type: 'spring',
-  stiffness: 1300,
-  damping: 46,
-  mass: 1,
-} as const
 
 /**
- * Velocity lost to friction while coasting, per second, as an exponential
- * decay constant. 3.2 means a flick keeps ~4% of its speed after one second:
- * a hard spin crosses most of the range, a lazy one crosses a detent or two.
- * Lower is icier, higher is stiffer grease.
+ * idle      — at rest, nothing dialled
+ * dialing   — a finger is in a hole and the wheel is being pulled to the stop
+ * returning — released; the governor is driving the wheel back, tripping pulses
  */
-const FRICTION = 3.2
+const STATES = ['idle', 'dialing', 'returning'] as const;
+export type DialState = (typeof STATES)[number];
 
-/** Degrees per second under which the nearest detent captures the needle.
- *  Above it the wheel is still travelling and no detent has a claim on it. */
-const CAPTURE_SPEED = 150
+// ---- mechanism constants -------------------------------------------------
+const STOP_ANGLE = 120; // finger stop, degrees clockwise from noon
+const PULSE_STEP = 30; // degrees of travel per pulse
+const RETURN_SPEED = 300; // deg/sec — governor speed, ~10 pulses/sec
+const ENGAGE = 0.85; // fraction of travel required to register a digit
 
-/** How much of an over-rotation past either end the needle actually shows.
- *  The rest is thrown away — the wheel is against a hard stop, and what a
- *  hard stop feels like is most of your motion not happening. */
-const OVERDRAG = 0.2
+const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+const LETTERS: Record<number, string> = {
+  2: 'ABC',
+  3: 'DEF',
+  4: 'GHI',
+  5: 'JKL',
+  6: 'MNO',
+  7: 'PRS',
+  8: 'TUV',
+  9: 'WXY',
+};
 
-/** Needle speed and remaining error below which the wheel is asleep.
- *  Degrees/second and degrees. */
-const REST_SPEED = 6
-const REST_DELTA = 0.25
+const pulsesFor = (d: number) => (d === 0 ? 10 : d);
+const angleFor = (d: number) => (STOP_ANGLE - PULSE_STEP * pulsesFor(d) + 360) % 360;
+const travelFor = (d: number) => PULSE_STEP * pulsesFor(d);
 
-/** The sweep of the whole range, centred on twelve o'clock. 270° is the
- *  hi-fi convention: enough travel that detents are distinct angles, with a
- *  dead quarter at the bottom so min and max cannot be confused. */
-const SWEEP = 270
+// polar -> cartesian, angle clockwise from noon
+const polar = (cx: number, cy: number, r: number, deg: number) => {
+  const a = ((deg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+};
 
-/**
- * Palette. CSS variables with fallbacks mixed from `currentColor`, so the knob
- * is drawn out of whatever ink the host page uses. The accent has one job:
- * the needle while the wheel is physically in motion. A knob at rest shows no
- * accent at all — including the knob that is merely *selected*.
- */
-const TOKENS = {
-  '--dl-line': 'var(--z-line, color-mix(in oklab, currentColor 24%, transparent))',
-  '--dl-tick': 'var(--z-muted, color-mix(in oklab, currentColor 45%, transparent))',
-  '--dl-face': 'var(--z-fill, color-mix(in oklab, currentColor 5%, transparent))',
-  '--dl-accent': 'var(--z-accent, oklch(0.53 0.17 45))',
-} as React.CSSProperties
+const circlePath = (cx: number, cy: number, r: number) =>
+  `M ${cx - r} ${cy} a ${r} ${r} 0 1 0 ${r * 2} 0 a ${r} ${r} 0 1 0 ${-r * 2} 0 Z`;
 
-/* ----------------------------------------------------------------- state -- */
-
-/**
- * `data-state` values, on the root.
- *
- *   idle     — at rest on a detent; no animation frame is scheduled
- *   turning  — a pointer is on it and the needle is following the hand
- *   coasting — nobody is touching it and it is still moving
- *
- * `coasting` is the component's reason to exist: the window between your hand
- * leaving and the value landing, where the interface is doing physics rather
- * than waiting out a duration. A consumer disabling a form while the value is
- * unsettled needs exactly this distinction, and `aria-valuenow` alone cannot
- * carry it.
- */
-const STATES = ['idle', 'turning', 'coasting'] as const
-
-export type DialState = (typeof STATES)[number]
-
-/* ------------------------------------------------------------- component -- */
-
-export type DialProps = Omit<
-  React.ComponentPropsWithRef<'div'>,
-  'children' | 'onChange' | 'defaultValue'
-> & {
-  /** Accessible name. Required: a knob has no text of its own to borrow. */
-  label: string
-  min?: number
-  max?: number
-  /** Distance between detents, in value units. Every detent is a tick mark. */
-  step?: number
-  /** Uncontrolled starting value. Ignored when `value` is passed. */
-  defaultValue?: number
-  /** Pass to control. The needle springs to externally-set values. */
-  value?: number
-  /** Fires every time the needle crosses onto a different detent — during a
-   *  drag and during a coast alike. This is the live reading. */
-  onValueChange?: (value: number) => void
-  /** Fires once, when the wheel has physically stopped on a detent. */
-  onSettle?: (value: number) => void
-  /** Outer size in pixels. Everything inside scales with it. */
-  size?: number
+// ---- mechanical click, synthesised; no assets ----------------------------
+type AudioContextCtor = typeof AudioContext;
+function getAudioContextCtor(): AudioContextCtor | undefined {
+  return (
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext
+  );
 }
 
-export function Dial({
-  label,
-  min = 0,
-  max = 10,
-  step = 1,
-  defaultValue,
-  value: valueProp,
-  onValueChange,
-  onSettle,
-  size = 112,
-  className,
-  style,
-  ...rest
-}: DialProps): React.ReactElement {
-  const reduced = useReducedMotion() ?? false
+function useClicker(enabled: boolean) {
+  const ctxRef = useRef<AudioContext | null>(null);
 
-  const detents = Math.max(1, Math.round((max - min) / step))
-  const degPerDetent = SWEEP / detents
-  const toAngle = (v: number) => ((v - min) / (max - min)) * SWEEP - SWEEP / 2
-  const toValue = (index: number) => min + index * step
-
-  const initial = valueProp ?? defaultValue ?? min
-  const clamp = (v: number) => Math.min(max, Math.max(min, v))
-
-  /**
-   * The one moving part. Angle in degrees, −SWEEP/2 at min, +SWEEP/2 at max,
-   * bound straight into the needle's rotation so a frame of physics is a frame
-   * of paint with no React render between them.
-   */
-  const angle = useMotionValue(toAngle(clamp(initial)))
-
-  const [state, setState] = React.useState<DialState>('idle')
-  // The detent the needle most recently crossed onto. This is aria-valuenow
-  // and the value every callback reports; the angle is presentation.
-  const [detent, setDetent] = React.useState(() =>
-    Math.round((toAngle(clamp(initial)) + SWEEP / 2) / degPerDetent),
-  )
-
-  const omega = React.useRef(0)
-  /**
-   * A commanded destination, as a detent index, or null when the wheel is on
-   * its own. A flick has no goal — where it lands is physics. A keyboard step
-   * and a controlled `value` DO have one, and "spring toward the nearest"
-   * cannot express it: with fine detents the nearest detent to the current
-   * angle is the one you are already on, and the needle would never leave.
-   */
-  const goal = React.useRef<number | null>(null)
-  const raf = React.useRef(0)
-  const last = React.useRef(0)
-  // The unresisted drag angle. Displayed angle compresses what is past the
-  // stops; this keeps the true position so backing off feels 1:1 again.
-  const virtual = React.useRef(0)
-  const pointer = React.useRef({ id: -1, angle: 0, t: 0 })
-  const rootRef = React.useRef<HTMLDivElement>(null)
-
-  const changeRef = React.useRef(onValueChange)
-  const settleRef = React.useRef(onSettle)
-  React.useEffect(() => {
-    changeRef.current = onValueChange
-    settleRef.current = onSettle
-  })
-
-  /** Report the detent under the needle, but only on the frame it changes —
-   *  this is the tick of the ratchet, not a stream. */
-  const report = React.useCallback(
-    (a: number) => {
-      const idx = Math.min(detents, Math.max(0, Math.round((a + SWEEP / 2) / degPerDetent)))
-      setDetent((prev) => {
-        if (prev === idx) return prev
-        changeRef.current?.(toValue(idx))
-        return idx
-      })
-      return idx
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [detents, degPerDetent, min, step],
-  )
-
-  /* ------------------------------------------------------------ the loop */
-
-  const stop = React.useCallback(() => {
-    cancelAnimationFrame(raf.current)
-    raf.current = 0
-  }, [])
-
-  const settleAt = React.useCallback(
-    (idx: number) => {
-      angle.set(toAngle(toValue(idx)))
-      omega.current = 0
-      goal.current = null
-      setState('idle')
-      settleRef.current?.(toValue(idx))
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [angle, min, max, step],
-  )
-
-  const tick = React.useCallback(
-    (now: number) => {
-      raf.current = 0
-      const dt = Math.min(0.032, (now - (last.current || now)) / 1000)
-      last.current = now
-
-      let a = angle.get()
-      let w = omega.current
-      const limit = SWEEP / 2
-
-      const beyond = a < -limit || a > limit
-      if (goal.current === null && Math.abs(w) > CAPTURE_SPEED && !beyond) {
-        // Coasting. Friction is the only force; the detents are terrain.
-        w *= Math.exp(-FRICTION * dt)
-      } else {
-        // Captured. The commanded detent if there is one; otherwise the
-        // nearest — or the end stop, if the throw went past it.
-        const idx =
-          goal.current ??
-          Math.round((Math.min(limit, Math.max(-limit, a)) + limit) / degPerDetent)
-        const rest = idx * degPerDetent - limit
-        const accel = -SPRING.stiffness * (a - rest) - SPRING.damping * w
-        w += accel * dt
-
-        if (Math.abs(w) < REST_SPEED && Math.abs(a - rest) < REST_DELTA) {
-          report(rest)
-          settleAt(idx)
-          return
+  const click = useCallback(
+    (gain = 0.5) => {
+      if (!enabled) return;
+      try {
+        if (!ctxRef.current) {
+          const AC = getAudioContextCtor();
+          if (!AC) return;
+          ctxRef.current = new AC();
         }
+        const ctx = ctxRef.current;
+        if (ctx.state === 'suspended') void ctx.resume();
+
+        // short filtered noise burst reads as a mechanical tick
+        const len = Math.floor(ctx.sampleRate * 0.03);
+        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 1900;
+        bp.Q.value = 1.4;
+
+        const g = ctx.createGain();
+        g.gain.value = gain;
+
+        src.connect(bp).connect(g).connect(ctx.destination);
+        src.start();
+      } catch {
+        /* audio is decorative; never let it break the dial */
       }
-
-      a += w * dt
-      omega.current = w
-      angle.set(a)
-      report(a)
-      raf.current = requestAnimationFrame(tick)
     },
-    [angle, degPerDetent, report, settleAt],
-  )
+    [enabled],
+  );
 
-  const kick = React.useCallback(() => {
-    if (raf.current) return
-    last.current = 0
-    raf.current = requestAnimationFrame(tick)
-  }, [tick])
+  useEffect(
+    () => () => {
+      if (ctxRef.current) {
+        ctxRef.current.close().catch(() => {});
+        ctxRef.current = null;
+      }
+    },
+    [],
+  );
 
-  React.useEffect(() => () => cancelAnimationFrame(raf.current), [])
+  return click;
+}
 
-  /* -------------------------------------------------------------- gestures */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  return reduced;
+}
 
-  /** Pointer angle around the knob centre, in degrees, twelve o'clock = 0. */
-  const angleOf = (e: { clientX: number; clientY: number }) => {
-    const rect = rootRef.current!.getBoundingClientRect()
-    const dx = e.clientX - (rect.left + rect.width / 2)
-    const dy = e.clientY - (rect.top + rect.height / 2)
-    return (Math.atan2(dx, -dy) * 180) / Math.PI
-  }
+// ---- component -----------------------------------------------------------
+export interface DialHandle {
+  /** the same path a number key takes: spring to the stop, then the real governed return */
+  dialDigit: (digit: number) => void;
+}
 
-  const down = (e: React.PointerEvent) => {
-    if (!rootRef.current) return
-    stop()
-    // A hand on the knob cancels any commanded destination. The interruption
-    // contract is that grabbing it mid-anything is just holding it.
-    goal.current = null
-    pointer.current = { id: e.pointerId, angle: angleOf(e), t: e.timeStamp }
-    virtual.current = angle.get()
-    omega.current = 0
-    rootRef.current.setPointerCapture(e.pointerId)
-    setState('turning')
-  }
+export interface DialProps {
+  ref?: Ref<DialHandle>;
+  size?: number;
+  /** Synthesised mechanical click. Off by default: an install should be quiet. */
+  sound?: boolean;
+  onDigit?: (digit: number) => void;
+  onPulse?: (i: number, n: number) => void;
+}
 
-  const move = (e: React.PointerEvent) => {
-    const p = pointer.current
-    if (e.pointerId !== p.id) return
+export function Dial({ ref, size = 320, sound = false, onDigit, onPulse }: DialProps) {
+  const SZ = size;
+  const C = SZ / 2;
+  const PLATE_R = SZ * 0.47; // fixed backplate
+  const WHEEL_R = SZ * 0.44; // rotating finger wheel
+  const HOLE_ORBIT = SZ * 0.335;
+  const HOLE_R = SZ * 0.072;
+  const NUM_ORBIT = HOLE_ORBIT; // digits sit UNDER the holes — read through them
+  const STOP_ORBIT = SZ * 0.335;
 
-    // Relative rotation, so grabbing the knob anywhere does not snap the
-    // needle to the pointer. The delta is normalised to (−180, 180] to
-    // survive the pointer crossing the six o'clock line.
-    const now = angleOf(e)
-    let delta = now - p.angle
-    if (delta > 180) delta -= 360
-    if (delta < -180) delta += 360
+  /* SVG ids are document-global. Without this, a second dial on the page
+     reuses the first one's gradients and paints wrong. */
+  const uid = useId().replace(/:/g, '');
+  const idPlate = `dl-plate-${uid}`;
+  const idWheel = `dl-wheel-${uid}`;
+  const idHub = `dl-hub-${uid}`;
+  const idShadow = `dl-shadow-${uid}`;
 
-    const dt = Math.max(1, e.timeStamp - p.t) / 1000
-    pointer.current = { id: p.id, angle: now, t: e.timeStamp }
+  const [rotation, setRotation] = useState(0);
+  const [active, setActive] = useState<number | null>(null); // digit being dragged
+  const [returning, setReturning] = useState(false);
 
-    virtual.current += delta
-    const limit = SWEEP / 2
-    // Past the stops, most of the motion does not happen. That resistance IS
-    // the stop — a wall you can feel through a mouse.
-    const v = virtual.current
-    const shown = v > limit ? limit + (v - limit) * OVERDRAG : v < -limit ? -limit + (v + limit) * OVERDRAG : v
+  const reduced = useReducedMotion();
+  const click = useClicker(sound);
 
-    // Velocity from the pointer's own timing, lightly smoothed, so the wheel
-    // keeps what the hand was really doing at release rather than one frame.
-    omega.current = omega.current * 0.7 + ((shown - angle.get()) / dt) * 0.3
-    angle.set(shown)
-    report(shown)
-  }
+  // refs for the drag/return loop — kept out of state to avoid re-render churn
+  const rotRef = useRef(0);
+  const lastPointerAngle = useRef(0);
+  const activeRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  const up = (e: React.PointerEvent) => {
-    if (e.pointerId !== pointer.current.id) return
-    pointer.current.id = -1
-    try {
-      rootRef.current?.releasePointerCapture(e.pointerId)
-    } catch {
-      /* already released */
+  const setRot = useCallback((v: number) => {
+    rotRef.current = v;
+    setRotation(v);
+  }, []);
+
+  const pointerAngle = useCallback((e: { clientX: number; clientY: number }) => {
+    const rect = svgRef.current!.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width / 2);
+    const dy = e.clientY - (rect.top + rect.height / 2);
+    return (Math.atan2(dx, -dy) * 180) / Math.PI; // clockwise from noon
+  }, []);
+
+  // ---- return stroke: constant speed, one pulse per 30deg ----------------
+  const runReturn = useCallback(
+    (digit: number) => {
+      const travel = travelFor(digit);
+      const engaged = rotRef.current >= travel * ENGAGE;
+      const counted = engaged ? pulsesFor(digit) : 0;
+
+      setReturning(true);
+      let emitted = 0;
+      let prev = performance.now();
+
+      const step = (now: number) => {
+        const dt = (now - prev) / 1000;
+        prev = now;
+        let next = rotRef.current - RETURN_SPEED * dt;
+        if (next <= 0) next = 0;
+
+        // pulses trip as the cam passes each 30deg boundary on the way back
+        if (counted) {
+          const shouldHave = counted - Math.floor(next / PULSE_STEP);
+          while (emitted < shouldHave && emitted < counted) {
+            emitted++;
+            click(0.45);
+            onPulse?.(emitted, counted);
+          }
+        }
+
+        setRot(next);
+
+        if (next > 0) {
+          rafRef.current = requestAnimationFrame(step);
+        } else {
+          rafRef.current = null;
+          setReturning(false);
+          setActive(null);
+          activeRef.current = null;
+          if (engaged) onDigit?.(digit);
+        }
+      };
+
+      rafRef.current = requestAnimationFrame(step);
+    },
+    [click, onDigit, onPulse, setRot],
+  );
+
+  // ---- pointer drag ------------------------------------------------------
+  const onPointerDown = useCallback(
+    (digit: number) => (e: ReactPointerEvent) => {
+      if (returning || activeRef.current !== null) return;
+      (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+      activeRef.current = digit;
+      setActive(digit);
+      lastPointerAngle.current = pointerAngle(e);
+      click(0.25);
+    },
+    [returning, pointerAngle, click],
+  );
+
+  const onPointerMove = useCallback(
+    (e: ReactPointerEvent) => {
+      const digit = activeRef.current;
+      if (digit === null || returning) return;
+
+      const now = pointerAngle(e);
+      let delta = now - lastPointerAngle.current;
+      // unwrap across the +/-180 seam so large travels accumulate correctly
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+      lastPointerAngle.current = now;
+
+      const max = travelFor(digit);
+      const next = Math.min(max, Math.max(0, rotRef.current + delta));
+
+      // tick as the wheel passes each pulse boundary on the way out
+      if (Math.floor(next / PULSE_STEP) !== Math.floor(rotRef.current / PULSE_STEP)) {
+        click(0.16);
+      }
+      setRot(next);
+    },
+    [returning, pointerAngle, click, setRot],
+  );
+
+  const onPointerUp = useCallback(() => {
+    const digit = activeRef.current;
+    if (digit === null || returning) return;
+    runReturn(digit);
+  }, [returning, runReturn]);
+
+  // ---- keyboard: same mechanism, no pointer required ---------------------
+  const onKeyDown = useCallback(
+    (digit: number) => (e: ReactKeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      if (returning || activeRef.current !== null) return;
+
+      if (reduced) {
+        click(0.4);
+        onDigit?.(digit);
+        return;
+      }
+      activeRef.current = digit;
+      setActive(digit);
+      setRot(travelFor(digit)); // snap to the stop, then run the real return
+      runReturn(digit);
+    },
+    [returning, reduced, click, onDigit, runReturn, setRot],
+  );
+
+  // the same path a number key takes — exposed so a demo card's trigger
+  // button can fire a real dial the same way pressing "5" would
+  const dialDigit = useCallback(
+    (digit: number) => {
+      if (returning || activeRef.current !== null) return;
+      if (reduced) {
+        click(0.4);
+        onDigit?.(digit);
+        return;
+      }
+      activeRef.current = digit;
+      setActive(digit);
+      setRot(travelFor(digit));
+      runReturn(digit);
+    },
+    [returning, reduced, click, onDigit, runReturn, setRot],
+  );
+
+  useImperativeHandle(ref, () => ({ dialDigit }), [dialDigit]);
+
+  useEffect(
+    () => () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    },
+    [],
+  );
+
+  const state: DialState = returning ? 'returning' : active !== null ? 'dialing' : 'idle';
+
+  const wheelPath = useMemo(() => {
+    let d = circlePath(C, C, WHEEL_R);
+    for (const digit of DIGITS) {
+      const p = polar(C, C, HOLE_ORBIT, angleFor(digit));
+      d += ' ' + circlePath(p.x, p.y, HOLE_R);
     }
-
-    if (reduced) {
-      /**
-       * The reduced-motion path is a real path: the wheel has no flywheel.
-       * Release quantises to the nearest detent on the next paint, the same
-       * callbacks fire in the same order, and no frame loop ever starts.
-       * Dragging itself is untouched — the needle under a hand is direct
-       * manipulation, not animation.
-       */
-      const limit = SWEEP / 2
-      const a = Math.min(limit, Math.max(-limit, angle.get()))
-      const idx = Math.round((a + limit) / degPerDetent)
-      report(idx * degPerDetent - limit)
-      settleAt(idx)
-      return
-    }
-
-    setState('coasting')
-    kick()
-  }
-
-  /**
-   * Keyboard turns the same wheel. An arrow key is a one-detent throw: it
-   * leaves the needle just short of the target with the spring engaged, so a
-   * held-down key ratchets and each step arrives the way a flick's last
-   * detent does. Nothing here bypasses the physics to write the value.
-   */
-  const key = (e: React.KeyboardEvent) => {
-    const dir =
-      e.key === 'ArrowRight' || e.key === 'ArrowUp'
-        ? 1
-        : e.key === 'ArrowLeft' || e.key === 'ArrowDown'
-          ? -1
-          : 0
-    const jump = e.key === 'Home' ? 0 : e.key === 'End' ? detents : null
-    if (!dir && jump === null) return
-    e.preventDefault()
-    stop()
-
-    const limit = SWEEP / 2
-    const here = Math.round((Math.min(limit, Math.max(-limit, angle.get())) + limit) / degPerDetent)
-    const idx = jump !== null ? jump : Math.min(detents, Math.max(0, here + dir))
-
-    if (reduced) {
-      report(idx * degPerDetent - limit)
-      settleAt(idx)
-      return
-    }
-
-    // The spring does the travel, with whatever speed the wheel already has
-    // as its initial velocity — a held-down arrow key ratchets, and a step
-    // pressed mid-ring keeps the ring's motion through the turn.
-    goal.current = idx
-    setState('coasting')
-    kick()
-  }
-
-  /**
-   * A controlled value change from outside is a command, not a gesture, and it
-   * arrives on the same spring a keyboard step does. Ignored mid-drag: the
-   * hand on the knob outranks the program behind it.
-   */
-  React.useEffect(() => {
-    if (valueProp === undefined || state === 'turning') return
-    const idx = Math.round((clamp(valueProp) - min) / step)
-    if (idx === detent && state === 'idle') return
-    if (reduced) {
-      report(idx * degPerDetent - SWEEP / 2)
-      settleAt(idx)
-      return
-    }
-    const target = idx * degPerDetent - SWEEP / 2
-    if (Math.abs(angle.get() - target) < REST_DELTA) return
-    goal.current = idx
-    setState('coasting')
-    kick()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valueProp])
-
-  /* ------------------------------------------------------------- rendering */
-
-  // Tick ring geometry. One tick per detent while they are legible; past 48
-  // the ring thins itself out rather than fusing into a grey band.
-  const every = Math.max(1, Math.ceil(detents / 48))
-  const ticks: React.ReactElement[] = []
-  for (let i = 0; i <= detents; i += every) {
-    const a = ((i * degPerDetent - SWEEP / 2) * Math.PI) / 180
-    const major = i === 0 || i === detents
-    const r1 = major ? 40 : 43
-    ticks.push(
-      <line
-        key={i}
-        x1={50 + Math.sin(a) * r1}
-        y1={50 - Math.cos(a) * r1}
-        x2={50 + Math.sin(a) * 47}
-        y2={50 - Math.cos(a) * 47}
-        stroke={major ? 'var(--dl-tick)' : 'var(--dl-line)'}
-        strokeWidth={major ? 2 : 1.25}
-        strokeLinecap="round"
-      />,
-    )
-  }
+    return d;
+  }, [C, WHEEL_R, HOLE_ORBIT, HOLE_R]);
 
   return (
-    <div
-      ref={rootRef}
-      role="slider"
-      tabIndex={0}
-      aria-label={label}
-      aria-valuemin={min}
-      aria-valuemax={max}
-      aria-valuenow={toValue(detent)}
+    <svg
+      ref={svgRef}
+      width={SZ}
+      height={SZ}
+      viewBox={`0 0 ${SZ} ${SZ}`}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className="dl"
       data-state={state}
-      onPointerDown={down}
-      onPointerMove={move}
-      onPointerUp={up}
-      onPointerCancel={up}
-      onKeyDown={key}
-      style={{ ...TOKENS, width: size, height: size, touchAction: 'none', ...style }}
-      className={[
-        'group/dl relative inline-block cursor-grab touch-none select-none active:cursor-grabbing',
-        'rounded-full outline-none focus-visible:outline-2 focus-visible:outline-solid',
-        'focus-visible:outline-offset-4 focus-visible:outline-[var(--dl-accent)]',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      {...rest}
+      role="group"
+      aria-label="Rotary telephone dial"
     >
-      {/* The static plate: tick ring and face. Nothing in this SVG moves. */}
-      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full" aria-hidden="true">
-        {ticks}
-        <circle
-          cx="50"
-          cy="50"
-          r="34"
-          fill="var(--dl-face)"
-          stroke="var(--dl-line)"
-          strokeWidth="1.5"
-        />
-      </svg>
+      <defs>
+        <radialGradient id={idPlate} cx="36%" cy="28%">
+          <stop offset="0%" className="dl-plate-0" />
+          <stop offset="60%" className="dl-plate-1" />
+          <stop offset="100%" className="dl-plate-2" />
+        </radialGradient>
+        <radialGradient id={idWheel} cx="34%" cy="26%">
+          <stop offset="0%" className="dl-wheel-0" />
+          <stop offset="55%" className="dl-wheel-1" />
+          <stop offset="100%" className="dl-wheel-2" />
+        </radialGradient>
+        <radialGradient id={idHub} cx="38%" cy="30%">
+          <stop offset="0%" className="dl-hub-0" />
+          <stop offset="60%" className="dl-hub-1" />
+          <stop offset="100%" className="dl-hub-2" />
+        </radialGradient>
+        <filter id={idShadow} x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="3" stdDeviation="4" floodOpacity="0.55" />
+        </filter>
+      </defs>
 
-      {/* The needle. One element rotates and it is this one; everything else
-          is chassis. Accent while physically moving, in either regime — keyed
-          off the same data-state a consumer's CSS would use, which makes this
-          styling the standing proof the attribute tracks reality. */}
-      <motion.div
-        aria-hidden="true"
-        style={{ rotate: angle }}
-        className="absolute inset-0 will-change-transform"
-      >
-        <span
-          className={[
-            'absolute left-1/2 top-[19%] block h-[17%] w-[3%] -translate-x-1/2 rounded-full',
-            'bg-[var(--dl-tick)]',
-            'group-data-[state=turning]/dl:bg-[var(--dl-accent)]',
-            'group-data-[state=coasting]/dl:bg-[var(--dl-accent)]',
-          ].join(' ')}
+      {/* fixed backplate */}
+      <circle cx={C} cy={C} r={PLATE_R} fill={`url(#${idPlate})`} />
+      <circle cx={C} cy={C} r={PLATE_R} className="dl-rim" />
+
+      {/* FIXED number ring — does not rotate, which is why it stays readable */}
+      <g className="dl-numbers">
+        {DIGITS.map((digit) => {
+          const c = polar(C, C, NUM_ORBIT, angleFor(digit));
+          const hasLetters = Boolean(LETTERS[digit]);
+          return (
+            <g key={digit}>
+              {hasLetters && (
+                <text
+                  x={c.x}
+                  y={c.y - HOLE_R * 0.44}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={SZ * 0.026}
+                  letterSpacing={SZ * 0.005}
+                  className="dl-letters"
+                >
+                  {LETTERS[digit]}
+                </text>
+              )}
+              <text
+                x={c.x}
+                y={c.y + (hasLetters ? HOLE_R * 0.22 : 0)}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={SZ * 0.062}
+                className="dl-digit"
+              >
+                {digit}
+              </text>
+            </g>
+          );
+        })}
+      </g>
+
+      {/* rotating finger wheel — holes punched with even-odd */}
+      <g transform={`rotate(${rotation} ${C} ${C})`}>
+        <path d={wheelPath} fillRule="evenodd" fill={`url(#${idWheel})`} filter={`url(#${idShadow})`} />
+        <path d={wheelPath} fillRule="evenodd" className="dl-wheel-edge" />
+
+        {/* hit targets ride with the wheel */}
+        {DIGITS.map((digit) => {
+          const p = polar(C, C, HOLE_ORBIT, angleFor(digit));
+          const isActive = active === digit;
+          return (
+            <circle
+              key={digit}
+              cx={p.x}
+              cy={p.y}
+              r={HOLE_R}
+              className="dl-hole"
+              data-active={isActive}
+              tabIndex={0}
+              role="button"
+              aria-label={`Dial ${digit}`}
+              onPointerDown={onPointerDown(digit)}
+              onKeyDown={onKeyDown(digit)}
+            />
+          );
+        })}
+      </g>
+
+      {/* finger stop — mounted to the frame at the rim, hooks inward over the
+          wheel. The wheel turns clockwise into this and can go no further. */}
+      <g className="dl-numbers" transform={`rotate(${STOP_ANGLE} ${C} ${C})`}>
+        <path
+          d={`M ${C - SZ * 0.026} ${C - PLATE_R - SZ * 0.012}
+              L ${C + SZ * 0.026} ${C - PLATE_R - SZ * 0.012}
+              L ${C + SZ * 0.02} ${C - STOP_ORBIT + SZ * 0.03}
+              Q ${C} ${C - STOP_ORBIT + SZ * 0.056} ${C - SZ * 0.02} ${C - STOP_ORBIT + SZ * 0.03}
+              Z`}
+          className="dl-stop-arm"
         />
-      </motion.div>
-    </div>
-  )
+        <path
+          d={`M ${C - SZ * 0.01} ${C - PLATE_R - SZ * 0.006}
+              L ${C - SZ * 0.006} ${C - STOP_ORBIT + SZ * 0.034}`}
+          className="dl-stop-hi"
+        />
+      </g>
+
+      {/* hub */}
+      <circle cx={C} cy={C} r={SZ * 0.085} fill={`url(#${idHub})`} />
+      <circle cx={C} cy={C} r={SZ * 0.03} className="dl-hub-cap" />
+    </svg>
+  );
 }

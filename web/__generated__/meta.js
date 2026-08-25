@@ -254,38 +254,26 @@ export const items = [
     "name": "dial",
     "type": "registry:component",
     "title": "Dial",
-    "description": "A knob with a flywheel in it. Flick it and it spins down through real friction, ticking over detents until the nearest one catches it with a spring. Grab it mid-spin and the spin is yours again.",
+    "description": "A pulse-dial telephone dial. The number ring is fixed and the finger wheel turns over it, so the digits stay upright while you dial. Pulses are emitted on the return, not the pull: a governor drives the wheel back at a constant 300 deg/sec and a cam trips one pulse every 30 degrees, so dialling 0 takes ten times as long as dialling 1. That asymmetry is the whole feel.",
     "category": "tactile-feedback",
     "gesture": "drag",
     "states": [
       "idle",
-      "turning",
-      "coasting"
+      "dialing",
+      "returning"
     ],
     "spring": null,
     "motion": {
       "states": [
         "idle",
-        "turning",
-        "coasting"
+        "dialing",
+        "returning"
       ],
-      "springs": [
-        {
-          "name": "SPRING",
-          "stiffness": 1300,
-          "damping": 46,
-          "mass": 1,
-          "restDelta": null,
-          "restSpeed": null,
-          "preset": null
-        }
-      ],
+      "springs": [],
       "durations": [],
       "reducedMotion": "branch"
     },
-    "dependencies": [
-      "motion"
-    ],
+    "dependencies": [],
     "installs": [
       {
         "name": "dial",
@@ -293,7 +281,12 @@ export const items = [
           {
             "key": "dial/dial.tsx",
             "target": "components/z-ui/dial.tsx",
-            "sha": "14759bd3ab84"
+            "sha": "4df931f25a84"
+          },
+          {
+            "key": "dial/dial.css",
+            "target": "components/z-ui/dial.css",
+            "sha": "f682b4d0a457"
           }
         ]
       }

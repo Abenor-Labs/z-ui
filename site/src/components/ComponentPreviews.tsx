@@ -9,8 +9,14 @@ import { ScrambleReveal } from '@z-ui/registry/scramble-reveal/scramble-reveal';
 import { ThinkingOrb } from '@z-ui/registry/thinking-orb/thinking-orb';
 
 /**
- * Compact live instances of each registry component — shared by the
- * library cards and the home registry grid. Interactive, never screenshots.
+ * Compact live instances of each registry component — the library cards, and
+ * the reduced-motion fallback behind the nav hover preview. Interactive,
+ * never screenshots.
+ *
+ * The hover preview's normal path is AutoPreview.tsx, which drives each
+ * component through its own trigger on a loop. This file stays hands-on: it
+ * is used where a cursor can actually reach the component, plus the one case
+ * where a loop is the wrong answer entirely.
  */
 
 function MiniChase() {
@@ -32,7 +38,7 @@ function MiniChase() {
 export function Preview({ name }: { name: string }) {
   switch (name) {
     case 'dial':
-      return <Dial label="level" min={0} max={10} size={96} />;
+      return <Dial size={128} />;
     case 'chase':
       return <MiniChase />;
     case 'heft':

@@ -60,8 +60,8 @@ export const CATALOG: Entry[] = [
     name: 'dial',
     span: 2,
     tall: true,
-    note: 'A knob with a flywheel in it. Flick it and friction spins it down until the nearest detent catches it on a spring.',
-    render: () => <Dial label="level" min={0} max={10} size={168} />,
+    note: 'A pulse-dial telephone dial. Pull a hole to the stop and let go — the governor drives it back at 300°/s and trips one pulse every 30°, so dialling 0 takes ten times as long as dialling 1.',
+    render: () => <Dial size={168} />,
   },
   {
     name: 'heft',

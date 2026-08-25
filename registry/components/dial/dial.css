@@ -1,0 +1,120 @@
+/**
+ * dial — a pulse-dial telephone dial.
+ *
+ * Ships beside dial.tsx and carries its own fallback values, so it renders
+ * correctly in a project with no design tokens. Every value reads a `--z-dial-*`
+ * custom property first, so a consumer can retheme the dial without forking it.
+ *
+ * The plate is deliberately light and the wheel deliberately dark: this is a
+ * physical object with its own colours, not a surface that should invert with a
+ * page theme. That is why the fallbacks are literal hexes rather than
+ * `--z-paper` / `--z-ink`, which on a dark site would turn the number plate
+ * black and make the digits unreadable.
+ */
+.dl {
+  --dl-plate-hi: var(--z-dial-plate-hi, #f3ead2);
+  --dl-plate-mid: var(--z-dial-plate-mid, #ded2b4);
+  --dl-plate-lo: var(--z-dial-plate-lo, #b9ab8a);
+
+  --dl-wheel-hi: var(--z-dial-wheel-hi, #35343a);
+  --dl-wheel-mid: var(--z-dial-wheel-mid, #232228);
+  --dl-wheel-lo: var(--z-dial-wheel-lo, #141317);
+
+  --dl-hub-hi: var(--z-dial-hub-hi, #d8d2c4);
+  --dl-hub-mid: var(--z-dial-hub-mid, #a9a294);
+  --dl-hub-lo: var(--z-dial-hub-lo, #6d675c);
+  --dl-hub-cap: var(--z-dial-hub-cap, #2a2a2e);
+
+  --dl-digit: var(--z-dial-digit, #1a1816);
+  --dl-letter: var(--z-dial-letter, rgba(24, 22, 20, 0.72));
+  --dl-stop: var(--z-dial-stop, #cdc5b2);
+
+  --dl-active-fill: var(--z-dial-active-fill, rgba(255, 220, 140, 0.16));
+  --dl-active-ring: var(--z-dial-active-ring, rgba(255, 214, 120, 0.85));
+
+  --dl-face: var(--z-dial-face, 'Georgia', 'Times New Roman', serif);
+
+  display: block;
+  /* the wheel is dragged; the page must not pan underneath it */
+  touch-action: none;
+}
+
+/* ---- gradient stops -------------------------------------------------- */
+.dl-plate-0 { stop-color: var(--dl-plate-hi); }
+.dl-plate-1 { stop-color: var(--dl-plate-mid); }
+.dl-plate-2 { stop-color: var(--dl-plate-lo); }
+
+.dl-wheel-0 { stop-color: var(--dl-wheel-hi); }
+.dl-wheel-1 { stop-color: var(--dl-wheel-mid); }
+.dl-wheel-2 { stop-color: var(--dl-wheel-lo); }
+
+.dl-hub-0 { stop-color: var(--dl-hub-hi); }
+.dl-hub-1 { stop-color: var(--dl-hub-mid); }
+.dl-hub-2 { stop-color: var(--dl-hub-lo); }
+
+/* ---- parts ------------------------------------------------------------ */
+.dl-rim {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1;
+}
+
+.dl-numbers {
+  pointer-events: none;
+}
+
+.dl-letters {
+  font-family: var(--dl-face);
+  fill: var(--dl-letter);
+  user-select: none;
+}
+
+.dl-digit {
+  font-family: var(--dl-face);
+  fill: var(--dl-digit);
+  user-select: none;
+}
+
+.dl-wheel-edge {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+}
+
+/* Hit targets ride with the wheel. Transparent until the finger is in one,
+   so the hole reads as a hole rather than a button. */
+.dl-hole {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 2;
+  outline: none;
+  cursor: grab;
+}
+.dl-hole[data-active='true'] {
+  fill: var(--dl-active-fill);
+  stroke: var(--dl-active-ring);
+}
+/* The governor owns the wheel during the return — see the note in dial.tsx.
+   The cursor says so rather than leaving a grab cursor over a dead target. */
+.dl[data-state='returning'] .dl-hole {
+  cursor: default;
+}
+.dl-hole:focus-visible {
+  stroke: var(--dl-active-ring);
+}
+
+.dl-stop-arm {
+  fill: var(--dl-stop);
+  stroke: rgba(0, 0, 0, 0.5);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.dl-stop-hi {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.5;
+}
+
+.dl-hub-cap {
+  fill: var(--dl-hub-cap);
+}
