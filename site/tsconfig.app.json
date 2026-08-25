@@ -16,8 +16,12 @@
     "skipLibCheck": true,
     "noEmit": true,
 
-    /* The registry sources the site renders directly. Mirrors the Vite alias. */
-    "baseUrl": ".",
+    /* The registry sources the site renders directly. Mirrors the Vite alias.
+       No baseUrl: it is deprecated and stops functioning in TypeScript 7, and
+       it was never needed here — with baseUrl absent, `paths` resolve relative
+       to this file, which is what the mapping below was already written
+       against. Removing it preserves behaviour, unlike silencing the warning
+       with ignoreDeprecations. */
     "paths": { "@z-ui/registry/*": ["../registry/components/*"] },
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
   },

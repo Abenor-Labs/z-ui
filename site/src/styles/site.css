@@ -128,16 +128,42 @@
   opacity: 1;
 }
 
-/* One low-frequency target, so it may have a transform the nav rows may not.
-   The glyph, not the word — scaling the label would reflow the row. */
-.nav-star span {
-  display: inline-block;
+/* The one chip in the topbar. It is not a nav link — it leaves the site and
+   it asks for something — so it does not take the rail treatment the nav rows
+   get, and it carries a border to say so at a glance. */
+.nav-star {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  background: var(--recess);
+  color: var(--ink);
+  opacity: 0.78;
+  text-decoration: none;
+  line-height: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .nav-star:hover span {
-    transform: scale(1.2);
+  .nav-star:hover {
+    opacity: 1;
+    border-color: var(--signal);
+    color: var(--signal);
   }
+}
+
+.nav-star:focus-visible {
+  opacity: 1;
+  border-color: var(--signal);
+  outline: none;
+}
+
+/* Optical, not geometric: the mark's mass sits low in its box, so centring it
+   on the label's baseline leaves it reading a hair high. */
+.nav-star svg {
+  display: block;
+  transform: translateY(0.5px);
 }
 
 /* The wordmark never shrinks or wraps; the nav is the part that gives. */
@@ -178,6 +204,11 @@
   .nav::-webkit-scrollbar {
     display: none;
   }
+
+  /* The chip must not be squeezed by the scroller it sits at the end of. */
+  .nav-star {
+    flex: none;
+  }
 }
 
 /* At phone width the version tag is the first thing worth losing — it is a
@@ -208,7 +239,7 @@
    these would stick lit after the finger has gone. */
 .nav-link,
 .nav-link::after,
-.nav-star span,
+.nav-star,
 .wordmark-version,
 .footer-links a,
 .card,
@@ -241,7 +272,7 @@
 @media (prefers-reduced-motion: reduce) {
   .nav-link,
   .nav-link::after,
-  .nav-star span,
+  .nav-star,
   .wordmark-version,
   .footer-links a,
   .card,
@@ -1555,12 +1586,6 @@
   font-size: 11px;
   letter-spacing: 0.02em;
   opacity: 0.45;
-}
-
-/* github star, last item in the topbar nav */
-.nav-star span {
-  color: var(--signal);
-  margin-right: 2px;
 }
 
 /* ——— demo grid ——— */
