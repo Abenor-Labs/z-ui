@@ -6,7 +6,7 @@ Name: Z-UI
 Tagline: "Micro-animations you own."
 Positioning: A copy-paste registry of React micro-interactions, installed as source into a project — not pulled in as a runtime dependency. Not a design system, not a layout kit, not a shadcn/ui replacement. Sits on top of whatever the developer already uses.
 Core install command: npx @abenor/z-ui@latest add dial
-Status: v0.1, early. CLI published, working. Eight components in the registry. Showcase site is live at https://z-ui-eight.vercel.app — registry served from raw GitHub. Names/props may still change before v1.
+Status: v0.1, early. CLI published, working. Eight components in the registry. Showcase site is live at https://zui-abenor.vercel.app — registry served from raw GitHub. Names/props may still change before v1.
 
 What it refuses to be: a design system, a layout kit, a shadcn/ui replacement, anything that isn't a micro-animation.
 

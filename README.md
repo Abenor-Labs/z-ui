@@ -10,7 +10,7 @@ A copy-paste registry of React micro-interactions — installed as source into y
 npx @abenor/z-ui@latest add dial
 ```
 
-> **Status: v0.1, early.** The CLI is published and installs working files. Eight components are in the registry. The showcase site is live at [z-ui-eight.vercel.app](https://z-ui-eight.vercel.app); the registry itself is still served from raw GitHub. Component names and props may still move before v1.
+> **Status: v0.1, early.** The CLI is published and installs working files. Eight components are in the registry. The showcase site is live at [zui-abenor.vercel.app](https://zui-abenor.vercel.app); the registry itself is still served from raw GitHub. Component names and props may still move before v1.
 
 ---
 
