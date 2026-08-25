@@ -7,6 +7,7 @@ import { CliCast } from '../components/CliCast';
 import { Console } from '../components/Console';
 import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
 import { FALLBACK_URL, REPO_URL, REGISTRY } from '../data/registry';
+import { API } from '../data/api';
 
 /**
  * /docs — the one documentation page.
@@ -158,23 +159,74 @@ export function Docs() {
           <Section index="02" label="COMPONENTS" id="components">
             <div style={{ maxWidth: 720 }}>
               <p className="playground-caption">
-                Eight, no more, no fewer. Each one is a single self-contained .tsx file.
+                Eight, no more, no fewer. Each one is a single self-contained .tsx file, and each
+                one below carries its real signature — every row is read out of the component's own
+                exported props type, doc comments included, so this cannot drift from what{' '}
+                <code>add</code> installs.
               </p>
-              <table className="cmd-table">
-                <tbody>
-                  {REGISTRY.map((c) => (
-                    <tr key={c.name}>
-                      <td>
-                        <Link to={`/components/${c.name}`}>{c.name}</Link>
-                      </td>
-                      <td>{c.category}</td>
-                      <td>{c.needs}</td>
-                      <td>{c.blurb}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
+
+            {REGISTRY.map((c) => {
+              const api = API[c.name];
+              return (
+                <div className="api" key={c.name} id={`api-${c.name}`}>
+                  <div className="api-head">
+                    <Link to={`/components/${c.name}`} className="api-name">
+                      {c.name}
+                    </Link>
+                    <span className="mono api-meta">{c.category}</span>
+                    <span className="mono api-meta">needs: {c.needs}</span>
+                    {api ? <span className="mono api-meta">{api.type}</span> : null}
+                  </div>
+
+                  <p className="api-blurb">{c.blurb}</p>
+
+                  {api ? (
+                    <>
+                      <CodeBlock code={api.usage} />
+                      <div className="api-table-wrap">
+                        <table className="api-table">
+                          <thead>
+                            <tr>
+                              <th>prop</th>
+                              <th>type</th>
+                              <th>default</th>
+                              <th>notes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {api.props.map((p) => (
+                              <tr key={p.name}>
+                                <td>
+                                  <code>{p.name}</code>
+                                  {p.required ? (
+                                    <span className="mono api-req" title="required">
+                                      *
+                                    </span>
+                                  ) : null}
+                                </td>
+                                <td>
+                                  <code className="api-type">{p.type}</code>
+                                </td>
+                                <td>
+                                  {p.def ? <code>{p.def}</code> : <span className="api-dash">—</span>}
+                                </td>
+                                <td>{p.doc ?? ''}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              );
+            })}
+
+            <p className="mono api-legend">
+              * required · everything else is optional · types are the component's own, not
+              simplified
+            </p>
           </Section>
 
           <Section index="03" label="SETUP" id="setup">

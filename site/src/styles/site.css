@@ -49,17 +49,10 @@
 }
 
 .wordmark {
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: -0.03em;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-}
-
-.wordmark-version {
-  font-size: 10px;
-  margin-left: 8px;
-  opacity: 0.55;
-  letter-spacing: 0;
+  color: var(--ink);
 }
 
 .nav {
@@ -128,6 +121,274 @@
   opacity: 1;
 }
 
+/* ——— api reference ———
+   A props table is the one thing a docs page cannot be vague about, so this
+   is the densest surface on the site: hairline rows, mono for every type and
+   default, and prose only in the notes column where it came from the source's
+   own doc comment. */
+.api {
+  border-top: 1px solid var(--rule);
+  padding: var(--u4) 0;
+  max-width: 100%;
+}
+
+.api-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--u2);
+  margin-bottom: 10px;
+}
+
+.api-name {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .api-name:hover {
+    color: var(--signal);
+  }
+}
+
+.api-meta {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  opacity: 0.45;
+}
+
+.api-blurb {
+  font-size: 13.5px;
+  line-height: 1.6;
+  opacity: 0.7;
+  max-width: 68ch;
+  margin: 0 0 var(--u2);
+}
+
+/* Signatures are wide and must not push the page sideways. */
+.api-table-wrap {
+  overflow-x: auto;
+  margin-top: var(--u2);
+}
+
+.api-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.api-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+  opacity: 0.4;
+  padding: 0 var(--u2) 8px 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.api-table td {
+  padding: 9px var(--u2) 9px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.api-table td:nth-child(4) {
+  opacity: 0.62;
+  min-width: 220px;
+}
+
+.api-table code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.api-type {
+  opacity: 0.75;
+  white-space: pre;
+}
+
+/* The required marker carries meaning, so it is signal and it has a title. */
+.api-req {
+  color: var(--signal);
+  margin-left: 2px;
+}
+
+.api-dash {
+  opacity: 0.3;
+}
+
+.api-legend {
+  font-size: 10.5px;
+  opacity: 0.4;
+  border-top: 1px solid var(--rule);
+  padding-top: var(--u2);
+  margin-top: 0;
+}
+
+/* ——— logomark ———
+   Ported from the reference navbar. Tailwind's primary/N opacities become
+   color-mix over --signal, so no new colour enters the palette and a retheme
+   carries the mark. The Z's square caps and mitred joins are the reference's
+   own and happen to be exactly the site's rule, so nothing is bent here. */
+.logomark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+/* shadow-glow-sm sits on the plate at rest, not only on hover — a second
+   break of DESIGN.md's no-box-shadows rule, recorded there with the first. */
+.logomark-plate {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 6px;
+  border: 1px solid var(--rule);
+  background: var(--recess);
+  box-shadow: 0 0 14px -6px color-mix(in oklab, var(--signal) 55%, transparent);
+  transition: border-color 300ms var(--ease-out);
+}
+
+.logomark-wash {
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--signal) 13%, transparent);
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out);
+}
+
+/* The glyph rotates, not the plate — a half turn on a Z lands on a Z, so the
+   mark is legible at every frame of it rather than only at the ends. */
+.logomark-z {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+  color: var(--signal);
+  transition: transform 500ms var(--ease-out);
+}
+
+/* Keyed remount replays the draw. A transition cannot restart itself, and this
+   fires once per hover rather than continuously — which is what a keyframe is
+   actually for. */
+.logomark-stroke {
+  animation: logomark-draw 560ms var(--ease-out) forwards;
+}
+
+@keyframes logomark-draw {
+  from {
+    stroke-dashoffset: 43;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.logomark-lockup {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* tabular-nums so a scrambling glyph never changes the wordmark's width — the
+   reference asks for it, and without it the lockup jitters as it decodes. */
+.logomark-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+  color: var(--ink);
+}
+
+.logomark-version {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+  transition: color 300ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .logomark:hover .logomark-plate {
+    border-color: color-mix(in oklab, var(--signal) 60%, transparent);
+  }
+
+  .logomark:hover .logomark-wash {
+    opacity: 1;
+  }
+
+  .logomark:hover .logomark-z {
+    transform: rotate(180deg);
+  }
+
+  .logomark:hover .logomark-version {
+    color: var(--signal);
+    opacity: 1;
+  }
+}
+
+/* The scripted first-load performance. Same declarations the pointer sets,
+   deliberately OUTSIDE the (hover: hover) query — a touch visitor has no way
+   to discover this mark moves, so they are the ones who most need it shown.
+   Kept as its own block rather than folded into the hover selector list for
+   exactly that reason. */
+.logomark-demo .logomark-plate {
+  border-color: color-mix(in oklab, var(--signal) 60%, transparent);
+}
+
+.logomark-demo .logomark-wash {
+  opacity: 1;
+}
+
+.logomark-demo .logomark-z {
+  transform: rotate(180deg);
+}
+
+.logomark-demo .logomark-version {
+  color: var(--signal);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logomark-plate,
+  .logomark-wash,
+  .logomark-z,
+  .logomark-version {
+    transition-duration: 0ms;
+  }
+
+  /* Belt and braces: the effect never mounts under reduced motion, but if the
+     class ever did land it must not turn the mark. */
+  .logomark-demo .logomark-z {
+    transform: none;
+  }
+
+  .logomark-stroke {
+    animation: none;
+  }
+
+  /* A half turn is the exact motion this setting exists to refuse; the edge
+     and colour changes still mark the hover. */
+  .logomark:hover .logomark-z {
+    transform: none;
+  }
+}
+
 /* The one chip in the topbar. It is not a nav link — it leaves the site and
    it asks for something — so it does not take the rail treatment the nav rows
    get, and it carries a border to say so at a glance. */
@@ -145,18 +406,40 @@
   line-height: 1;
 }
 
+/* Hover is the chip's own, at 300ms rather than the shared 150ms: this is one
+   low-frequency target that is being asked to draw the eye, not a nav row the
+   cursor crosses on the way somewhere else. Border warms to a partial signal
+   and a soft glow comes up behind it; the label stays ink, because recolouring
+   the text as well makes the whole chip shout when only its edge needs to. */
+.nav-star {
+  transition-property: opacity, border-color, box-shadow;
+  transition-duration: 300ms;
+  transition-timing-function: var(--ease-out);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .nav-star:hover {
     opacity: 1;
-    border-color: var(--signal);
-    color: var(--signal);
+    border-color: color-mix(in oklab, var(--signal) 75%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--signal) 28%, transparent),
+      0 0 22px 0 color-mix(in oklab, var(--signal) 38%, transparent);
   }
 }
 
 .nav-star:focus-visible {
   opacity: 1;
-  border-color: var(--signal);
+  border-color: color-mix(in oklab, var(--signal) 75%, transparent);
+  box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--signal) 28%, transparent),
+      0 0 22px 0 color-mix(in oklab, var(--signal) 38%, transparent);
   outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-star {
+    transition-duration: 0ms;
+  }
 }
 
 /* Optical, not geometric: the mark's mass sits low in its box, so centring it
@@ -214,7 +497,7 @@
 /* At phone width the version tag is the first thing worth losing — it is a
    footnote on the wordmark, and the footer states the version anyway. */
 @media (max-width: 420px) {
-  .wordmark-version {
+  .logomark-version {
     display: none;
   }
 
@@ -239,8 +522,6 @@
    these would stick lit after the finger has gone. */
 .nav-link,
 .nav-link::after,
-.nav-star,
-.wordmark-version,
 .footer-links a,
 .card,
 .card-name,
@@ -272,8 +553,6 @@
 @media (prefers-reduced-motion: reduce) {
   .nav-link,
   .nav-link::after,
-  .nav-star,
-  .wordmark-version,
   .footer-links a,
   .card,
   .card-name,

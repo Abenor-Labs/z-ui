@@ -595,3 +595,92 @@ The destination question from CANDIDATES.md ("expand the registry / keep eight a
 build in the registry repo") is still **open**. This change does not settle it and deliberately
 does not touch PRD.md: a site bench claims nothing about the registry, which is exactly why it
 could ship while the decision waits.
+
+---
+
+## Revision 2026-08-25b (user-directed) — a glow on the GitHub chip
+
+DESIGN.md's rule is "no box-shadows except the single 1px-offset hard shadow on pressed/dragged
+elements." The GitHub star chip in the topbar now breaks it: on hover and focus it raises a soft
+`--signal` glow behind its border.
+
+Recorded rather than quietly absorbed, because it is a real deviation and the rule is otherwise
+still in force everywhere. Nothing else on the site has gained a shadow, and nothing else should
+without the same note.
+
+**What was taken, and what was not.** The treatment comes from a reference navbar the user
+supplied — a Tailwind component whose chip carries `hover:border-primary/60 hover:shadow-glow-sm`
+at `duration-300`. Only that hover was adopted. The rest of the reference — Tailwind classes,
+lucide icons, a scroll-triggered backdrop blur, a mobile sheet — was not, and the site's own nav
+rail, chip geometry and markup are unchanged.
+
+**Three things were tuned rather than copied.**
+
+- **Border goes to 60% signal, not 100%.** Full signal on the edge plus a glow is two shouts. The
+  partial border is what the reference actually specifies, and it is the better call.
+- **The label stays ink.** The previous implementation also recoloured the text to signal; with a
+  glow behind it, that made the whole chip light up when only its edge needed to.
+- **300ms, not the shared 150ms.** `--t-hover` is budgeted for things the cursor crosses on the
+  way somewhere else. This is one low-frequency target that is being asked to draw the eye, so it
+  keeps the reference's slower curve and owns its own timing. It is out of the shared transition
+  contract for that reason, and carries its own reduced-motion zero.
+
+The glow is `color-mix`ed from `--signal` rather than written as a new colour, so the palette is
+unchanged and a retheme still carries it.
+
+---
+
+## Revision 2026-08-25c (user-directed) — the mark, the API reference, and a footerless landing
+
+**The mark ships.** Four concepts were drawn (reversal, overshoot, stretch, detent); the user
+supplied their own, and it is essentially the first with a plate around it. `LogoMark` is a Z on a
+32px rounded plate: travel out, turn hard, come back — mid-flight reversal drawn as a letterform,
+which is the one behaviour the registry exists to prove. Square terminals and mitred joins, so it
+obeys the site's hard-edge rule rather than bending it.
+
+Three things about it are worth keeping written down.
+
+- **It runs on `scramble-reveal`.** The reference hand-rolled a scramble with its own rAF loop and
+  glyph pool. This registry ships that component, so the mark uses `useScramble` — the exact hook
+  behind the file the CLI installs. A site whose claim is that every demo is the real component
+  cannot keep a private copy of one in its own logo. It is also the more correct loop: the
+  reference advanced by 1/3 per rAF tick, so it decoded twice as fast at 120Hz.
+- **The gradient became a flat wash.** The reference used `var(--gradient-mark)`; DESIGN.md forbids
+  gradients. At 32px a 13% signal wash is indistinguishable, so the rule stands and the effect
+  survives.
+- **It performs its own hover once on first load.** 300ms in, held for a second, then released —
+  the real state the pointer sets, not an imitation. An affordance nobody discovers is not an
+  affordance, and the rotation was hover-only, so the one thing announcing "this moves" was the one
+  thing a visitor never saw. Deliberately outside the `(hover: hover)` query: a touch visitor has
+  no other way to learn it, so they need it most. Skipped entirely under reduced motion.
+
+**Second box-shadow deviation.** The plate carries a soft `--signal` bloom at rest, as the
+reference specifies. That is the second break of "no box-shadows except the 1px contact shadow",
+after the GitHub chip in 2026-08-25b. Both are recorded; the rule still holds everywhere else, and
+nothing further should gain a shadow without its own note.
+
+**`--signal` at rest, which is also a first.** Everywhere else the accent marks what is live and
+never what is merely present. The mark is signal when nothing is happening. A mark is not a state —
+it is the thing itself — so the rule does not apply, but this is the only element on the site
+sitting permanently in the accent, and that is the point of it standing out.
+
+**The landing page loses its footer.** It is a header and one hero, and the footer repeated the
+tagline, the version and the licence under a page two screens tall. Every other route keeps it:
+they are long, and a reader who reaches the bottom of `/docs` needs somewhere to go next. On the
+landing, the hero's own CTA is that somewhere.
+
+**`/docs` gets a real API reference, because it did not have one.** The page argued at length about
+mid-flight reversal and never said that `<Disclosure>` takes `open` / `onOpenChange`. Worse, no
+props were documented *anywhere* on the site — not on `/docs`, not on any of the eight detail
+pages. It was possible to read the whole thing and still be unable to use a component.
+
+Each component now carries a runnable usage snippet and a full props table: name, type, default,
+required, and notes. All 52 rows live in `site/src/data/api.ts`, **extracted from the components'
+own exported `*Props` types** — types and optionality from the interface, defaults from the real
+destructuring, and the notes column is the source's JSDoc verbatim. Generated and then committed,
+so the table cannot quietly describe a component the CLI no longer installs. Nothing in it was
+written from memory, which is the only way a props table survives the component changing.
+
+Still thin, recorded as known gaps rather than fixed: `z-ui.json` is referenced three times and
+never shown, and `web/public/r/*.json` already carries `gesture`, `states`, `reducedMotion` and
+per-file digests for every component, none of which the site displays.
