@@ -41,6 +41,22 @@
   /* The single permitted shadow: 1px-offset hard contact on pressed/dragged elements. */
   --contact-shadow: 1px 1px 0 0 var(--ink);
 
+  /* Motion — introduced 2026-08-25. Before this the whole stylesheet held one
+     transition; every other :hover was an instant flip and the topbar had no
+     hover rule at all. These two names exist so that never happens by default
+     again, and so nothing hand-rolls a curve inline.
+
+     --ease-out is the strong ease-out. The browser's built-in `ease-out` is
+     too weak to register at 150ms — it reads as a delay rather than a move.
+
+     --t-hover is the budget for anything the cursor crosses dozens of times a
+     session: nav rows, links, buttons, cards. Colour and opacity only, and
+     fast, because a bespoke animation on a high-frequency target charges its
+     attention cost on every single pass. The press is where tactile feedback
+     belongs, and the press is instant — see the contact shadow below. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --t-hover: 150ms;
+
   /* Radii — introduced with the 2026-08-18 revision; the original direction had none. */
   --r-card: 14px;
   --r-stage: 10px;
@@ -63,4 +79,19 @@
   --z-accent: var(--signal);
   --z-invalid: var(--signal);
   --z-radius: var(--r-pill);
+}
+
+/* One --z-radius cannot serve four components with four different geometries.
+   A pill is the right shape for chase (a segmented control), hold-drain (a
+   button) and late-critique (a field) — all of them fixed-height rows, where
+   999px resolves to "half my height" and reads as a capsule.
+
+   Disclosure is not a row. Its root grows to the full height of its content,
+   so the same 999px resolves against a 300px box and paints an ellipse
+   straight through the text. The component's own fallback is 4px for exactly
+   this reason; the site's bridge was overriding it with a value that only
+   makes sense on something short. It opts back out here rather than at :root,
+   because the other three are correct as they are. */
+.dsc {
+  --z-radius: var(--r-stage);
 }

@@ -22,7 +22,7 @@ export function HoldDrainPage() {
               options: DURATIONS.map((v) => ({ value: v, label: `${v}ms` })),
             },
           ]}
-          code={`<HoldDrain\n  label="hold to confirm"\n  duration={${duration}}\n  onConfirm={confirm}\n/>`}
+          code={`<HoldDrain\n  label="hold to confirm"\n  armedLabel="release to confirm"\n  committedLabel="confirmed"\n  duration={${duration}}\n  onConfirm={confirm}\n/>`}
           caption={`An abort costs what the hold earned: let go and the fill drains over exactly the time it took to climb. At ${duration}ms a full commit takes ${(Number(duration) / 1000).toFixed(2)}s — and so does giving up on one. Hold to the end and release while it's armed; that release is what confirms.`}
         >
           <HoldDrainDemo key={duration} duration={Number(duration)} />

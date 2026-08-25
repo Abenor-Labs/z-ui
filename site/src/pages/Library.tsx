@@ -4,9 +4,33 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Page } from '../components/Page';
 import { Section } from '../components/Section';
 import { Preview } from '../components/ComponentPreviews';
+import { BenchPreview } from '../components/BenchPreviews';
 import { useSiteSpring } from '../lib/springs';
 import { REGISTRY, CATEGORIES, type RegistryComponent } from '../data/registry';
+import { CANDIDATES, type CandidateComponent } from '../data/candidates';
 import { Chase } from '@z-ui/registry/chase/chase';
+
+/**
+ * A bench card is deliberately not a registry card. No link, because there is
+ * no page to go to; no name that reads as installable; and the status line is
+ * the first thing under the title rather than a footnote. The five are here
+ * because hiding finished work helps nobody — not because they are shipping.
+ */
+function BenchCard({ c }: { c: CandidateComponent }) {
+  return (
+    <div className="card card-bench">
+      <div className="card-head">
+        <span className="card-name card-name-bench">{c.name}</span>
+        <span className="mono card-cat">{c.category}</span>
+      </div>
+      <div className="card-preview">
+        <BenchPreview name={c.name} />
+      </div>
+      <p className="card-blurb">{c.principle}</p>
+      <span className="mono card-needs card-needs-bench">no install command</span>
+    </div>
+  );
+}
 
 function Card({ c }: { c: RegistryComponent }) {
   return (
@@ -107,10 +131,18 @@ export function Library() {
 
       <Section index="03" label="BENCH">
         <p className="playground-caption">
-          Five more are on the <Link to="/candidates">candidate bench</Link> — flywheel, reel, origin,
-          grip, intent. They are not in the registry, have no install command, and may never get one.
-          Eight is still eight.
+          Five more sit off the registry. Each one takes a mechanic that exists elsewhere as
+          decoration, strips it back to the rule underneath, and has to prove that rule is worth a
+          file. None of them has an install command, because none of them has earned one — the
+          registry ships eight and still ships eight. They are live below anyway: a component that
+          has not earned a command has only one case to make, and you make it by touching the
+          thing.
         </p>
+        <div className="library-grid bench-grid">
+          {CANDIDATES.map((c) => (
+            <BenchCard key={c.name} c={c} />
+          ))}
+        </div>
       </Section>
     </Page>
   );

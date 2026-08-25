@@ -17,25 +17,60 @@ import { Readout } from './Readout';
 export interface HoldDrainDemoHandle {
   /** hold for `ms`, then release — via the keyboard path, so the component's own handlers run */
   hold: (ms?: number) => void;
+  /**
+   * Remount the control back to `idle`.
+   *
+   * `committed` is a one-shot guard in the shipped component — it returns
+   * early on every press once it is set, which is correct for a confirm button
+   * and fatal for anything replaying it on a loop. A remount is the registry's
+   * own reset story, so this is the same escape the reset chip uses.
+   */
+  reset: () => void;
 }
 
 export function HoldDrainDemo({
   ref,
   duration = 1600,
   label = 'hold to confirm',
+  /**
+   * The shipped component falls back `committedLabel ?? armedLabel ?? label`,
+   * so passing only `label` means the button says the same thing while idle,
+   * while armed, and after it has fired. "Confirmed." exists in the component
+   * already — but only in the visually-hidden aria-live region, which meant
+   * every sighted visitor watched a hold complete and change nothing. These
+   * two defaults put the state a screen reader was already being told on the
+   * face of the button.
+   */
+  armedLabel = 'release to confirm',
+  committedLabel = 'confirmed',
   readouts = true,
   compact = false,
+  focusOnHold = true,
 }: {
   ref?: Ref<HoldDrainDemoHandle>;
   /** ms to fill — also the time a full drain takes */
   duration?: number;
   label?: string;
+  armedLabel?: string;
+  committedLabel?: string;
   readouts?: boolean;
   compact?: boolean;
+  /**
+   * Whether `hold()` focuses the button first. On a demo card that is right —
+   * the focus ring is part of what is being shown. Inside the aria-hidden
+   * hover preview it is not: nothing there is reachable, and pulling focus
+   * into it every few seconds would move it off whatever the reader was
+   * actually on. The dispatched key events bubble to React either way, so
+   * focus was never load-bearing for the replay.
+   */
+  focusOnHold?: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLElement | null>(null);
   const [committed, setCommitted] = useState(false);
+  /** Bumped by `reset()`. A counter rather than a boolean flip, so a reset
+   *  still remounts when the control never reached `committed`. */
+  const [generation, setGeneration] = useState(0);
 
   const fill = useMotionValue(0); // 0..100, sampled
   const rateMV = useMotionValue(0); // %/s, derived
@@ -84,7 +119,7 @@ export function HoldDrainDemo({
       hold: (ms = 700) => {
         const btn = hostRef.current?.querySelector<HTMLButtonElement>('button[data-state]');
         if (!btn) return;
-        btn.focus();
+        if (focusOnHold) btn.focus();
         // The keyboard path runs the component's own handlers: keydown fills,
         // keyup releases (or commits when armed). Synthetic pointer events
         // would trip the pointer-capture call for a pointer that does not exist.
@@ -94,16 +129,23 @@ export function HoldDrainDemo({
           btn.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
         }, ms);
       },
+      reset: () => {
+        window.clearTimeout(holdTimer.current);
+        setCommitted(false);
+        setGeneration((g) => g + 1);
+      },
     }),
-    [],
+    [focusOnHold],
   );
 
   return (
     <div className={`holddrain${compact ? ' holddrain-compact' : ''}`} ref={setHost}>
       {/* keyed remount is the registry's own reset story for a committed guard */}
       <HoldDrain
-        key={`${duration}-${committed ? 'c' : 'i'}`}
+        key={`${duration}-${generation}-${committed ? 'c' : 'i'}`}
         label={label}
+        armedLabel={armedLabel}
+        committedLabel={committedLabel}
         duration={duration}
         onConfirm={() => setCommitted(true)}
       />

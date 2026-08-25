@@ -3,11 +3,8 @@ import { AnimatePresence } from 'motion/react';
 import { Shell } from './components/Shell';
 import { Home } from './pages/Home';
 import { Library } from './pages/Library';
-import { Cli } from './pages/Cli';
-import { Architecture } from './pages/Architecture';
 import { Docs } from './pages/Docs';
 import { NotFound } from './pages/NotFound';
-import { Candidates } from './pages/Candidates';
 import { LabIndex } from './pages/lab/Index';
 import { Navigation } from './pages/lab/Navigation';
 import { Buttons } from './pages/lab/Buttons';
@@ -37,13 +34,10 @@ export function App() {
           <Route path="/components/late-critique" element={<LateCritiquePage />} />
           <Route path="/components/scramble-reveal" element={<ScrambleRevealPage />} />
           <Route path="/components/thinking-orb" element={<ThinkingOrbPage />} />
-          <Route path="/candidates" element={<Candidates />} />
           <Route path="/lab" element={<LabIndex />} />
           <Route path="/lab/navigation" element={<Navigation />} />
           <Route path="/lab/buttons" element={<Buttons />} />
           <Route path="/lab/text" element={<Text />} />
-          <Route path="/cli" element={<Cli />} />
-          <Route path="/architecture" element={<Architecture />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

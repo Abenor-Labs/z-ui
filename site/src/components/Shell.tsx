@@ -4,10 +4,7 @@ import { REPO_URL, NPM_URL } from '../data/registry';
 
 const NAV = [
   { to: '/components', label: 'components' },
-  { to: '/candidates', label: 'candidates' },
   { to: '/lab', label: 'lab' },
-  { to: '/cli', label: 'cli' },
-  { to: '/architecture', label: 'architecture' },
   { to: '/docs', label: 'docs' },
 ];
 
@@ -29,8 +26,14 @@ export function Shell({ children }: { children: ReactNode }) {
                 {n.label}
               </NavLink>
             ))}
-            <a href={REPO_URL} target="_blank" rel="noreferrer" className="nav-link">
-              github↗
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="nav-link nav-star"
+              aria-label="Star Z-UI on GitHub"
+            >
+              <span aria-hidden="true">★</span> star
             </a>
           </nav>
         </div>

@@ -25,9 +25,8 @@ export function LabIndex() {
           <span>no CLI command</span>
         </div>
         <p className="detail-principle">
-          A bench for interaction patterns, same status as the{' '}
-          <Link to="/candidates">candidate bench</Link>: nothing here installs, and none of it is a
-          product fact. Categories get built one at a time; unbuilt ones are listed so the scope is
+          A bench for interaction patterns: nothing here installs, and none of it is a product
+          fact. Categories get built one at a time; unbuilt ones are listed so the scope is
           visible rather than implied.
         </p>
       </div>

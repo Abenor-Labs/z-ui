@@ -69,13 +69,200 @@
   flex-wrap: wrap;
 }
 
+/* The rail under a nav item wipes in from the left rather than fading.
+   A transform, so it composites; scaleX from a left origin, so it reads as
+   the rule being drawn toward where you are going rather than a box turning
+   on. The item is the only thing in the topbar that moves. */
 .nav-link {
+  position: relative;
   text-decoration: none;
   padding: 2px 0;
+  opacity: 0.62;
 }
 
-.nav-active {
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover {
+    opacity: 1;
+  }
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/* Keyboard gets the same affordance the pointer does. */
+.nav-link:focus-visible {
+  opacity: 1;
+  outline: none;
+}
+
+.nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* The current page keeps its rail down — a static cue, so the state survives
+   a still frame and does not depend on anything having moved. */
+.nav-active,
+.nav-link.nav-active:hover {
   color: var(--signal);
+  opacity: 1;
+}
+
+.nav-active::after {
+  transform: scaleX(1);
+}
+
+.wordmark:hover .wordmark-version {
+  opacity: 1;
+}
+
+/* One low-frequency target, so it may have a transform the nav rows may not.
+   The glyph, not the word — scaling the label would reflow the row. */
+.nav-star span {
+  display: inline-block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-star:hover span {
+    transform: scale(1.2);
+  }
+}
+
+/* The wordmark never shrinks or wraps; the nav is the part that gives. */
+.wordmark {
+  flex: none;
+  white-space: nowrap;
+}
+
+.nav-link {
+  white-space: nowrap;
+}
+
+/* ——— topbar, narrow ———
+   Four items and the star fit one row on a desktop. Below 720 the bar keeps
+   ONE row and the nav becomes a horizontal scroller instead of wrapping: a
+   wordmark sitting alone above a wrapped nav reads as two headers stacked,
+   and a sticky bar that costs two rows takes vertical space it has not
+   earned. The scroller is only reachable when the items genuinely overflow.
+   Baseline alignment is a two-row artifact — once it is one row, center. */
+@media (max-width: 720px) {
+  .topbar-inner {
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: var(--u2);
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .nav {
+    flex-wrap: nowrap;
+    gap: var(--u2);
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* At phone width the version tag is the first thing worth losing — it is a
+   footnote on the wordmark, and the footer states the version anyway. */
+@media (max-width: 420px) {
+  .wordmark-version {
+    display: none;
+  }
+
+  .nav {
+    gap: 14px;
+  }
+}
+
+/* ——— interaction ———
+   Everything the cursor crosses, given the same contract.
+
+   **Named properties, never `all`.** A blanket transition would sweep up the
+   1px contact shadow and the press transform and put 150ms of delay on the
+   one thing that has to land on the same frame as the pointer going down.
+
+   **Colour, opacity and border only** — plus the two transforms that are
+   decoration rather than layout (the nav rail, the star). These are
+   high-frequency targets; a bespoke animation on a nav row bills its
+   attention cost on every single pass.
+
+   **Gated on a real pointer.** A tap fires a synthetic hover, so ungated
+   these would stick lit after the finger has gone. */
+.nav-link,
+.nav-link::after,
+.nav-star span,
+.wordmark-version,
+.footer-links a,
+.card,
+.card-name,
+.detail-back,
+.pill,
+.btn-mono,
+.spawn-btn,
+.step-btn,
+.console-clear,
+.console-chip,
+.cast-btn,
+.cast-step-btn {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: var(--t-hover);
+  transition-timing-function: var(--ease-out);
+}
+
+/* The press is the exception, and it is deliberate: feedback on pointer-down
+   has to be instant or directness falls off a cliff. The contact shadow and
+   the 1px offset land on the frame the button goes down, and only spring back
+   on the way out. */
+.pill:active,
+.btn-mono:active,
+.spawn-btn:active,
+.step-btn:active {
+  transition-duration: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link,
+  .nav-link::after,
+  .nav-star span,
+  .wordmark-version,
+  .footer-links a,
+  .card,
+  .card-name,
+  .detail-back,
+  .pill,
+  .btn-mono,
+  .spawn-btn,
+  .step-btn,
+  .console-clear,
+  .console-chip,
+  .cast-btn,
+  .cast-step-btn {
+    transition-duration: 0ms;
+  }
+
+  /* The rail still marks the item; it just arrives rather than travelling. */
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
 }
 
 /* ——— footer ——— */
@@ -577,8 +764,74 @@
   gap: var(--u2);
 }
 
-.card:hover {
-  border-color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: var(--ink);
+  }
+}
+
+/* ——— bench ———
+   Visually a sibling of the registry card, deliberately not a twin. The border
+   is dashed and the name is not a link, because there is nowhere to go and
+   nothing to install — the difference has to survive a glance, not a careful
+   read. Same grid, so the five read as the same kind of object as the eight;
+   different edge, so nobody copies a name out of here expecting `add` to
+   know it. */
+.bench-grid {
+  margin-top: var(--u2);
+}
+
+.card-bench {
+  border-style: dashed;
+  background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-bench:hover {
+    border-color: color-mix(in oklab, var(--ink) 45%, transparent);
+  }
+}
+
+/* Not a link, so it must not look like one — the registry card's name is the
+   only underlined, signal-coloured thing in a card, and this is neither. */
+.card-name-bench {
+  color: var(--ink);
+  opacity: 0.85;
+  cursor: default;
+}
+
+.card-needs-bench {
+  color: var(--signal);
+  opacity: 0.75;
+}
+
+.bench-live {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--u2);
+  width: 100%;
+}
+
+.bench-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--u);
+}
+
+.bench-grip {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.bench-body,
+.bench-note {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.65;
 }
 
 .card-head {
@@ -1183,23 +1436,15 @@
   padding: var(--u12) 0 var(--u8);
 }
 
-.lander-mark {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-stage);
-  background: var(--recess);
-}
-
 /* the one permitted glow: it sits behind the mark and nothing else on the site has it */
-.lander-mark::before {
+/* The glow moved to the dial's stage and lost most of its strength: behind a
+   26px glyph it was the only thing on screen, behind a 148px object that
+   paints its own plate it only has to say "this one is lit". */
+.lander-stage::before {
   content: '';
   position: absolute;
-  inset: -40px;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 77, 0, 0.22), transparent 62%);
+  inset: -56px -56px 0;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 77, 0, 0.16), transparent 64%);
   pointer-events: none;
   z-index: -1;
 }
@@ -1237,8 +1482,11 @@
   text-decoration: none;
 }
 
-.pill:hover {
-  border-color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover {
+    border-color: var(--ink);
+    background: var(--recess-2);
+  }
 }
 
 .pill-primary {
@@ -1247,10 +1495,12 @@
   border-color: var(--ink);
 }
 
-.pill-primary:hover {
-  background: var(--signal);
-  border-color: var(--signal);
-  color: var(--paper);
+@media (hover: hover) and (pointer: fine) {
+  .pill-primary:hover {
+    background: var(--signal);
+    border-color: var(--signal);
+    color: var(--paper);
+  }
 }
 
 .pill:active {
@@ -1258,12 +1508,59 @@
   transform: translate(-1px, -1px);
 }
 
-.lander-install {
-  font-size: 12px;
-  opacity: 0.6;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-pill);
-  padding: 7px 16px;
+/* the landing page is header + hero only, so the hero carries the whole
+   vertical rhythm of the page rather than sitting above a grid */
+.lander-solo {
+  padding: var(--u8) 0 var(--u12);
+  min-height: 62vh;
+  justify-content: center;
+  gap: var(--u2);
+}
+
+/* The mark is a live dial. It gets a stage rather than the old 52px chip,
+   and the stage is transparent — the component paints its own plate, and a
+   --recess box behind it would read as a second, competing object. */
+.lander-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--u2);
+}
+
+/* The one place on the page that tells you to touch something. Static text,
+   not motion — motion is never the only feedback channel, and this is the
+   channel that works before anything has moved. */
+.lander-hint {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.4;
+}
+
+/* the install command IS the button — a pill wide enough to read the whole
+   line, swapping to "copied" on the site spring like every other copy
+   affordance here */
+.pill-install {
+  font-size: 12.5px;
+  padding: 10px 18px;
+}
+
+.pill-install .copy-btn-window {
+  height: 17px;
+}
+
+.lander-status {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  opacity: 0.45;
+}
+
+/* github star, last item in the topbar nav */
+.nav-star span {
+  color: var(--signal);
+  margin-right: 2px;
 }
 
 /* ——— demo grid ——— */
@@ -1508,9 +1805,114 @@
   opacity: 0.66;
 }
 
-.cnav-link:hover {
+/* High-frequency interaction, so the feedback is instant-adjacent: 120ms on
+   colour and background only, and never on transform. A row the cursor is
+   sweeping past should not spend a fifth of a second deciding how it feels. */
+.cnav-link {
+  transition-property: background-color, opacity, color;
+  transition-duration: var(--t-hover);
+  transition-timing-function: var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cnav-link:hover {
+    background: var(--recess);
+    opacity: 1;
+  }
+}
+
+/* Motion is never the only feedback channel: while a row's preview is open,
+   the row itself is marked, so the connection between the panel and what it
+   is previewing survives a still frame. */
+.cnav-peeked {
   background: var(--recess);
   opacity: 1;
+  color: var(--signal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cnav-link {
+    transition-duration: 0ms;
+  }
+}
+
+
+/* ——— nav hover preview ———
+   Fixed, so no ancestor's overflow can clip it, and inert to the pointer: it
+   is a view of the link, not a surface to enter. Centring is done with the
+   transform rather than by offsetting `top`, so the panel's own entrance and
+   its vertical placement are the same animatable property. */
+.navpv {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  transform-origin: left center;
+  background: var(--recess);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  padding: var(--u2);
+  will-change: transform, opacity;
+}
+
+.navpv-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* A card sitting on --recess needs one step further up. Radius is the outer
+   radius minus the padding, so the corners stay concentric. */
+.navpv-stage {
+  display: grid;
+  place-items: center;
+  min-height: 132px;
+  padding: var(--u2);
+  background: var(--recess-2);
+  border-radius: calc(var(--r-card) - 16px);
+  overflow: hidden;
+}
+
+.navpv-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--u);
+}
+
+.navpv-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.navpv-cat {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.navpv-blurb {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.6;
+}
+
+/* Drivers that report a value alongside the component — the dial's pulse
+   count, the orb's state name. The number is the proof the loop is real. */
+.navpv-driver {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.navpv-readout {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  opacity: 0.45;
+}
+
+.navpv-inner {
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .cnav-active {

@@ -470,3 +470,128 @@ implementation choices, NOT product facts.
   all three faces with the knob first and the other two captioned as candidates. The mechanics are
   recorded, not deleted: the flywheel's entry lives on the bench like reel's, and the merged-mode
   implementation survives at `site/src/zui/Dial.tsx`.
+
+- **A22 — `dial` is the rotary face, and it is the one component that is not interruptible**
+  (2026-08-24, user-directed). The flywheel knob that shipped under this name is now a candidate;
+  `npx @abenor/z-ui add dial` installs the pulse-dial telephone face. The knob and the flywheel were
+  both removed from `/components/dial`, which had been showing three "modes" behind a toggle while
+  printing one install command — a visitor could select `flywheel`, read a registry badge, copy a
+  `<Flywheel />` snippet, and install something else entirely.
+
+  **The exception, stated plainly.** CLAUDE.md says every transition must be interruptible or it does
+  not ship. This one is not: from release until the wheel seats, the governor owns it, and
+  `onPointerDown` is ignored. That is the mechanism rather than a shortcut — a real dial cannot be
+  caught on its way back, and the digit is a *count of pulses tripped during the return*, so a return
+  that can be interrupted reports a number that was never dialled. Every other component in the
+  registry still honours the rule; this is the only carve-out, and it is carved out for the one
+  reason that survives scrutiny — interrupting it would make the component lie about its output.
+
+  Three things changed on the way in, none of them cosmetic:
+
+  - **Sound is off by default.** The dial synthesises its own mechanical click with no assets, but a
+    component that starts making noise the moment it is installed is one nobody asked to be loud.
+    `sound` opts in; with it off, `AudioContext` is never constructed.
+  - **SVG ids are per-instance.** `rd-plate` / `rd-wheel` / `rd-hub` were module-level constants, so
+    a second dial on the same page reused the first one's gradients and painted wrong. They are
+    derived from `useId()` now. This was a real bug, found on promotion, not a style preference.
+  - **Paint moved out of the file and into `dial.css`,** which ships beside it. Twelve hardcoded
+    hexes became `--z-dial-*` custom properties carrying those hexes as fallbacks, so the default
+    look is byte-identical and a consumer can retheme without forking. The fallbacks are literal
+    colours rather than `--z-paper` / `--z-ink` on purpose: the plate is a light object and the wheel
+    a dark one, and mapping them to page tokens would turn the number plate black on a dark site and
+    make the digits unreadable. The radial gradients and the serif numerals stay — they are what the
+    object looks like, and DESIGN.md's no-gradient rule is about page chrome, not about a rendering
+    of a physical dial.
+
+  The component gained a `data-state` of `idle | dialing | returning` and a `STATES` declaration to
+  satisfy the registry lint, and lost its `motion` dependency entirely — it is react-only now.
+
+---
+
+## Revision 2026-08-24 (user-directed) — the site collapses to four routes
+
+The site had eight top-level routes. It has four: `/`, `/components`, `/lab`, `/docs`.
+
+**What went, and why.**
+
+- **`/candidates` deleted.** The bench was a public page for components that have no install
+  command and may never get one. Every visitor it reached was a visitor shown something they
+  cannot have. `ComponentNav`'s "bench" group went with it, so nothing in the component index
+  links to an uninstallable name any more. `/components` still says the bench exists, in one
+  sentence, without linking anywhere.
+- **`/architecture` deleted, content preserved.** Its four decisions are real PRODUCT FACTS
+  content, not page-specific writing, so they moved into `/docs` as section 04 rather than being
+  lost. A whole route for four paragraphs was the wrong container, not the wrong content.
+- **`/cli` deleted.** This is the one that mattered. That page was a reference file ported
+  verbatim on instruction (A18-style standing), and it documented `init add list view` against
+  components named `rotary-dial`, `gooey-fab`, `gooey-tabs` — a fictional surface, which was
+  tolerable only while the page was clearly an artifact sitting at its own route. Renaming it to
+  "docs" would have promoted fiction to documentation, and PRD.md's seven commands and eight
+  components are the only CLI surface the site is allowed to claim. So the route did not get
+  renamed; it got replaced.
+- **`/docs` is now the whole reference.** Getting-started (which was already real), the CLI
+  surface, the architecture decisions, requirements, troubleshooting, contributing. Its terminal
+  frames are `CliCast` and `Console` — both already in the tree, both unused until now, and both
+  replaying output captured from the published CLI (`src/data/cliRecordings.ts`) rather than
+  mocking a session up. That is why they were reached for instead of porting the deleted page's
+  `.term` styling: the honest terminal already existed.
+
+**The landing page is a header and one hero.** The demo grid, the REFUSALS list and the OWNERSHIP
+list all moved off it — not rewritten, removed. Each of those things has a page that owns it, and
+a landing page that repeats them is a second, worse copy of each. What a first-time visitor is
+owed is what this is and how to get it, so the hero carries exactly two controls: **Browse** into
+`/components`, and the install command as a copy button (`pnpm dlx @abenor/z-ui@latest add dial`).
+GitHub moved out of the hero and into the topbar as a **★ star** link, where a repo link belongs.
+
+The install button briefly printed the pnpm form (`pnpm dlx`), recorded here as an assumption
+because PRD.md's canonical line is the `npx` one. That is settled rather than assumed now: the
+button prints `npx @abenor/z-ui@latest add dial`, the same string PRD.md and `/docs` both use, and
+the site no longer states an install path from two directions.
+
+**Left in the tree deliberately, not deleted:** `src/zui/*` and `src/data/candidates.ts` are now
+unreferenced. CLAUDE.md's rule is that these are site reimplementations kept until a specific one
+earns promotion on evidence, and the repo archives rather than deletes. They still typecheck and
+Vite drops them from the bundle, so the cost is zero and the record survives.
+
+**Incidental win:** deleting `/cli` removed the last third-party font request. The IBM Plex
+`<link>` tags in `index.html` existed only for that page; every route now self-hosts via
+`@fontsource`, as originally intended.
+
+---
+
+## Revision 2026-08-25 (user-directed) — the bench comes back, as a section not a route
+
+Deleting `/candidates` orphaned five finished components. `reel`, `origin`, `grip`, `intent` and
+the flywheel `Dial` were built, verified in-browser, and then unreachable — the site was showing
+eight and hiding five. That is a worse outcome than the page we removed.
+
+They return as a **bench section on `/components`**, not as a restored route. The route is still
+the wrong container (one page for five cards, plus a nav item advertising things nobody can
+install). The section already existed at index 03; it just said the five were "not shown here",
+which was an apology standing in for the work.
+
+**A bench card is a sibling of a registry card, not a twin.** Same grid, so the five read as the
+same *kind* of object as the eight. Dashed border, transparent ground, name not a link, and
+"no install command" where the registry card puts its dependency line — so the difference survives
+a glance rather than needing a careful read. Nobody should be able to copy a name out of the bench
+and expect `add` to know it.
+
+**They are interactive, not auto-driven** — the opposite call from the nav hover preview, for the
+opposite reason. That panel is `pointer-events: none`, so its contents have to demonstrate
+themselves. This sits inline on a page where putting your hands on the thing is the entire
+argument, and a component that has not earned an install command has only that one case to make.
+
+**On "why only eight" (recorded, because it keeps coming up).** Eight is a headcount, not a cap.
+PRD.md:9 is a status line — a true count at a point in time. PRD.md:94's "No invented surface
+area" is an anti-drift guardrail aimed at documentation: do not write about a ninth that does not
+exist. The actual product constraint is about *kind*, not *count* — "anything that isn't a
+micro-animation". A ninth is therefore allowed; what it costs is atomicity. `Eight` is asserted in
+about twelve places (PRD.md ×3, .claude/CLAUDE.md ×2, Docs.tsx ×4, Home.tsx, Library.tsx,
+DetailLayout.tsx, data/registry.ts) and the generated `web/public/r/` must be rebuilt from
+`registry/`, all in one commit, or the site starts contradicting itself and CI fails the
+generated-registry check. A chore, not a barrier.
+
+The destination question from CANDIDATES.md ("expand the registry / keep eight and ship site-only /
+build in the registry repo") is still **open**. This change does not settle it and deliberately
+does not touch PRD.md: a site bench claims nothing about the registry, which is exactly why it
+could ship while the decision waits.

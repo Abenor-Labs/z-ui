@@ -36,6 +36,13 @@ function validate(v: string): string | null {
 export interface LateCritiqueDemoHandle {
   /** replay real keystrokes through the field's own input path, one per frame-ish */
   type: (text: string, msPerKey?: number) => void;
+  /**
+   * Same path, but without clearing first — the keystrokes land on whatever is
+   * already in the field. This is the only way to demonstrate the half of the
+   * component that matters: the error has to already be on screen when the
+   * fixing character arrives, or "forgiveness on the same frame" is invisible.
+   */
+  append: (text: string, msPerKey?: number) => void;
 }
 
 export function LateCritiqueDemo({
@@ -104,15 +111,17 @@ export function LateCritiqueDemo({
   // component's own decision path runs exactly as it does under a keyboard
   useImperativeHandle(
     ref,
-    () => ({
-      type: (text: string, msPerKey = 90) => {
+    () => {
+      const play = (text: string, msPerKey: number, clearFirst: boolean) => {
         const el = rootRef.current?.querySelector('input');
         if (!el) return;
         window.clearInterval(typing.current);
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-        setter?.call(el, '');
-        el.dispatchEvent(new InputEvent('input', { bubbles: true }));
-        valueRef.current = '';
+        if (clearFirst) {
+          setter?.call(el, '');
+          el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+          valueRef.current = '';
+        }
         let i = 0;
         typing.current = window.setInterval(() => {
           if (i >= text.length) {
@@ -123,8 +132,13 @@ export function LateCritiqueDemo({
           setter?.call(el, el.value + ch);
           el.dispatchEvent(new InputEvent('input', { bubbles: true, data: ch }));
         }, msPerKey);
-      },
-    }),
+      };
+
+      return {
+        type: (text: string, msPerKey = 90) => play(text, msPerKey, true),
+        append: (text: string, msPerKey = 90) => play(text, msPerKey, false),
+      };
+    },
     [],
   );
 

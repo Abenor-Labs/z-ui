@@ -3,23 +3,50 @@ import { Page } from '../components/Page';
 import { Section } from '../components/Section';
 import { CodeBlock } from '../components/CodeBlock';
 import { CliBanner } from '../components/CliBanner';
+import { CliCast } from '../components/CliCast';
+import { Console } from '../components/Console';
 import { Disclosure } from '@z-ui/registry/disclosure/disclosure';
 import { FALLBACK_URL, REPO_URL, REGISTRY } from '../data/registry';
 
+/**
+ * /docs — the one documentation page.
+ *
+ * It absorbed three routes: the getting-started page it grew out of, the old
+ * /cli page, and /architecture. The CLI surface documented here is the real
+ * one — seven commands, eight components — and every terminal frame on the
+ * page replays output captured from the published CLI rather than mocking it
+ * up (see src/data/cliRecordings.ts).
+ *
+ * The accordions are real disclosure instances, so the docs run on the
+ * product they document.
+ */
+
 const TOC = [
   { id: 'overview', label: 'Overview' },
+  { id: 'cli', label: 'The CLI' },
   { id: 'components', label: 'Components' },
   { id: 'setup', label: 'Setup' },
+  { id: 'architecture', label: 'Architecture' },
   { id: 'requirements', label: 'Requirements' },
   { id: 'troubleshooting', label: 'Troubleshooting' },
   { id: 'contributing', label: 'Contributing' },
 ];
 
+const COMMANDS: Array<[string, string]> = [
+  ['init', 'writes z-ui.json — add does this automatically on first run if missing'],
+  ['add <name...>', 'adds one or more components and their npm dependencies'],
+  ['list', 'lists what the registry offers'],
+  ['doctor', "checks what's installed, changes nothing"],
+  ['spring [name]', 'draws the actual spring curve for a component before you pick a preset'],
+  ['preview <name>', 'shows how a component moves, before installing it'],
+  ['completion <shell>', 'shell completion script for bash, zsh, or fish'],
+];
+
 export function Docs() {
   return (
-    <Page title="Getting started">
+    <Page title="Docs">
       <div className="detail-head">
-        <h1>Getting started</h1>
+        <h1>Docs</h1>
         <p className="detail-principle">
           These accordions are real disclosure instances — interrupt them mid-open and they
           reverse with the velocity they had. The docs run on the product.
@@ -54,15 +81,81 @@ export function Docs() {
                 use, and what it refuses to be is the point as much as what it does.
               </p>
               <p className="playground-caption">
-                This page covers getting one component installed and running the project itself.
-                For the full command and flag reference, see <Link to="/cli">the CLI page</Link>.
-                For why it's built the way it is, see{' '}
-                <Link to="/architecture">the architecture page</Link>.
+                This page is the whole reference: the CLI, the eight components, how to install
+                one, and why it's built the way it is.
               </p>
             </div>
           </Section>
 
-          <Section index="01" label="COMPONENTS" id="components">
+          <Section index="01" label="THE CLI" id="cli">
+            <div style={{ maxWidth: 720 }}>
+              <p className="playground-caption">
+                Seven commands. The session below is a recording, not a re-enactment — every line
+                came out of the published CLI and was captured verbatim.
+              </p>
+            </div>
+
+            <CliCast />
+
+            <div style={{ maxWidth: 720 }}>
+              <table className="cmd-table">
+                <tbody>
+                  {COMMANDS.map(([cmd, what]) => (
+                    <tr key={cmd}>
+                      <td>
+                        <code>{cmd}</code>
+                      </td>
+                      <td>{what}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <Disclosure label="Flags worth knowing">
+                <ul className="fact-list mono">
+                  <li>
+                    <code>--dry-run</code> — show the install plan, write nothing.
+                  </li>
+                  <li>
+                    <code>--registry ./registry</code> — install from a local clone instead of
+                    GitHub.
+                  </li>
+                  <li>
+                    <code>--json</code> — machine-readable output for list, doctor, and preview.
+                  </li>
+                  <li>
+                    <code>-o</code>/<code>--overwrite</code> — replace a file that already exists.
+                  </li>
+                  <li>
+                    <code>-y</code>/<code>--yes</code> — skip the confirmation prompts.
+                  </li>
+                </ul>
+              </Disclosure>
+
+              <Disclosure label="Why --spring refuses on hand-tuned components">
+                <p className="playground-caption">
+                  <code>--spring &lt;preset&gt;</code> retargets a component's default spring at
+                  install time — snap, bounce, settle, or fling. Every springed component
+                  currently ships bespoke, hand-tuned physics rather than a shared preset: dial
+                  runs at 1300/46, chase runs two springs simultaneously. So the CLI refuses to
+                  apply <code>--spring</code> to those, and prints which exact numbers to edit by
+                  hand instead of silently installing motion the original author never tuned.
+                </p>
+                <p className="playground-caption">
+                  That refusal is a product decision, not a missing feature.
+                </p>
+              </Disclosure>
+
+              <p className="playground-caption">
+                The shell below replays the same recordings on demand. Type a command that was
+                never captured and it says so rather than inventing output.
+              </p>
+            </div>
+
+            <Console />
+          </Section>
+
+          <Section index="02" label="COMPONENTS" id="components">
             <div style={{ maxWidth: 720 }}>
               <p className="playground-caption">
                 Eight, no more, no fewer. Each one is a single self-contained .tsx file.
@@ -84,7 +177,7 @@ export function Docs() {
             </div>
           </Section>
 
-          <Section index="02" label="SETUP" id="setup">
+          <Section index="03" label="SETUP" id="setup">
             <div style={{ maxWidth: 720 }}>
               <Disclosure label="Install your first component" defaultOpen>
                 <CodeBlock code={'npx @abenor/z-ui@latest add dial'} />
@@ -129,9 +222,8 @@ export function Docs() {
                 />
                 <p className="playground-caption">
                   preview shows how a component moves before it touches your tree; spring draws
-                  the actual curve before you pick a preset (snap, bounce, settle, or fling). For
-                  hand-tuned components the CLI refuses to apply a preset —{' '}
-                  <Link to="/cli">the refusal is documented</Link>.
+                  the actual curve before you pick a preset. For hand-tuned components the CLI
+                  refuses to apply a preset — <a href="#cli">the refusal is documented above</a>.
                 </p>
               </Disclosure>
 
@@ -154,7 +246,58 @@ export function Docs() {
             </div>
           </Section>
 
-          <Section index="03" label="REQUIREMENTS" id="requirements">
+          <Section index="04" label="ARCHITECTURE" id="architecture">
+            <div style={{ maxWidth: 720 }}>
+              <p className="playground-caption">
+                Four decisions carry the whole thing. Each one trades something visible for
+                something the product actually needs.
+              </p>
+
+              <div className="decision">
+                <p className="decision-verdict">
+                  Motion (Framer Motion), declared per-component — only when needed.
+                </p>
+                <p>
+                  Real interruptible springs with velocity carry-over are required. CSS keyframes
+                  cannot reverse mid-flight, and mid-flight reversal IS the product. A component
+                  that doesn't need it doesn't declare the dependency — late-critique and
+                  scramble-reveal ship with react only.
+                </p>
+              </div>
+
+              <div className="decision">
+                <p className="decision-verdict">A first-party CLI: @abenor/z-ui on npm.</p>
+                <p>
+                  Full control over the install UX — preview, spring curves, doctor, the refusal
+                  behavior. Registry items stay shadcn-schema-shaped, so{' '}
+                  <code>npx shadcn add &lt;url&gt;</code> works as a free fallback path for anyone
+                  who doesn't want another CLI.
+                </p>
+              </div>
+
+              <div className="decision">
+                <p className="decision-verdict">
+                  Raw GitHub URLs behind a single constant base URL.
+                </p>
+                <p>
+                  No hosting to stand up on day one; swappable to a real domain later with no code
+                  change. The caveat is real: unauthenticated raw GitHub allows about 60 requests
+                  per hour per IP — which <code>--registry ./registry</code> avoids.
+                </p>
+              </div>
+
+              <div className="decision">
+                <p className="decision-verdict">Uncontrolled by default, controlled optional.</p>
+                <p>
+                  <code>&lt;Disclosure /&gt;</code> works immediately with zero setup;{' '}
+                  <code>open</code> / <code>onOpenChange</code> exist for apps that need real
+                  control.
+                </p>
+              </div>
+            </div>
+          </Section>
+
+          <Section index="05" label="REQUIREMENTS" id="requirements">
             <div className="prose" style={{ maxWidth: 720 }}>
               <ul>
                 <li>React, already in your project — the CLI never installs it.</li>
@@ -165,7 +308,7 @@ export function Docs() {
             </div>
           </Section>
 
-          <Section index="04" label="TROUBLESHOOTING" id="troubleshooting">
+          <Section index="06" label="TROUBLESHOOTING" id="troubleshooting">
             <div style={{ maxWidth: 720 }}>
               <Disclosure label="add can't find the component I want">
                 <p className="playground-caption">
@@ -195,10 +338,12 @@ export function Docs() {
             </div>
           </Section>
 
-          <Section index="05" label="CONTRIBUTING" id="contributing">
+          <Section index="07" label="CONTRIBUTING" id="contributing">
             <div style={{ maxWidth: 720 }}>
               <Disclosure label="Working on z-ui itself">
-                <CodeBlock code={'pnpm install\npnpm dev\npnpm --filter @z-ui/web dev\npnpm verify'} />
+                <CodeBlock
+                  code={'pnpm install\npnpm dev\npnpm --filter @z-ui/web dev\npnpm verify'}
+                />
                 <p className="playground-caption">
                   verify runs typecheck → registry linter → contrast linter → generated-registry
                   check → tests — plus suites that deliberately break each linter to prove it
@@ -223,4 +368,3 @@ export function Docs() {
     </Page>
   );
 }
-
